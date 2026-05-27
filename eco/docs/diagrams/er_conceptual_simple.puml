@@ -1,0 +1,85 @@
+@startuml ER_conceptual_simple
+' Концептуальная модель данных — для слайда презентации
+
+skinparam shadowing false
+skinparam defaultFontSize 12
+skinparam linetype ortho
+
+title Концептуальная модель данных\n(программный комплекс)
+
+entity "Организация" as Org {
+  * id
+  --
+  название
+  адрес
+  контакты
+}
+
+entity "Вид отхода" as Waste {
+  * id
+  --
+  код
+  наименование
+  класс опасности
+  код ФККО
+}
+
+entity "Партия отходов" as Batch {
+  * id
+  --
+  код партии
+  объём, т
+  статус
+  дата поступления
+}
+
+entity "План переработки" as Plan {
+  * id
+  --
+  линия
+  дата смены
+  статус плана
+}
+
+entity "Этап переработки" as Stage {
+  * id
+  --
+  этап
+  дата/время
+  результат
+}
+
+entity "Операция" as Op {
+  * id
+  --
+  тип операции
+  объём, т
+  дата
+}
+
+entity "Измерение" as Meas {
+  * id
+  --
+  показатель
+  значение
+  норматив
+  дата
+}
+
+entity "Пользователь" as User {
+  * id
+  --
+  email
+  роль
+}
+
+Org ||--o{ Batch : производит
+Waste ||--o{ Batch : классифицирует
+Batch ||--o| Plan : планируется
+Batch ||--o{ Stage : проходит
+Org ||--o{ Op : учитывает
+Waste ||--o{ Op : по виду
+Org ||--o{ Meas : контролирует
+User }o--|| Org : доступ к данным
+
+@enduml

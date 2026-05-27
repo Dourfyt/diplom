@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Модули комплекса{% endblock %}
+
+{% block content %}
+<div class="mb-4" data-tour="eco-page-title">
+  <h1 class="h3 fw-bold text-dark mb-0">Модули комплекса</h1>
+  <p class="text-muted mb-0">Переход к соседним модулям — кнопки «Модули» в зелёной шапке сайта.</p>
+</div>
+
+<div class="card border-0 shadow-sm" data-tour="eco-page-table">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped mb-0 align-middle">
+        <thead class="table-success">
+          <tr>
+            <th scope="col">Модуль</th>
+            <th scope="col">Префикс API</th>
+            <th scope="col">Описание</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in modules %}
+            <tr>
+              <td class="fw-semibold">{{ item.name }}</td>
+              <td class="font-monospace small">{{ item.api_prefix }}</td>
+              <td>{{ item.description|default:"—" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="3" class="text-center text-muted py-5">Нет данных</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if is_paginated %}
+  <nav class="mt-3" aria-label="Страницы">
+    <ul class="pagination justify-content-center mb-0">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a></li>
+      {% endif %}
+      <li class="page-item disabled"><span class="page-link">Стр. {{ page_obj.number }} из {{ paginator.num_pages }}</span></li>
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперёд</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+{% endblock %}

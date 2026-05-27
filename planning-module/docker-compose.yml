@@ -1,0 +1,8 @@
+# UI модуля планирования → REST API платформы waste-complex-platform
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    restart: unless-stopped

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if form.instance.pk %}Редактирование операции{% else %}Новая операция{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4 p-md-5">
+        <h1 class="h4 fw-bold text-dark mb-3">
+          {% if form.instance.pk %}Изменить операцию{% else %}Добавить операцию{% endif %}
+        </h1>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.organization.id_for_label }}">Организация</label>
+            {{ form.organization }}
+            {% if form.organization.errors %}<div class="text-danger small">{{ form.organization.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.waste_type.id_for_label }}">Вид отхода</label>
+            {{ form.waste_type }}
+            {% if form.waste_type.errors %}<div class="text-danger small">{{ form.waste_type.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.operation_type.id_for_label }}">Тип операции</label>
+            {{ form.operation_type }}
+            <div class="form-text">В списке — понятные названия: накопление, переработка, вывоз.</div>
+            {% if form.operation_type.errors %}<div class="text-danger small">{{ form.operation_type.errors }}</div>{% endif %}
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.volume.id_for_label }}">Объём, т</label>
+              {{ form.volume }}
+              {% if form.volume.errors %}<div class="text-danger small">{{ form.volume.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.operation_date.id_for_label }}">Дата операции</label>
+              {{ form.operation_date }}
+              {% if form.operation_date.errors %}<div class="text-danger small">{{ form.operation_date.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{% url 'operations:list' %}{% if request.GET.organization %}?organization={{ request.GET.organization }}{% endif %}">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Новое измерение{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h1 class="h4 fw-bold mb-1">Добавить измерение</h1>
+        <p class="text-muted small mb-4">
+          Данные отправляются на сервер платформы (REST API). Норматив на сервере не хранится —
+          для демонстрации превышений используются учебные пороги для известных показателей.
+        </p>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.organization.id_for_label }}">{{ form.organization.label }}</label>
+            {{ form.organization }}
+            {% if form.organization.errors %}<div class="text-danger small">{{ form.organization.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.parameter.id_for_label }}">{{ form.parameter.label }}</label>
+            {{ form.parameter }}
+            {% if form.parameter.errors %}<div class="text-danger small">{{ form.parameter.errors }}</div>{% endif %}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.value.id_for_label }}">{{ form.value.label }}</label>
+              {{ form.value }}
+              {% if form.value.errors %}<div class="text-danger small">{{ form.value.errors }}</div>{% endif %}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="{{ form.unit.id_for_label }}">{{ form.unit.label }}</label>
+              {{ form.unit }}
+              {% if form.unit.errors %}<div class="text-danger small">{{ form.unit.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-monitoring-accent text-white">Сохранить на сервере</button>
+            <a class="btn btn-outline-secondary" href="{% url 'monitoring:list' %}">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
