@@ -1,0 +1,355 @@
+================================================================================
+  СТРУКТУРА БАЗЫ ДАННЫХ ПРОГРАММНОГО КОМПЛЕКСА
+  «Учёт и переработка промышленных отходов»
+================================================================================
+
+СУБД:          PostgreSQL 16
+Имя БД:        waste_complex
+Пользователь:  complex / complex
+Порт (Docker): 5434  (внутри контейнера: 5432)
+Платформа:     waste-complex-platform/
+
+Всего таблиц:  17
+
+================================================================================
+  0. ПОЛЬЗОВАТЕЛИ (АУТЕНТИФИКАЦИЯ)
+================================================================================
+
+--------------------------------------------------------------------------------
+0.1. users — учётные записи
+--------------------------------------------------------------------------------
+Модуль: auth (JWT)
+
+  id            INTEGER       PK
+  email         VARCHAR(128)  UNIQUE, логин
+  password_hash VARCHAR(256)  bcrypt
+  full_name     VARCHAR(128)  ФИО
+  role          VARCHAR(32)   operator | dispatcher | admin | …
+  is_active     BOOLEAN
+  created_at    TIMESTAMP
+
+
+================================================================================
+  1. ОБЩИЕ ТАБЛИЦЫ (ЯДРО КОМПЛЕКСА)
+================================================================================
+
+Эти таблицы используются несколькими модулями. Центральная сущность — партия
+отходов (waste_batches), как в таблице 9 дипломного проекта.
+
+--------------------------------------------------------------------------------
+1.1. organizations — организации / предприятия
+--------------------------------------------------------------------------------
+Модули: учёт, отчётность, экологический контроль
+
+  id          INTEGER       PK
+  name        VARCHAR(256)  название
+  address     VARCHAR(512)
+  email       VARCHAR(128)
+  phone       VARCHAR(64)
+
+Связи:
+  → waste_batches (1:N)
+  → waste_operations (1:N)
+  → environmental_measurements (1:N)
+
+--------------------------------------------------------------------------------
+1.2. waste_types — виды отходов (справочник)
+--------------------------------------------------------------------------------
+Модули: учёт, отчётность
+
+  id            INTEGER       PK
+  code          VARCHAR(32)   UNIQUE, код вида
+  name          VARCHAR(256)  наименование
+  fkko_code     VARCHAR(32)   код ФККО
+  hazard_class  INTEGER       класс опасности (1–5)
+  description   TEXT
+
+Связи:
+  → waste_batches (1:N)
+  → waste_operations (1:N)
+
+--------------------------------------------------------------------------------
+1.3. waste_batches — партии отходов (ГЛАВНАЯ ОБЩАЯ СУЩНОСТЬ)
+--------------------------------------------------------------------------------
+Модули: ВСЕ
+  • учёт — создание, классификация
+  • планирование — приоритет, расписание
+  • мониторинг — этапы, QR-код
+  • отчётность — операции, KPI
+
+  id                      INTEGER       PK
+  code                    VARCHAR(16)   UNIQUE, код партии (P1, P2, …)
+  name                    VARCHAR(256)  наименование
+  fkko_code               VARCHAR(32)   код ФККО
+  hazard_class            INTEGER       класс опасности
+  volume_tons             FLOAT         объём, т
+  storage_deadline_hours  FLOAT         допустимый срок хранения, ч
+  received_at             TIMESTAMP     дата поступления
+  status                  VARCHAR(32)   accepted | classified | processing | …
+  economic_value          FLOAT         экономическая ценность
+  route_codes             VARCHAR(64)   маршрут, напр. «L1,L2»
+  organization_id         INTEGER       FK → organizations (NULL)
+  waste_type_id           INTEGER       FK → waste_types (NULL)
+  source_department       VARCHAR(128)  цех-источник
+  qr_token                VARCHAR(64)   токен для QR (мониторинг)
+  classification_note     TEXT          примечание классификации
+
+Связи:
+  ← organizations, waste_types
+  → schedule_items (1:N)
+  → batch_stage_progress (1:N)
+  → batch_documents (1:N)
+  → waste_operations (1:N)
+  → notifications (1:N, опционально)
+
+
+================================================================================
+  2. СВЯЗУЮЩИЕ ОБЩИЕ ТАБЛИЦЫ
+================================================================================
+
+Используются двумя и более модулями, но не являются «справочником ядра».
+
+--------------------------------------------------------------------------------
+2.1. waste_operations — журнал операций с отходами
+--------------------------------------------------------------------------------
+Модули: учёт (запись), отчётность (чтение, отчёты)
+
+  id               INTEGER       PK
+  organization_id  INTEGER       FK → organizations
+  waste_type_id    INTEGER       FK → waste_types (NULL)
+  batch_id         INTEGER       FK → waste_batches (NULL)
+  operation_type   VARCHAR(64)   receipt | disposal | transfer | …
+  quantity_tons    FLOAT
+  operation_at     TIMESTAMP
+  notes            TEXT
+
+--------------------------------------------------------------------------------
+2.2. schedule_plans — версии планов переработки
+--------------------------------------------------------------------------------
+Модули: планирование (CRUD), мониторинг (синхронизация этапов при утверждении)
+
+  id              INTEGER       PK
+  name            VARCHAR(128)
+  horizon_hours   FLOAT         горизонт планирования, ч
+  status          ENUM          draft | approved | archived | published
+  version_no      INTEGER       номер версии
+  author          VARCHAR(64)
+  created_at      TIMESTAMP
+  approved_at     TIMESTAMP     NULL
+  is_simulation   BOOLEAN       признак симуляции
+  parent_plan_id  INTEGER       FK → schedule_plans (NULL)
+
+Связи:
+  → schedule_items (1:N, CASCADE DELETE)
+
+--------------------------------------------------------------------------------
+2.3. schedule_items — операции в плане (назначения на линии)
+--------------------------------------------------------------------------------
+Модули: планирование, мониторинг (плановые start/end → batch_stage_progress)
+
+  id                   INTEGER     PK
+  plan_id              INTEGER     FK → schedule_plans (ON DELETE CASCADE)
+  batch_id             INTEGER     FK → waste_batches
+  line_id              INTEGER     FK → production_lines
+  operation_code       VARCHAR(32)
+  start_at             TIMESTAMP
+  end_at               TIMESTAMP
+  priority_score       FLOAT
+  planned_output_tons  FLOAT
+  planned_loss_tons    FLOAT
+
+--------------------------------------------------------------------------------
+2.4. notifications — уведомления о рисках
+--------------------------------------------------------------------------------
+Модули: в основном планирование; поле source_module для других модулей
+
+  id             INTEGER     PK
+  trigger_code   VARCHAR(8)  T1 | T2 | T3 | T4
+  title          VARCHAR(256)
+  message        TEXT
+  batch_id       INTEGER     FK → waste_batches (NULL)
+  line_id        INTEGER     FK → production_lines (NULL)
+  channel        VARCHAR(32) in_app | email | …
+  status         ENUM        new | sent | acknowledged
+  created_at     TIMESTAMP
+  source_module  VARCHAR(32) planning | monitoring | …
+
+
+================================================================================
+  3. ТАБЛИЦЫ МОДУЛЯ ПЛАНИРОВАНИЯ (Долгов Е.В.)
+================================================================================
+
+--------------------------------------------------------------------------------
+3.1. production_lines — производственные линии
+--------------------------------------------------------------------------------
+  id                    INTEGER     PK
+  code                  VARCHAR(16) UNIQUE (L1, L2)
+  name                  VARCHAR(128)
+  line_type             VARCHAR(64)
+  capacity_t_per_hour   FLOAT
+  is_available          BOOLEAN
+
+--------------------------------------------------------------------------------
+3.2. routing_operations — технологические операции маршрута
+--------------------------------------------------------------------------------
+  id                    INTEGER     PK
+  code                  VARCHAR(32) UNIQUE
+  name                  VARCHAR(128)
+  line_code             VARCHAR(16)
+  base_duration_hours   FLOAT
+  output_ratio          FLOAT
+  loss_ratio            FLOAT
+  sequence_order        INTEGER
+
+--------------------------------------------------------------------------------
+3.3. line_downtimes — простои линий
+--------------------------------------------------------------------------------
+  id               INTEGER     PK
+  line_id          INTEGER     FK → production_lines
+  start_at         TIMESTAMP
+  duration_hours   FLOAT
+  reason           VARCHAR(256)
+
+
+================================================================================
+  4. ТАБЛИЦЫ МОДУЛЯ МОНИТОРИНГА (Хука М.М.)
+================================================================================
+
+--------------------------------------------------------------------------------
+4.1. processing_stages — этапы переработки
+--------------------------------------------------------------------------------
+  id              INTEGER     PK
+  code            VARCHAR(32) UNIQUE (ST-RECEIPT, ST-L1, ST-L2, …)
+  name            VARCHAR(128)
+  sequence_order  INTEGER
+  norm_hours      FLOAT       нормативная длительность
+  line_code       VARCHAR(16) привязка к линии (L1, L2) или пусто
+
+--------------------------------------------------------------------------------
+4.2. batch_stage_progress — статус партии на этапе
+--------------------------------------------------------------------------------
+  id                  INTEGER     PK
+  batch_id            INTEGER     FK → waste_batches (ON DELETE CASCADE)
+  stage_id            INTEGER     FK → processing_stages
+  status              VARCHAR(32) pending | in_progress | done | delayed
+  planned_start       TIMESTAMP   NULL (из утверждённого плана)
+  planned_end         TIMESTAMP   NULL
+  actual_start        TIMESTAMP   NULL
+  actual_end          TIMESTAMP   NULL
+  deviation_percent   FLOAT       NULL, отклонение от норматива, %
+
+Связи:
+  → stage_events (1:N)
+
+--------------------------------------------------------------------------------
+4.3. stage_events — события на этапе
+--------------------------------------------------------------------------------
+  id             INTEGER     PK
+  progress_id    INTEGER     FK → batch_stage_progress (ON DELETE CASCADE)
+  event_type     VARCHAR(64)
+  comment        TEXT
+  created_at     TIMESTAMP
+  operator_name  VARCHAR(128)
+
+
+================================================================================
+  5. ТАБЛИЦЫ МОДУЛЯ УЧЁТА (Корчагин Д.Е.)
+================================================================================
+
+--------------------------------------------------------------------------------
+5.1. batch_documents — документы по партии
+--------------------------------------------------------------------------------
+  id          INTEGER     PK
+  batch_id    INTEGER     FK → waste_batches (ON DELETE CASCADE)
+  doc_type    VARCHAR(64) acceptance_act | classification_act | …
+  doc_number  VARCHAR(64)
+  created_at  TIMESTAMP
+
+
+================================================================================
+  6. ТАБЛИЦЫ МОДУЛЯ ОТЧЁТНОСТИ (Журавлёва М.Е.)
+================================================================================
+
+--------------------------------------------------------------------------------
+6.1. environmental_measurements — экологические измерения
+--------------------------------------------------------------------------------
+  id               INTEGER     PK
+  organization_id  INTEGER     FK → organizations
+  parameter        VARCHAR(128)  напр. «Выбросы пыли», «pH сточных вод»
+  value            FLOAT
+  unit             VARCHAR(32)
+  measured_at      TIMESTAMP
+  batch_id         INTEGER     FK → waste_batches (NULL)
+
+
+================================================================================
+  7. СХЕМА СВЯЗЕЙ (КРАТКО)
+================================================================================
+
+  organizations ─────┬──► waste_batches ◄────┬── schedule_items
+  waste_types ─────┘         │              ├── batch_stage_progress
+                             │              ├── batch_documents
+                             │              ├── waste_operations
+                             │              └── notifications
+                             │
+  schedule_plans ──► schedule_items ──► production_lines
+        │                    │
+        └── parent_plan_id   └── waste_batches
+
+  processing_stages ──► batch_stage_progress ──► stage_events
+                              │
+                              └── waste_batches
+
+  organizations ──► waste_operations
+  organizations ──► environmental_measurements
+
+
+================================================================================
+  8. МАТРИЦА: ТАБЛИЦА × МОДУЛЬ
+================================================================================
+
+  Таблица                      | Учёт | План | Монит | Отчёт
+  -----------------------------+------+------+-------+------
+  organizations                |  ·   |      |       |  ✓
+  waste_types                  |  ✓   |      |       |  ✓
+  waste_batches                |  ✓   |  ✓   |   ✓   |  ✓
+  batch_documents              |  ✓   |      |       |
+  waste_operations             |  ✓   |      |       |  ✓
+  production_lines             |      |  ✓   |       |
+  routing_operations           |      |  ✓   |       |
+  schedule_plans               |      |  ✓   |  ·    |  ·
+  schedule_items               |      |  ✓   |  ·    |
+  line_downtimes               |      |  ✓   |       |
+  notifications                |      |  ✓   |       |
+  processing_stages            |      |      |   ✓   |
+  batch_stage_progress         |      |  ·   |   ✓   |
+  stage_events                 |      |      |   ✓   |
+  environmental_measurements   |      |      |       |  ✓
+
+  ✓ — основное использование
+  · — чтение / синхронизация
+
+
+================================================================================
+  9. ПОДКЛЮЧЕНИЕ МОДУЛЕЙ
+================================================================================
+
+  Строка подключения:
+    postgresql://complex:complex@localhost:5434/waste_complex
+
+  API через nginx:
+    http://localhost:8080/api/v1/
+
+  Префиксы REST API:
+    /api/v1/core          — справочники, health, список модулей
+    /api/v1/accounting    — учёт (регистрация партий)
+    /api/v1/planning      — планирование
+    /api/v1               — то же, что planning (совместимость)
+    /api/v1/monitoring    — мониторинг этапов
+    /api/v1/reporting     — отчётность
+
+  Документация API: http://localhost:8080/docs
+
+================================================================================
+  Конец документа
+================================================================================

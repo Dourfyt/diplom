@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if form.instance.pk %}Редактирование{% else %}Новый вид отхода{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4 p-md-5">
+        <h1 class="h4 fw-bold text-dark mb-3">
+          {% if form.instance.pk %}Редактировать вид отхода{% else %}Добавить вид отхода{% endif %}
+        </h1>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.code.id_for_label }}">Код отхода</label>
+            {{ form.code }}
+            {% if form.code.errors %}<div class="text-danger small">{{ form.code.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.name.id_for_label }}">Наименование</label>
+            {{ form.name }}
+            {% if form.name.errors %}<div class="text-danger small">{{ form.name.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.hazard_class.id_for_label }}">Класс опасности (1–5)</label>
+            {{ form.hazard_class }}
+            {% if form.hazard_class.errors %}<div class="text-danger small">{{ form.hazard_class.errors }}</div>{% endif %}
+          </div>
+          <div class="mb-4">
+            <label class="form-label" for="{{ form.description.id_for_label }}">Описание</label>
+            {{ form.description }}
+            {% if form.description.errors %}<div class="text-danger small">{{ form.description.errors }}</div>{% endif %}
+          </div>
+
+          <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-success">Сохранить</button>
+            <a class="btn btn-outline-secondary" href="{% url 'waste:list' %}">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

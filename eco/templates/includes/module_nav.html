@@ -1,0 +1,12 @@
+<nav class="module-nav-bar d-flex flex-wrap align-items-center gap-1" data-tour="eco-modules" aria-label="Переход между модулями комплекса">
+  <span class="text-white-50 small me-1 d-none d-md-inline">Модули:</span>
+  {% for m in sibling_modules %}
+    {% if m.current %}
+      <span class="btn btn-light btn-sm disabled opacity-100" aria-current="page">{{ m.label }}</span>
+    {% else %}
+      <a class="btn btn-outline-light btn-sm" href="{{ m.url }}{% if m.id == 'api' %}/docs{% endif %}" target="_blank" rel="noopener">
+        {{ m.label }}
+      </a>
+    {% endif %}
+  {% endfor %}
+</nav>

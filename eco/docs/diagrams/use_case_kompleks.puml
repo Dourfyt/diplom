@@ -1,0 +1,99 @@
+@startuml UseCase_kompleks
+' Диаграмма прецедентов — функциональные требования программного комплекса
+' Открыть: https://www.plantuml.com/plantuml/uml — вставить содержимое файла → Export PNG
+
+left to right direction
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #F8FAFC
+  BorderColor #334155
+}
+skinparam actor {
+  BorderColor #334155
+}
+
+title Функциональные требования\nпрограммного комплекса учёта и переработки отходов
+
+actor "Оператор\nсклада / учёта" as OpSklad
+actor "Планировщик" as Plan
+actor "Оператор\nлинии" as OpLin
+actor "Эколог" as Eco
+actor "Руководитель" as Mgr
+actor "Администратор" as Admin
+
+rectangle "Программный комплекс\nучёта и переработки промышленных отходов" as K {
+
+  package "Модуль учёта\nи классификации" as M1 {
+    usecase "Регистрация партии отходов" as U1
+    usecase "Классификация по виду\nи классу опасности" as U2
+    usecase "Просмотр справочника\nвидов отходов" as U3
+  }
+
+  package "Модуль планирования" as M2 {
+    usecase "Планирование загрузки линии" as U4
+    usecase "Перепланирование\nпри сбоях" as U5
+    usecase "Просмотр плана\nна смену" as U6
+  }
+
+  package "Модуль мониторинга" as M3 {
+    usecase "Контроль этапов\nпереработки" as U7
+    usecase "Фиксация событий\nна линии" as U8
+    usecase "Просмотр статуса\nпартии" as U9
+  }
+
+  package "Модуль отчётности\nи экологического контроля" as M4 {
+    usecase "Журнал операций\n(накопление, переработка, вывоз)" as U10
+    usecase "Фильтрация и поиск\nв журнале" as U11
+    usecase "Экспорт отчётов\nExcel / PDF / XML" as U12
+    usecase "Учёт экологических\nизмерений" as U13
+    usecase "Контроль превышений\nнорм" as U14
+    usecase "Дашборд KPI\nи графики" as U15
+  }
+
+  package "Общие функции\n(API / ядро)" as M0 {
+    usecase "Вход в систему\n(JWT)" as U0
+    usecase "Управление\nпользователями" as U16
+    usecase "Справочник\nорганизаций" as U17
+    usecase "Единая база данных\nPostgreSQL" as U18
+  }
+}
+
+OpSklad --> U1
+OpSklad --> U2
+OpSklad --> U3
+
+Plan --> U4
+Plan --> U5
+Plan --> U6
+
+OpLin --> U7
+OpLin --> U8
+OpLin --> U9
+
+Eco --> U0
+Eco --> U10
+Eco --> U11
+Eco --> U12
+Eco --> U13
+Eco --> U14
+Eco --> U15
+
+Mgr --> U0
+Mgr --> U15
+
+Admin --> U0
+Admin --> U16
+Admin --> U17
+Admin --> U3
+
+U2 ..> U3 : <<include>>
+U11 ..> U10 : <<include>>
+U12 ..> U10 : <<extend>>
+U14 ..> U13 : <<include>>
+U1 ..> U18 : данные
+U7 ..> U18 : данные
+U10 ..> U18 : данные
+
+@enduml

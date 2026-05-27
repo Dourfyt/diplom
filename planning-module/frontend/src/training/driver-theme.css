@@ -1,0 +1,104 @@
+/* Без размытия подсветки и фона */
+.driver-overlay {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.driver-active-element {
+  filter: none !important;
+  -webkit-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Попап в стиле ЭкоПлан */
+.planning-driver-popover.driver-popover,
+.eco-driver-popover.driver-popover {
+  background: #ffffff;
+  color: #1a2332;
+  border: 1px solid #dde3ec;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(26, 35, 50, 0.12);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-width: 380px;
+  padding: 0;
+  overflow: hidden;
+}
+
+.planning-driver-popover .driver-popover-title,
+.eco-driver-popover .driver-popover-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1a2332;
+  margin: 0;
+  padding: 0.9rem 1rem 0.35rem;
+  border-top: 3px solid #0d7a5f;
+}
+
+.eco-driver-popover .driver-popover-title {
+  border-top-color: #198754;
+}
+
+.planning-driver-popover .driver-popover-description,
+.eco-driver-popover .driver-popover-description {
+  color: #5a6b7d;
+  font-size: 0.88rem;
+  padding: 0 1rem 0.75rem;
+  margin: 0;
+}
+
+.planning-driver-popover .driver-popover-progress-text,
+.eco-driver-popover .driver-popover-progress-text {
+  color: #8b9aab;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.planning-driver-popover .driver-popover-footer,
+.eco-driver-popover .driver-popover-footer {
+  padding: 0.65rem 1rem 0.85rem;
+  border-top: 1px solid #eef2f6;
+  gap: 0.35rem;
+}
+
+.planning-driver-popover .driver-popover-prev-btn,
+.planning-driver-popover .driver-popover-next-btn,
+.eco-driver-popover .driver-popover-prev-btn,
+.eco-driver-popover .driver-popover-next-btn {
+  background: #f4f6f9;
+  color: #1a2332;
+  border: 1px solid #dde3ec;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 0.4rem 0.75rem;
+  text-shadow: none;
+}
+
+.planning-driver-popover .driver-popover-next-btn,
+.eco-driver-popover .driver-popover-next-btn {
+  background: linear-gradient(135deg, #0d7a5f 0%, #10b981 100%);
+  color: #fff;
+  border: none;
+}
+
+.eco-driver-popover .driver-popover-next-btn {
+  background: linear-gradient(135deg, #157347 0%, #198754 100%);
+}
+
+.planning-driver-popover .driver-popover-close-btn,
+.eco-driver-popover .driver-popover-close-btn {
+  color: #8b9aab;
+}
+
+.planning-driver-popover .driver-popover-arrow-side-left,
+.planning-driver-popover .driver-popover-arrow-side-right,
+.planning-driver-popover .driver-popover-arrow-side-top,
+.planning-driver-popover .driver-popover-arrow-side-bottom,
+.eco-driver-popover .driver-popover-arrow-side-left,
+.eco-driver-popover .driver-popover-arrow-side-right,
+.eco-driver-popover .driver-popover-arrow-side-top,
+.eco-driver-popover .driver-popover-arrow-side-bottom {
+  border-color: #ffffff;
+}

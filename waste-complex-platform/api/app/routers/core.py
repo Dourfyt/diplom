@@ -1,0 +1,141 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import text
+from sqlalchemy.orm import Session
+
+from app.database import engine, get_db
+from app.models import Organization, User, WasteBatch, WasteType
+from app.schemas import (
+    DepartmentOut,
+    HealthOut,
+    ModuleInfo,
+    OrganizationOut,
+    WasteTypeImportItem,
+    WasteTypeImportResult,
+    WasteTypeOut,
+)
+from app.services.auth import get_current_user
+from app.services.rbac import require_roles
+
+router = APIRouter()
+
+
+MODULES = [
+    ModuleInfo(
+        id="auth",
+        name="Аутентификация",
+        api_prefix="/api/v1/auth",
+        description="Регистрация, вход, профиль пользователя (JWT)",
+    ),
+    ModuleInfo(
+        id="admin",
+        name="Администрирование",
+        api_prefix="/api/v1/admin",
+        description="Пользователи и аудит действий (admin)",
+    ),
+    ModuleInfo(
+        id="accounting",
+        name="Учёт поступления и классификации",
+        api_prefix="/api/v1/accounting",
+        description="Регистрация партий, классификация, документы (Корчагин Д.Е.)",
+    ),
+    ModuleInfo(
+        id="planning",
+        name="Планирование переработки",
+        api_prefix="/api/v1/planning",
+        description="Расписание, симуляция, KPI, уведомления (Долгов Е.В.)",
+    ),
+    ModuleInfo(
+        id="monitoring",
+        name="Мониторинг этапов",
+        api_prefix="/api/v1/monitoring",
+        description="Статусы этапов, события, QR (Хука М.М.)",
+    ),
+    ModuleInfo(
+        id="reporting",
+        name="Отчётность и экоконтроль",
+        api_prefix="/api/v1/reporting",
+        description="Операции, измерения, дашборд (Журавлёва М.Е.)",
+    ),
+]
+
+
+@router.get("/health", response_model=HealthOut)
+def health(db: Session = Depends(get_db)):
+    db.execute(text("SELECT 1"))
+    return HealthOut(status="ok", service="waste-complex-platform", database=str(engine.url.database))
+
+
+@router.get("/modules", response_model=list[ModuleInfo])
+def list_modules():
+    return MODULES
+
+
+@router.get("/organizations", response_model=list[OrganizationOut])
+def list_organizations(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("chief", "ecologist", "admin")),
+):
+    return db.query(Organization).order_by(Organization.name).all()
+
+
+@router.get("/waste-types", response_model=list[WasteTypeOut])
+def list_waste_types(
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("chief", "ecologist", "admin")),
+):
+    return db.query(WasteType).order_by(WasteType.code).all()
+
+
+@router.post("/waste-types/import", response_model=WasteTypeImportResult)
+def import_waste_types(
+    payload: list[WasteTypeImportItem],
+    db: Session = Depends(get_db),
+    _: User = Depends(require_roles("admin")),
+):
+    if not payload:
+        raise HTTPException(status_code=400, detail="Пустой список waste_types")
+
+    codes = [item.code.strip() for item in payload]
+    existing = db.query(WasteType).filter(WasteType.code.in_(codes)).all()
+    by_code = {row.code: row for row in existing}
+
+    created = 0
+    updated = 0
+    for item in payload:
+        code = item.code.strip()
+        row = by_code.get(code)
+        if row is None:
+            row = WasteType(
+                code=code,
+                name=item.name.strip(),
+                fkko_code=item.fkko_code.strip(),
+                hazard_class=item.hazard_class,
+                description=item.description.strip(),
+            )
+            db.add(row)
+            created += 1
+            continue
+
+        row.name = item.name.strip()
+        row.fkko_code = item.fkko_code.strip()
+        row.hazard_class = item.hazard_class
+        row.description = item.description.strip()
+        updated += 1
+
+    db.commit()
+    return WasteTypeImportResult(total=len(payload), created=created, updated=updated)
+
+
+@router.get("/departments", response_model=list[DepartmentOut])
+def list_departments(
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    names = (
+        db.query(WasteBatch.source_department)
+        .filter(WasteBatch.source_department != "")
+        .distinct()
+        .order_by(WasteBatch.source_department)
+        .all()
+    )
+    return [DepartmentOut(name=row[0]) for row in names]

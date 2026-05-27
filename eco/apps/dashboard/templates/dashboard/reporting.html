@@ -1,0 +1,345 @@
+{% extends "base.html" %}
+
+{% block title %}Дашборд отчётности{% endblock %}
+
+{% block extra_css %}
+<style>
+  .kpi-tile {
+    border: none;
+    border-radius: 1.1rem;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, .08);
+  }
+  .kpi-tile .kpi-value {
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .kpi-tile .kpi-hint { font-size: .8rem; color: #6c757d; }
+  .chart-box { min-height: 280px; }
+</style>
+{% endblock %}
+
+{% block content %}
+  {% if api_error %}
+    <div class="alert alert-danger">
+      <strong>Нет данных с сервера платформы.</strong><br>
+      {{ api_error }}
+    </div>
+  {% endif %}
+
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4" data-tour="eco-page-title">
+    <div>
+      <h1 class="h3 fw-bold text-dark mb-1">Дашборд отчётности</h1>
+      <p class="text-muted mb-0">
+        Сводка по партиям, операциям и измерениям
+        {% if remote_organization_name %}— {{ remote_organization_name }}{% endif %}
+      </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2" data-tour="eco-report-actions">
+      <a class="btn btn-outline-success btn-sm" href="{% url 'dashboard' %}">Дашборд KPI</a>
+      {% if can_access_operations %}
+        <a class="btn btn-success btn-sm" href="{% url 'operations:export_excel' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Excel операций</a>
+        <a class="btn btn-outline-danger btn-sm" href="{% url 'operations:export_pdf' %}{% if filter_query %}?{{ filter_query }}{% endif %}">PDF</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+      <form class="row g-2 align-items-end" method="get" action="{% url 'reporting' %}">
+        <div class="col-md-3 col-lg-2">
+          <label class="form-label small text-muted mb-1" for="date-from">Дата от</label>
+          <input type="date" class="form-control" id="date-from" name="date_from" value="{{ date_from }}">
+        </div>
+        <div class="col-md-3 col-lg-2">
+          <label class="form-label small text-muted mb-1" for="date-to">Дата до</label>
+          <input type="date" class="form-control" id="date-to" name="date_to" value="{{ date_to }}">
+        </div>
+        <div class="col-md-4 col-lg-3">
+          <label class="form-label small text-muted mb-1" for="filter-org">Организация</label>
+          <select class="form-select" id="filter-org" name="organization">
+            <option value="">Все организации</option>
+            {% for org in organizations %}
+              <option value="{{ org.pk }}" {% if selected_organization == org.pk|stringformat:"s" %}selected{% endif %}>
+                {{ org.name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto d-flex flex-wrap gap-2">
+          <button type="submit" class="btn btn-primary">Применить</button>
+          <a class="btn btn-outline-secondary" href="{% url 'reporting' %}">Сбросить</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <h2 class="h6 text-uppercase text-muted fw-semibold mb-3">Показатели платформы</h2>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-4 col-xl">
+      <div class="card kpi-tile h-100 border-start border-4 border-primary">
+        <div class="card-body">
+          <p class="kpi-hint mb-1">Партий (всего)</p>
+          <p class="kpi-value text-primary mb-0">{{ remote_total_batches }}</p>
+          <p class="kpi-hint mb-0 mt-1">обработано: {{ remote_batches_processed }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="card kpi-tile h-100 border-start border-4 border-dark">
+        <div class="card-body">
+          <p class="kpi-hint mb-1">Объём на складе, т</p>
+          <p class="kpi-value text-dark mb-0">{{ remote_total_volume }}</p>
+          <p class="kpi-hint mb-0 mt-1">за период: {{ batch_volume }} т ({{ batches_total }} партий)</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="card kpi-tile h-100 border-start border-4 border-warning">
+        <div class="card-body">
+          <p class="kpi-hint mb-1">Средний класс опасности</p>
+          <p class="kpi-value text-warning mb-0">{{ remote_avg_hazard }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="card kpi-tile h-100 border-start border-4 border-info">
+        <div class="card-body">
+          <p class="kpi-hint mb-1">Выполнение плана</p>
+          <p class="kpi-value text-info mb-0">{{ remote_plan_completion }}%</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="card kpi-tile h-100 border-start border-4 border-success">
+        <div class="card-body">
+          <p class="kpi-hint mb-1">Операции / измерения</p>
+          <p class="kpi-value text-success mb-0">{{ remote_operations_count }} / {{ remote_measurements_count }}</p>
+          <p class="kpi-hint mb-0 mt-1">за период: {{ movements_total }} / {{ measurements_total }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-4 col-xl">
+      <div class="card kpi-tile h-100 border-start border-4 border-danger">
+        <div class="card-body">
+          <p class="kpi-hint mb-1">Превышения норматива</p>
+          <p class="kpi-value text-danger mb-0">{{ exceed_count }}</p>
+          <p class="kpi-hint mb-0 mt-1">измерений за выбранный период</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if line_utilization %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body py-3">
+        <p class="small text-muted mb-2">Загрузка линий переработки, %</p>
+        <div class="d-flex flex-wrap gap-3">
+          {% for line, pct in line_utilization.items %}
+            <span class="badge text-bg-light border text-dark px-3 py-2">
+              {{ line }}: <strong>{{ pct }}%</strong>
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-6">
+      <div class="card chart-card chart-box h-100">
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 card-title">Объём по классу опасности</h2>
+          <p class="text-muted small">Сводка с сервера отчётности (<code>/reporting/summary/by-hazard</code>).</p>
+          <div class="flex-grow-1 position-relative" style="min-height: 240px;">
+            <canvas id="chartHazard"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card chart-card chart-box h-100">
+        <div class="card-body d-flex flex-column">
+          <h2 class="h5 card-title">Операции за период</h2>
+          <p class="text-muted small">Количество операций по типу (объём за период: {{ operation_volume }} т).</p>
+          <div class="flex-grow-1 position-relative" style="min-height: 240px;">
+            <canvas id="chartOperations"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if hazard_rows %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Класс опасности</th>
+                <th class="text-end">Партий</th>
+                <th class="text-end">Объём, т</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in hazard_rows %}
+                <tr>
+                  <td>{{ row.hazard_label }}</td>
+                  <td class="text-end">{{ row.batch_count }}</td>
+                  <td class="text-end">{{ row.volume_tons }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 pt-3 pb-0">
+          <h2 class="h6 fw-semibold mb-0">Партии за период</h2>
+          <p class="text-muted small mb-0">Показаны первые {{ batches|length }} из {{ batches_total }}</p>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0 align-middle">
+              <thead class="table-primary">
+                <tr>
+                  <th>Код</th>
+                  <th>Наименование</th>
+                  <th>Кл.</th>
+                  <th class="text-end">Объём, т</th>
+                  <th>Дата</th>
+                  <th>Статус</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for b in batches %}
+                  <tr>
+                    <td>{{ b.code }}</td>
+                    <td>{{ b.name|truncatechars:40 }}</td>
+                    <td>{{ b.hazard_class_display }}</td>
+                    <td class="text-end">{{ b.volume_tons }}</td>
+                    <td>{{ b.received_at|date:"d.m.Y" }}</td>
+                    <td><span class="badge text-bg-secondary">{{ b.status_display }}</span></td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="6" class="text-muted text-center py-4">Нет партий за выбранный период</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 pt-3 pb-0">
+          <h2 class="h6 fw-semibold mb-0">Операции за период</h2>
+          <p class="text-muted small mb-0">Показаны первые {{ movements|length }} из {{ movements_total }}</p>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-sm table-hover mb-0 align-middle">
+              <thead class="table-primary">
+                <tr>
+                  <th>Дата</th>
+                  <th>Организация</th>
+                  <th>Тип</th>
+                  <th class="text-end">Объём, т</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for m in movements %}
+                  <tr>
+                    <td>{{ m.operation_date|date:"d.m.Y" }}</td>
+                    <td>{{ m.organization.name|truncatechars:28 }}</td>
+                    <td>{{ m.operation_type_display }}</td>
+                    <td class="text-end">{{ m.volume }}</td>
+                  </tr>
+                {% empty %}
+                  <tr><td colspan="4" class="text-muted text-center py-4">Нет операций за выбранный период</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{ chart_hazard|json_script:"chart-hazard-data" }}
+  {{ chart_operations|json_script:"chart-operations-data" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    const hazardData = JSON.parse(document.getElementById('chart-hazard-data').textContent);
+    const operationsData = JSON.parse(document.getElementById('chart-operations-data').textContent);
+
+    const formatVolume = (value) => {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return String(value);
+      return n.toLocaleString('ru-RU', { maximumFractionDigits: 3 });
+    };
+
+    const commonOptions = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom' } }
+    };
+
+    new Chart(document.getElementById('chartHazard'), {
+      type: 'bar',
+      data: {
+        labels: hazardData.labels,
+        datasets: [{
+          label: 'Объём, т',
+          data: hazardData.volumes,
+          backgroundColor: 'rgba(25, 135, 84, 0.7)',
+          borderRadius: 8
+        }]
+      },
+      options: {
+        ...commonOptions,
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: { callback: (v) => formatVolume(v) }
+          }
+        },
+        plugins: {
+          ...commonOptions.plugins,
+          tooltip: {
+            callbacks: {
+              afterLabel: (ctx) => {
+                const count = hazardData.counts[ctx.dataIndex];
+                return count != null ? `Партий: ${count}` : '';
+              }
+            }
+          }
+        }
+      }
+    });
+
+    new Chart(document.getElementById('chartOperations'), {
+      type: 'doughnut',
+      data: {
+        labels: operationsData.labels,
+        datasets: [{
+          data: operationsData.values,
+          backgroundColor: ['#198754', '#0d6efd', '#6c757d', '#ffc107', '#dc3545'],
+          borderWidth: 0
+        }]
+      },
+      options: commonOptions
+    });
+  })();
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+# Документы Word (дипломные .docx в корне не коммитим)
+*.docx
+~$*.docx
+
+# Секреты и локальная конфигурация
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Django
+*.log
+db.sqlite3
+eco/staticfiles/
+eco/sqlite/
+
+# Node / frontend
+node_modules/
+dist/
+*.local
+
+# IDE и ОС
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Docker / данные
+pgdata/
+*.pid
+
+# Временные выгрузки и подготовленные импорты
+ФККО.import.json
+ФККО_с_сервера.json

@@ -1,0 +1,44 @@
+@startuml UseCase_kompleks_simple
+' Упрощённая диаграмма — горизонтальная, для слайда 16:9
+
+left to right direction
+skinparam shadowing false
+skinparam defaultFontSize 14
+skinparam nodesep 12
+skinparam ranksep 35
+
+rectangle "Программный комплекс учёта и переработки отходов" {
+
+  usecase "Учёт и классификация" as U1
+  usecase "Планирование" as U2
+  usecase "Мониторинг" as U3
+  usecase "Операции и экспорт" as U4
+  usecase "Измерения" as U5
+  usecase "Дашборд KPI" as U6
+  usecase "Администрирование" as U7
+
+  U1 -[hidden]r-> U2
+  U2 -[hidden]r-> U3
+  U3 -[hidden]r-> U4
+  U4 -[hidden]r-> U5
+  U5 -[hidden]r-> U6
+  U6 -[hidden]r-> U7
+}
+
+actor "Склад" as A1
+actor "Планировщик" as A2
+actor "Линия" as A3
+actor "Эколог" as A4
+actor "Руководитель" as A5
+actor "Админ" as A6
+
+A1 -up-> U1
+A2 -up-> U2
+A3 -up-> U3
+A4 -down-> U4
+A4 -down-> U5
+A4 -down-> U6
+A5 -down-> U6
+A6 -down-> U7
+
+@enduml

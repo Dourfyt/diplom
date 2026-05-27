@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Новый пользователь{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm" data-tour="eco-page-form">
+      <div class="card-body p-4">
+        <h1 class="h4 fw-bold mb-4" data-tour="eco-page-title">Создать пользователя</h1>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% if form.email.errors %}<div class="text-danger small">{{ form.email.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+            {{ form.password }}
+            {% if form.password.errors %}<div class="text-danger small">{{ form.password.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.full_name.id_for_label }}">{{ form.full_name.label }}</label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}<div class="text-danger small">{{ form.full_name.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label" for="{{ form.role.id_for_label }}">{{ form.role.label }}</label>
+            {{ form.role }}
+            {% if form.role.errors %}<div class="text-danger small">{{ form.role.errors }}</div>{% endif %}
+          </div>
+
+          <div class="d-flex flex-wrap gap-2">
+            <button type="submit" class="btn btn-success">Создать</button>
+            <a class="btn btn-outline-secondary" href="{% url 'administration:organizations' %}">Отмена</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
