@@ -4,6 +4,7 @@
 
 from django.contrib import messages
 from django.urls import reverse_lazy
+from django.shortcuts import redirect
 from django.views.generic import FormView, ListView
 
 from apps.administration.forms import UserRegisterForm
@@ -76,6 +77,12 @@ class UserRegisterView(AdminRequiredMixin, FormView):
     form_class = UserRegisterForm
     template_name = "administration/user_register.html"
     success_url = reverse_lazy("administration:user_register")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            messages.error(request, "Создание пользователей доступно только суперпользователю.")
+            return redirect("administration:organizations")
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         try:
