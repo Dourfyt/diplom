@@ -27,6 +27,7 @@ class WasteTypeRecord:
   hazard_class: int
   description: str = ""
   fkko_code: str = ""
+  hazard_class_display: str = "—"
 
 
 @dataclass

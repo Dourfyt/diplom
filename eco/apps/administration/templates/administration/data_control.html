@@ -3,14 +3,14 @@
 {% block title %}Контроль данных{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-  <h1 class="h3 fw-bold text-dark mb-0">Контроль данных</h1>
+<div class="eco-page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+  <h1 class="eco-page-title h3 mb-0">Контроль данных</h1>
   <span class="text-muted small">Сводка связности между организациями, партиями, операциями и измерениями</span>
 </div>
 
 <div class="row g-3 mb-4">
   <div class="col-md-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-body">
         <div class="text-muted small">Организаций</div>
         <div class="h4 mb-0">{{ stats.org_total }}</div>
@@ -19,7 +19,7 @@
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-body">
         <div class="text-muted small">Партий</div>
         <div class="h4 mb-0">{{ stats.batch_total }}</div>
@@ -28,39 +28,39 @@
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-body">
-        <div class="text-muted small">Организации OK</div>
+        <div class="text-muted small">Организации в норме</div>
         <div class="h4 mb-0 text-success">{{ org_totals.ok }}</div>
       </div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-body">
-        <div class="text-muted small">Партии OK</div>
+        <div class="text-muted small">Партии в норме</div>
         <div class="h4 mb-0 text-success">{{ batch_totals.ok }}</div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="alert alert-light border d-flex flex-wrap gap-3 align-items-center mb-3">
+<div class="alert eco-summary-bar d-flex flex-wrap gap-3 align-items-center mb-3">
   <span class="small text-muted">Организации:</span>
-  <span class="badge text-bg-success">OK: {{ org_totals.ok }}</span>
+  <span class="badge text-bg-success">В норме: {{ org_totals.ok }}</span>
   <span class="badge text-bg-warning">Предупреждение: {{ org_totals.warning }}</span>
   <span class="badge text-bg-danger">Проблема: {{ org_totals.problem }}</span>
   <span class="small text-muted ms-md-3">Партии:</span>
-  <span class="badge text-bg-success">OK: {{ batch_totals.ok }}</span>
+  <span class="badge text-bg-success">В норме: {{ batch_totals.ok }}</span>
   <span class="badge text-bg-warning">Предупреждение: {{ batch_totals.warning }}</span>
   <span class="badge text-bg-danger">Проблема: {{ batch_totals.problem }}</span>
 </div>
 
-<div class="card border-0 shadow-sm">
+<div class="card eco-card">
   <div class="card-header bg-white fw-semibold">Организации, требующие внимания</div>
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover table-striped mb-0 align-middle small">
+      <table class="table table-hover table-striped eco-table mb-0 align-middle small">
         <thead class="table-success">
           <tr>
             <th>Организация</th>

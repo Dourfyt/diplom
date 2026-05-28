@@ -27,10 +27,10 @@
     </div>
   {% endif %}
 
-  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4" data-tour="eco-page-title">
+  <div class="eco-page-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3" data-tour="eco-page-title">
     <div>
-      <h1 class="h3 fw-bold text-dark mb-1">Дашборд отчётности</h1>
-      <p class="text-muted mb-0">
+      <h1 class="eco-page-title h3 mb-1">Дашборд отчётности</h1>
+      <p class="eco-page-lead">
         Сводка по партиям, операциям и измерениям
         {% if remote_organization_name %}— {{ remote_organization_name }}{% endif %}
       </p>
@@ -199,10 +199,10 @@
 
   <div class="row g-4">
     <div class="col-lg-6">
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card eco-card h-100">
         <div class="card-header bg-white border-0 pt-3 pb-0">
           <h2 class="h6 fw-semibold mb-0">Партии за период</h2>
-          <p class="text-muted small mb-0">Показаны первые {{ batches|length }} из {{ batches_total }}</p>
+          <p class="eco-page-lead">Показаны первые {{ batches|length }} из {{ batches_total }}</p>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
@@ -237,10 +237,10 @@
       </div>
     </div>
     <div class="col-lg-6">
-      <div class="card border-0 shadow-sm h-100">
+      <div class="card eco-card h-100">
         <div class="card-header bg-white border-0 pt-3 pb-0">
           <h2 class="h6 fw-semibold mb-0">Операции за период</h2>
-          <p class="text-muted small mb-0">Показаны первые {{ movements|length }} из {{ movements_total }}</p>
+          <p class="eco-page-lead">Показаны первые {{ movements|length }} из {{ movements_total }}</p>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">

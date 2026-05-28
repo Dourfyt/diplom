@@ -5,9 +5,9 @@
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-lg-8">
-    <div class="card border-0 shadow-sm" data-tour="eco-page-form">
-      <div class="card-body p-4">
-        <h1 class="h4 fw-bold mb-4" data-tour="eco-page-title">Создать пользователя</h1>
+    <div class="card eco-card eco-form-card mx-auto" data-tour="eco-page-form">
+      <div class="card-body">
+        <h1 class="h4 eco-page-title mb-4" data-tour="eco-page-title">Создать пользователя</h1>
 
         <form method="post" novalidate>
           {% csrf_token %}

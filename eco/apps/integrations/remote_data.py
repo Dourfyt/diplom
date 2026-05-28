@@ -81,27 +81,6 @@ def _org_from_dict(data: dict) -> OrganizationRecord:
     )
 
 
-def _waste_from_dict(data: dict) -> WasteTypeRecord:
-    return WasteTypeRecord(
-        pk=int(data["id"]),
-        code=data.get("code", ""),
-        name=data.get("name", ""),
-        hazard_class=int(data.get("hazard_class", 0)),
-        description=data.get("description", ""),
-        fkko_code=data.get("fkko_code", ""),
-    )
-
-
-BATCH_STATUS_LABELS = {
-    "new": "Новая",
-    "classified": "Классифицирована",
-    "in_storage": "На хранении",
-    "planned": "В плане",
-    "in_process": "В переработке",
-    "completed": "Завершена",
-    "disposed": "Утилизирована",
-}
-
 HAZARD_CLASS_LABELS = {
     1: "I",
     2: "II",
@@ -109,6 +88,100 @@ HAZARD_CLASS_LABELS = {
     4: "IV",
     5: "V",
 }
+
+
+def _waste_from_dict(data: dict) -> WasteTypeRecord:
+    hazard_class = int(data.get("hazard_class", 0))
+    return WasteTypeRecord(
+        pk=int(data["id"]),
+        code=data.get("code", ""),
+        name=data.get("name", ""),
+        hazard_class=hazard_class,
+        description=data.get("description", ""),
+        fkko_code=data.get("fkko_code", ""),
+        hazard_class_display=HAZARD_CLASS_LABELS.get(
+            hazard_class, str(hazard_class or "—")
+        ),
+    )
+
+
+BATCH_STATUS_LABELS = {
+    "new": "Новая",
+    "classified": "Классифицирована",
+    "in_storage": "На хранении",
+    "in storage": "На хранении",
+    "stored": "На хранении",
+    "storage": "На хранении",
+    "planned": "В плане",
+    "in_process": "В переработке",
+    "in process": "В переработке",
+    "processing": "В переработке",
+    "completed": "Завершена",
+    "complete": "Завершена",
+    "done": "Завершена",
+    "disposed": "Утилизирована",
+    "disposal": "Утилизирована",
+    "utilized": "Утилизирована",
+    "pending": "Ожидает обработки",
+    "received": "Поступила",
+    "active": "Активна",
+    "closed": "Закрыта",
+    "cancelled": "Отменена",
+    "canceled": "Отменена",
+    "rejected": "Отклонена",
+    "archived": "В архиве",
+    "draft": "Черновик",
+}
+
+
+def get_batch_status_display(status_key: str) -> str:
+    """
+    Человекочитаемый статус партии на русском.
+
+    В БД/API хранятся технические коды на латинице (new, in_process, …).
+    """
+    if not status_key:
+        return "—"
+    raw = status_key.strip()
+    normalized = raw.lower().replace("-", "_")
+    spaced = normalized.replace("_", " ")
+    for key in (normalized, spaced, raw.lower(), raw):
+        label = BATCH_STATUS_LABELS.get(key)
+        if label:
+            return label
+    return _humanize_unknown_batch_status(normalized)
+
+
+def _humanize_unknown_batch_status(normalized: str) -> str:
+    """Запасной перевод для неизвестных кодов вида in_some_status."""
+    word_map = {
+        "new": "новая",
+        "classified": "классифицирована",
+        "planned": "в плане",
+        "process": "переработка",
+        "processing": "переработка",
+        "storage": "хранение",
+        "stored": "хранение",
+        "completed": "завершена",
+        "complete": "завершена",
+        "disposed": "утилизирована",
+        "pending": "ожидает",
+        "received": "поступила",
+        "active": "активна",
+        "closed": "закрыта",
+        "cancelled": "отменена",
+        "canceled": "отменена",
+        "rejected": "отклонена",
+        "archived": "в архиве",
+        "draft": "черновик",
+        "in": "",
+        "on": "",
+        "at": "",
+    }
+    parts = [word_map.get(p, p) for p in normalized.split("_") if word_map.get(p, p)]
+    if parts:
+        return " ".join(parts).strip().capitalize()
+    return normalized.replace("_", " ").capitalize()
 
 
 def _parse_optional_date(value: str | None) -> date | None:
@@ -238,7 +311,7 @@ class RemoteDataService:
                     hazard_class=hazard_class,
                     volume_tons=_to_decimal(item.get("volume_tons")),
                     status=status_key,
-                    status_display=BATCH_STATUS_LABELS.get(status_key, status_key),
+                    status_display=get_batch_status_display(status_key),
                     received_at=received_at,
                     organization=org,
                     waste_type=waste,

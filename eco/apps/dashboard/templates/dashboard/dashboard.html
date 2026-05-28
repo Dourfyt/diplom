@@ -33,10 +33,10 @@
   {% elif api_charts_warning %}
     <div class="alert alert-warning">{{ api_charts_warning }}</div>
   {% endif %}
-  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4" data-tour="eco-page-title">
+  <div class="eco-page-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3" data-tour="eco-page-title">
     <div>
-      <h1 class="h3 fw-bold text-dark">Панель показателей (KPI)</h1>
-      <p class="text-muted mb-0">Сводка по организациям, отходам, операциям, ключевым показателям и измерениям.</p>
+      <h1 class="eco-page-title h3">Панель показателей (KPI)</h1>
+      <p class="eco-page-lead">Сводка по организациям, отходам, операциям, ключевым показателям и измерениям.</p>
     </div>
     <a class="btn btn-outline-success btn-sm" href="{% url 'reporting' %}">Дашборд отчётности</a>
   </div>

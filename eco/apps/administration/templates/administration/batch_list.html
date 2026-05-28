@@ -3,11 +3,11 @@
 {% block title %}Партии отходов{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4" data-tour="eco-page-title">
-  <h1 class="h3 fw-bold text-dark mb-0">Партии отходов</h1>
+<div class="eco-page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3" data-tour="eco-page-title">
+  <h1 class="eco-page-title h3 mb-0">Партии отходов</h1>
 </div>
 
-<div class="card border-0 shadow-sm mb-3">
+<div class="card eco-card eco-card-filter mb-4">
   <div class="card-body py-3">
     <form class="row g-2 align-items-end" method="get">
       <div class="col-md-5 col-lg-4">
@@ -24,7 +24,7 @@
         </select>
       </div>
       <div class="col-auto d-flex flex-wrap gap-2">
-        <button type="submit" class="btn btn-outline-success">Применить</button>
+        <button type="submit" class="btn btn-success">Применить</button>
         {% if search_query or selected_status %}
           <a class="btn btn-outline-secondary" href="{% url 'administration:batches' %}">Сбросить</a>
         {% endif %}
@@ -33,17 +33,17 @@
   </div>
 </div>
 
-<div class="alert alert-light border d-flex flex-wrap gap-3 align-items-center mb-3">
+<div class="alert eco-summary-bar d-flex flex-wrap gap-3 align-items-center mb-3">
   <span class="small text-muted">Контроль связности с модулями Операции/Измерения:</span>
-  <span class="badge text-bg-success">OK: {{ integrity_totals.ok|default:0 }}</span>
+  <span class="badge text-bg-success">В норме: {{ integrity_totals.ok|default:0 }}</span>
   <span class="badge text-bg-warning">Предупреждение: {{ integrity_totals.warning|default:0 }}</span>
   <span class="badge text-bg-danger">Проблема: {{ integrity_totals.problem|default:0 }}</span>
 </div>
 
-<div class="card border-0 shadow-sm" data-tour="eco-page-table">
+<div class="card eco-card eco-card-table" data-tour="eco-page-table">
   <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover table-striped mb-0 align-middle small">
+      <table class="table table-hover table-striped eco-table mb-0 align-middle small">
         <thead class="table-success">
           <tr>
             <th scope="col">Код</th>
@@ -74,7 +74,7 @@
               <td class="small">
                 {% if check %}
                   {% if check.severity == "ok" %}
-                    <span class="badge text-bg-success">OK {{ check.score }}%</span>
+                    <span class="badge text-bg-success">В норме {{ check.score }}%</span>
                   {% elif check.severity == "warning" %}
                     <span class="badge text-bg-warning">Предупр. {{ check.score }}%</span>
                   {% else %}

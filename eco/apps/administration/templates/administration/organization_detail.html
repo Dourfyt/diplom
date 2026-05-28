@@ -3,13 +3,13 @@
 {% block title %}{{ organization.name }}{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+<div class="eco-page-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
   <div>
   <a class="btn btn-sm btn-outline-secondary mb-2" href="{% url 'administration:organizations' %}">← К списку организаций</a>
-    <h1 class="h3 fw-bold text-dark mb-0">{{ organization.name }}</h1>
+    <h1 class="eco-page-title h3 mb-0">{{ organization.name }}</h1>
   </div>
   {% if summary.severity == "ok" %}
-    <span class="badge text-bg-success fs-6">Контроль данных: OK {{ summary.score }}%</span>
+    <span class="badge text-bg-success fs-6">Контроль данных: в норме {{ summary.score }}%</span>
   {% elif summary.severity == "warning" %}
     <span class="badge text-bg-warning fs-6">Предупреждение {{ summary.score }}%</span>
   {% else %}
@@ -19,7 +19,7 @@
 
 <div class="row g-3 mb-4">
   <div class="col-md-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-body">
         <div class="text-muted small">Партии</div>
         <div class="h4 mb-0">{{ summary.batch_count }}</div>
@@ -28,7 +28,7 @@
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-body">
         <div class="text-muted small">Операции</div>
         <div class="h4 mb-0">{{ summary.ops_count }}</div>
@@ -36,7 +36,7 @@
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-body">
         <div class="text-muted small">Измерения</div>
         <div class="h4 mb-0">{{ summary.measures_count }}</div>
@@ -44,7 +44,7 @@
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-body">
         <div class="text-muted small">Проблемные партии</div>
         <div class="h4 mb-0">{{ summary.batch_problems }}</div>
@@ -55,7 +55,7 @@
 
 <div class="row g-3 mb-4">
   <div class="col-lg-5">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-header bg-white fw-semibold">Реквизиты</div>
       <div class="card-body small">
         <p class="mb-2"><span class="text-muted">Адрес:</span> {{ organization.address|default:"—" }}</p>
@@ -69,7 +69,7 @@
     </div>
   </div>
   <div class="col-lg-7">
-    <div class="card border-0 shadow-sm h-100">
+    <div class="card eco-card h-100">
       <div class="card-header bg-white fw-semibold">Партии организации</div>
       <div class="card-body p-0">
         <div class="table-responsive">
@@ -91,7 +91,7 @@
                   <td>
                     {% with check=batch.integrity_check %}
                       {% if check.severity == "ok" %}
-                        <span class="badge text-bg-success">OK</span>
+                        <span class="badge text-bg-success">В норме</span>
                       {% elif check.severity == "warning" %}
                         <span class="badge text-bg-warning">!</span>
                       {% else %}
@@ -113,7 +113,7 @@
 
 <div class="row g-3">
   <div class="col-lg-6">
-    <div class="card border-0 shadow-sm">
+    <div class="card eco-card">
       <div class="card-header bg-white fw-semibold">Последние операции (модуль «Операции»)</div>
       <div class="card-body p-0">
         <ul class="list-group list-group-flush small">
@@ -130,7 +130,7 @@
     </div>
   </div>
   <div class="col-lg-6">
-    <div class="card border-0 shadow-sm">
+    <div class="card eco-card">
       <div class="card-header bg-white fw-semibold">Последние измерения (модуль «Измерения»)</div>
       <div class="card-body p-0">
         <ul class="list-group list-group-flush small">

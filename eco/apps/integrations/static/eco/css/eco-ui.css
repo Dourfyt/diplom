@@ -1,0 +1,311 @@
+/* Эко-учёт — единый UI на Bootstrap 5 */
+
+:root {
+  --eco-green: #198754;
+  --eco-green-dark: #157347;
+  --eco-green-soft: #d1e7dd;
+  --eco-surface: #ffffff;
+  --eco-text: #212529;
+  --eco-muted: #6c757d;
+  --eco-border: rgba(0, 0, 0, 0.06);
+  --eco-radius: 0.875rem;
+  --eco-radius-sm: 0.625rem;
+  --eco-shadow: 0 4px 20px rgba(15, 45, 30, 0.08);
+  --eco-shadow-sm: 0 2px 10px rgba(15, 45, 30, 0.06);
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(165deg, #f6fbf7 0%, #edf5f1 45%, #f0f4fa 100%);
+  color: var(--eco-text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ——— Шапка ——— */
+.navbar-eco {
+  background: linear-gradient(90deg, var(--eco-green-dark) 0%, var(--eco-green) 55%, #1f9d6a 100%) !important;
+  box-shadow: 0 4px 24px rgba(21, 115, 71, 0.25);
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+}
+
+.navbar-eco .navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.navbar-eco-tabs .btn {
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-width: 1px;
+  transition: background-color 0.15s ease, transform 0.12s ease;
+}
+
+.navbar-eco-tabs .btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.navbar-eco-tabs .btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.navbar-eco-tabs .btn-light.active,
+.navbar-eco-tabs .btn.active {
+  background: #fff !important;
+  color: var(--eco-green-dark) !important;
+  border-color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.navbar-eco-user {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.module-nav-bar .btn {
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
+/* ——— Контент ——— */
+.eco-main {
+  max-width: 1320px;
+}
+
+.eco-page-header {
+  margin-bottom: 1.5rem;
+}
+
+.eco-page-title {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #1a2e24;
+}
+
+.eco-page-lead {
+  color: var(--eco-muted);
+  font-size: 0.925rem;
+  margin-bottom: 0;
+}
+
+/* ——— Карточки ——— */
+.eco-card,
+main.container > .card.border-0.shadow-sm {
+  border: 1px solid var(--eco-border) !important;
+  border-radius: var(--eco-radius) !important;
+  box-shadow: var(--eco-shadow-sm) !important;
+  background: var(--eco-surface);
+  overflow: hidden;
+}
+
+.eco-card-filter .card-body,
+main.container > .card.border-0.shadow-sm.mb-3 .card-body {
+  padding: 1rem 1.25rem !important;
+}
+
+.eco-card-table > .card-body.p-0,
+main.container > .card.border-0.shadow-sm:not(.mb-3) > .card-body.p-0 {
+  padding: 0 !important;
+}
+
+.eco-card .card-header {
+  background: #fafcfb;
+  border-bottom: 1px solid var(--eco-border);
+  font-weight: 600;
+  padding: 0.85rem 1.25rem;
+}
+
+/* ——— Сводки / алерты ——— */
+.eco-summary-bar,
+main.container > .alert.alert-light.border {
+  border-radius: var(--eco-radius-sm) !important;
+  background: #f8fbf9 !important;
+  border-color: var(--eco-border) !important;
+  padding: 0.75rem 1rem !important;
+  margin-bottom: 1rem !important;
+}
+
+/* ——— Таблицы ——— */
+.eco-table,
+main.container .table.table-hover {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.eco-table thead th,
+main.container .table thead.table-success th,
+main.container .table thead.table-primary th,
+main.container .table thead.table-light th {
+  background: linear-gradient(180deg, #2d8f5f 0%, var(--eco-green) 100%) !important;
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: none !important;
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+}
+
+.eco-table tbody td,
+main.container .table tbody td {
+  padding: 0.7rem 1rem;
+  vertical-align: middle;
+  border-color: #eef2ef;
+}
+
+.eco-table.table-striped > tbody > tr:nth-of-type(odd) > *,
+main.container .table.table-striped > tbody > tr:nth-of-type(odd) > * {
+  background-color: rgba(25, 135, 84, 0.03);
+}
+
+.eco-table tbody tr:hover > *,
+main.container .table.table-hover tbody tr:hover > * {
+  background-color: rgba(25, 135, 84, 0.07) !important;
+}
+
+/* ——— Формы в фильтрах ——— */
+.eco-card-filter .form-label,
+main.container .card .form-label.small.text-muted {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #5a6b63 !important;
+  margin-bottom: 0.35rem;
+}
+
+.eco-card-filter .form-control,
+.eco-card-filter .form-select,
+main.container .card .form-control,
+main.container .card .form-select {
+  border-radius: var(--eco-radius-sm);
+  border-color: #dee5e0;
+  font-size: 0.9rem;
+}
+
+.eco-card-filter .form-control:focus,
+.eco-card-filter .form-select:focus,
+main.container .card .form-control:focus,
+main.container .card .form-select:focus {
+  border-color: var(--eco-green);
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+}
+
+/* ——— Кнопки ——— */
+.btn {
+  border-radius: var(--eco-radius-sm);
+  font-weight: 500;
+}
+
+.btn-success {
+  background: linear-gradient(180deg, #22a06b 0%, var(--eco-green) 100%);
+  border-color: var(--eco-green-dark);
+}
+
+.btn-success:hover {
+  background: linear-gradient(180deg, var(--eco-green) 0%, var(--eco-green-dark) 100%);
+  border-color: #146c43;
+}
+
+.btn-outline-success {
+  border-color: var(--eco-green);
+  color: var(--eco-green-dark);
+}
+
+.btn-outline-success:hover {
+  background: var(--eco-green-soft);
+  color: var(--eco-green-dark);
+}
+
+.btn-sm {
+  font-size: 0.8125rem;
+  padding: 0.3rem 0.65rem;
+}
+
+/* ——— Пагинация ——— */
+.pagination .page-link {
+  border-radius: var(--eco-radius-sm);
+  margin: 0 0.15rem;
+  color: var(--eco-green-dark);
+}
+
+.pagination .page-item.active .page-link {
+  background-color: var(--eco-green);
+  border-color: var(--eco-green);
+}
+
+/* ——— Бейджи ——— */
+.badge {
+  font-weight: 600;
+}
+
+/* Класс опасности (справочник отходов) */
+.hazard-class-badge {
+  font-weight: 700;
+  font-size: 0.85rem;
+  min-width: 2.25rem;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.hazard-class-1 { background-color: #b02a37; color: #fff; }
+.hazard-class-2 { background-color: #e8590c; color: #fff; }
+.hazard-class-3 { background-color: #f59f00; color: #212529; }
+.hazard-class-4 { background-color: #ffe066; color: #212529; }
+.hazard-class-5 { background-color: #2f9e44; color: #fff; }
+.hazard-class-0 { background-color: #868e96; color: #fff; }
+
+/* Дашборд */
+.card-stat,
+.chart-card,
+.kpi-tile {
+  border: 1px solid var(--eco-border) !important;
+  border-radius: var(--eco-radius) !important;
+  box-shadow: var(--eco-shadow-sm) !important;
+}
+
+/* Формы редактирования */
+.eco-form-card {
+  max-width: 42rem;
+}
+
+.eco-form-card .card-body {
+  padding: 1.5rem 1.75rem;
+}
+
+.eco-form-card .form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.eco-form-card .form-control,
+.eco-form-card .form-select {
+  border-radius: var(--eco-radius-sm);
+  border-color: #dee5e0;
+}
+
+.eco-form-card .form-control:focus,
+.eco-form-card .form-select:focus {
+  border-color: var(--eco-green);
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.15);
+}
+
+/* Вход */
+.eco-login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(165deg, #f6fbf7 0%, #edf5f1 100%);
+}
+
+.eco-login-card {
+  max-width: 420px;
+  border-radius: var(--eco-radius);
+  box-shadow: var(--eco-shadow);
+  border: 1px solid var(--eco-border);
+}

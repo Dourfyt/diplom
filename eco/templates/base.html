@@ -8,123 +8,60 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.6/dist/driver.css">
+  <link rel="stylesheet" href="{% static 'eco/css/eco-ui.css' %}">
   <style>
-    /* Общий фон и типографика (объединяет прежние темы страниц) */
-    body {
-      min-height: 100vh;
-      background: linear-gradient(160deg, #f4f9f4 0%, #e8f4f0 40%, #eef4fb 100%);
-    }
-    .navbar { box-shadow: 0 2px 12px rgba(0, 0, 0, .07); }
-    /* Дашборд: карточки и графики */
-    .card-stat { border: none; border-radius: 1rem; box-shadow: 0 4px 18px rgba(0, 0, 0, .07); }
-    .card-stat .icon { font-size: 1.75rem; opacity: .85; }
-    .chart-card { border: none; border-radius: 1rem; box-shadow: 0 4px 18px rgba(0, 0, 0, .07); }
     canvas { max-height: 320px; }
-    /* Акцент для раздела измерений (кнопки на странице списка) */
     .btn-monitoring-accent {
       background: linear-gradient(90deg, #5c4d7a, #3d6b8a);
       border: none;
     }
     .btn-monitoring-accent:hover { filter: brightness(1.05); color: #fff; }
-    .module-nav-bar .btn.disabled {
-      pointer-events: none;
-    }
-  </style>
-  <style>
-    /* Шапка: вкладки и «Выход» не разъезжаются на вторую строку */
+    .module-nav-bar .btn.disabled { pointer-events: none; }
     @media (min-width: 992px) {
-      .navbar-eco-collapse {
-        flex-grow: 1;
-        justify-content: flex-end;
-      }
+      .navbar-eco-collapse { flex-grow: 1; justify-content: flex-end; }
       .navbar-eco-actions {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-wrap: nowrap;
-        margin-left: auto;
-        max-width: 100%;
+        display: flex; align-items: center; gap: 0.5rem;
+        flex-wrap: nowrap; margin-left: auto; max-width: 100%;
       }
       .navbar-eco-tabs {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        gap: 0.25rem;
+        display: flex; flex-wrap: nowrap; align-items: center; gap: 0.35rem;
       }
       .navbar-eco-tabs .btn {
-        white-space: nowrap;
-        padding-left: 0.55rem;
-        padding-right: 0.55rem;
+        white-space: nowrap; padding-left: 0.7rem; padding-right: 0.7rem;
       }
       .navbar-eco-utils {
-        display: flex;
-        flex-wrap: nowrap;
-        align-items: center;
-        gap: 0.35rem;
-        flex-shrink: 0;
-        margin-left: 0.35rem;
-        padding-left: 0.35rem;
+        display: flex; flex-wrap: nowrap; align-items: center; gap: 0.35rem;
+        flex-shrink: 0; margin-left: 0.5rem; padding-left: 0.5rem;
         border-left: 1px solid rgba(255, 255, 255, 0.25);
       }
-      #trainingToggle {
-        white-space: nowrap;
-      }
+      #trainingToggle { white-space: nowrap; }
     }
     @media (max-width: 991.98px) {
       .navbar-eco-actions {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.5rem;
-        width: 100%;
+        display: flex; flex-direction: column; align-items: stretch;
+        gap: 0.5rem; width: 100%;
       }
-      .navbar-eco-tabs {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.35rem;
-      }
-      .navbar-eco-utils {
-        display: flex;
-        flex-wrap: nowrap;
-        gap: 0.5rem;
-      }
-    }
-    .navbar-eco-tabs .btn.active {
-      font-weight: 600;
+      .navbar-eco-tabs { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+      .navbar-eco-utils { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     }
     .eco-driver-popover.driver-popover {
-      background: #fff;
-      border: 1px solid #dee2e6;
-      border-radius: 1rem;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, .12);
-      max-width: 380px;
+      background: #fff; border: 1px solid #dee2e6; border-radius: 1rem;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, .12); max-width: 380px;
       font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     }
     .eco-driver-popover .driver-popover-title {
-      border-top: 3px solid #198754;
-      padding-top: 0.85rem;
-      font-weight: 700;
+      border-top: 3px solid #198754; padding-top: 0.85rem; font-weight: 700;
     }
-    .driver-overlay {
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-    .driver-active-element {
-      filter: none !important;
-      -webkit-filter: none !important;
-    }
-    .navbar-eco-user {
-      white-space: nowrap;
-      flex-shrink: 0;
-      max-width: none;
-    }
+    .driver-overlay { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+    .driver-active-element { filter: none !important; -webkit-filter: none !important; }
+    .navbar-eco-user { white-space: nowrap; flex-shrink: 0; }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body data-nav-active="{{ nav_active }}">
-<nav class="navbar navbar-expand-lg navbar-dark bg-success mb-4">
-  <div class="container">
-    <a class="navbar-brand fw-semibold" href="{% if user.is_authenticated %}{{ user_home_url }}{% else %}{% url 'login' %}{% endif %}">Эко-учёт отходов</a>
+<nav class="navbar navbar-expand-lg navbar-dark navbar-eco sticky-top mb-4">
+  <div class="container eco-main">
+    <a class="navbar-brand" href="{% if user.is_authenticated %}{{ user_home_url }}{% else %}{% url 'login' %}{% endif %}">Эко-учёт отходов</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
             aria-controls="mainNav" aria-expanded="false" aria-label="Меню">
       <span class="navbar-toggler-icon"></span>
@@ -134,7 +71,7 @@
         {% include "includes/module_nav.html" %}
         {% if user.is_authenticated %}
           <div class="navbar-eco-actions">
-            <span class="navbar-text text-white-50 small navbar-eco-user d-none d-lg-inline"
+            <span class="navbar-text text-white-50 navbar-eco-user d-none d-xl-inline"
                   title="{{ user.username }}{% if user_role_label %} · {{ user_role_label }}{% endif %}">
               {{ user.username }}{% if user_role_label %} · {{ user_role_label }}{% endif %}
             </span>
@@ -159,10 +96,10 @@
   </div>
 </nav>
 
-<main class="container pb-5" data-tour="eco-main">
+<main class="container eco-main pb-5" data-tour="eco-main">
   {% if messages %}
     {% for message in messages %}
-      <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert">
+      <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
         {{ message }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
       </div>
