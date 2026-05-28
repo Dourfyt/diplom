@@ -66,13 +66,40 @@ class MeasurementCreateView(EcologistRequiredMixin, FormView):
         kwargs["organization_choices"] = [(o.pk, o.name) for o in orgs]
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        batches_by_org: dict[str, list[dict[str, object]]] = {}
+        for batch in get_remote_service().batches_list():
+            if batch.organization is None:
+                continue
+            key = str(batch.organization.pk)
+            label = batch.code
+            if batch.name:
+                label = f"{batch.code} — {batch.name}"
+            batches_by_org.setdefault(key, []).append({"id": batch.pk, "label": label})
+        ctx["batches_by_org"] = batches_by_org
+        return ctx
+
     def form_valid(self, form):
+        org_id = int(form.cleaned_data["organization"])
+        batch_raw = form.cleaned_data.get("batch") or ""
+        batch_id = int(batch_raw) if batch_raw else None
+        if batch_id is not None:
+            batch = next(
+                (b for b in get_remote_service().batches_list() if b.pk == batch_id),
+                None,
+            )
+            if batch is None or batch.organization is None or batch.organization.pk != org_id:
+                form.add_error("batch", "Выберите партию выбранной организации.")
+                return self.form_invalid(form)
+
         try:
             get_remote_service().create_measurement(
-                organization_id=int(form.cleaned_data["organization"]),
+                organization_id=org_id,
                 parameter=form.cleaned_data["parameter"],
                 value=form.cleaned_data["value"],
                 unit=form.cleaned_data["unit"],
+                batch_id=batch_id,
             )
         except ApiError as exc:
             form.add_error(None, str(exc))

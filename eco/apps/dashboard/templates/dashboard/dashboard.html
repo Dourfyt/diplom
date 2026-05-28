@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Дашборд{% endblock %}
+{% block title %}Оперативный контроль{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -8,19 +8,17 @@
     border: none;
     border-radius: 1.1rem;
     box-shadow: 0 6px 24px rgba(0, 0, 0, .08);
-    transition: transform .15s ease, box-shadow .15s ease;
-  }
-  .kpi-tile:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, .1);
   }
   .kpi-tile .kpi-value {
-    font-size: clamp(1.75rem, 4vw, 2.35rem);
+    font-size: clamp(1.5rem, 3.5vw, 2.1rem);
     font-weight: 700;
     line-height: 1.1;
   }
   .kpi-tile .kpi-hint { font-size: .8rem; color: #6c757d; }
-  .chart-triple { min-height: 280px; }
+  .eco-report-link-card {
+    background: linear-gradient(135deg, #f0faf4 0%, #e8f4f8 100%);
+    border: 1px dashed rgba(25, 135, 84, 0.35);
+  }
 </style>
 {% endblock %}
 
@@ -30,207 +28,195 @@
       <strong>Нет данных с сервера платформы.</strong><br>
       {{ api_error }}
     </div>
-  {% elif api_charts_warning %}
-    <div class="alert alert-warning">{{ api_charts_warning }}</div>
   {% endif %}
+
   <div class="eco-page-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3" data-tour="eco-page-title">
     <div>
-      <h1 class="eco-page-title h3">Панель показателей (KPI)</h1>
-      <p class="eco-page-lead">Сводка по организациям, отходам, операциям, ключевым показателям и измерениям.</p>
+      <h1 class="eco-page-title h3">Оперативный контроль</h1>
+      <p class="eco-page-lead mb-0">
+        Задачи на сегодня и ключевые цифры за период {{ period_label }}.
+        Полный аналитический отчёт — во вкладке <strong>«Отчётность»</strong>.
+      </p>
     </div>
-    <a class="btn btn-outline-success btn-sm" href="{% url 'reporting' %}">Дашборд отчётности</a>
+    <div class="d-flex flex-wrap gap-2" data-tour="eco-page-actions">
+      {% if can_access_operations %}
+        <a class="btn btn-success btn-sm" href="{% url 'operations:list' %}">Журнал операций</a>
+      {% endif %}
+      {% if can_access_monitoring %}
+        <a class="btn btn-outline-primary btn-sm" href="{% url 'monitoring:create' %}">Добавить измерение</a>
+      {% endif %}
+      <a class="btn btn-outline-secondary btn-sm" href="{% url 'reporting' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Отчётность →</a>
+    </div>
   </div>
 
-  {# Справочники #}
-  <div class="row g-3 mb-2">
-    <div class="col-sm-6 col-lg-4" data-tour="eco-kpi-orgs">
+  <div class="card eco-card eco-card-filter mb-4">
+    <div class="card-body">
+      <form class="row g-2 align-items-end" method="get" action="{% url 'dashboard' %}">
+        <div class="col-md-3 col-lg-2">
+          <label class="form-label small text-muted mb-1" for="kpi-date-from">Дата от</label>
+          <input type="date" class="form-control" id="kpi-date-from" name="date_from" value="{{ date_from }}">
+        </div>
+        <div class="col-md-3 col-lg-2">
+          <label class="form-label small text-muted mb-1" for="kpi-date-to">Дата до</label>
+          <input type="date" class="form-control" id="kpi-date-to" name="date_to" value="{{ date_to }}">
+        </div>
+        <div class="col-auto d-flex flex-wrap gap-2">
+          <button type="submit" class="btn btn-success">Применить</button>
+          <a class="btn btn-outline-secondary" href="{% url 'dashboard' %}">Сбросить</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4" data-tour="eco-kpi-attention">
+    <div class="col-lg-8">
+      <div class="card eco-card h-100 border-start border-4 border-danger">
+        <div class="card-header bg-white fw-semibold">Требует внимания эколога</div>
+        <div class="card-body small">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <p class="text-muted mb-2">
+                Превышения норматива:
+                <strong class="text-danger fs-5">{{ exceed_count }}</strong>
+              </p>
+              {% if recent_exceedances %}
+                <ul class="list-group list-group-flush">
+                  {% for m in recent_exceedances %}
+                    <li class="list-group-item px-0 d-flex justify-content-between">
+                      <span>{{ m.organization.name }} — {{ m.indicator_type_display }}</span>
+                      <span class="text-danger text-nowrap ms-2">{{ m.value }} {{ m.unit }}</span>
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-success mb-0">Превышений за период нет.</p>
+              {% endif %}
+            </div>
+            <div class="col-md-6">
+              <p class="text-muted mb-2">Есть операции, но нет измерений:</p>
+              {% if orgs_without_measurements %}
+                <ul class="list-group list-group-flush">
+                  {% for org in orgs_without_measurements %}
+                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                      <span>{{ org.name }}</span>
+                      {% if can_access_monitoring %}
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'monitoring:create' %}">Измерение</a>
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% else %}
+                <p class="text-success mb-0">Все активные организации с измерениями.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="card eco-card h-100">
+        <div class="card-body">
+          <p class="kpi-hint mb-2">Доля переработки за период</p>
+          <p class="kpi-value text-success mb-2">{{ recycling_percent }}%</p>
+          <div class="progress mb-3" style="height: 0.65rem;">
+            <div class="progress-bar bg-success" role="progressbar"
+                 style="width: {{ recycling_percent }}%"
+                 aria-valuenow="{{ recycling_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          <p class="small text-muted mb-0">
+            Переработано {{ recycling_volume }} т из {{ total_volume }} т операций за период.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2 class="h6 text-uppercase text-muted fw-semibold mb-3">Справочники и активность за период</h2>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3" data-tour="eco-kpi-orgs">
       <div class="card kpi-tile h-100">
         <div class="card-body">
-          <p class="kpi-hint mb-1">Организации в системе</p>
+          <p class="kpi-hint mb-1">Организаций</p>
           <p class="kpi-value text-success mb-0">{{ count_organizations }}</p>
         </div>
       </div>
     </div>
-    <div class="col-sm-6 col-lg-4" data-tour="eco-kpi-waste">
+    <div class="col-6 col-md-3" data-tour="eco-kpi-waste">
       <div class="card kpi-tile h-100">
         <div class="card-body">
-          <p class="kpi-hint mb-1">Виды отходов в справочнике</p>
+          <p class="kpi-hint mb-1">Видов отходов</p>
           <p class="kpi-value text-primary mb-0">{{ count_waste_types }}</p>
         </div>
       </div>
     </div>
+    <div class="col-6 col-md-3">
+      <div class="card kpi-tile h-100">
+        <div class="card-body">
+          <p class="kpi-hint mb-1">Партий за период</p>
+          <p class="kpi-value text-dark mb-0">{{ count_batches }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card kpi-tile h-100">
+        <div class="card-body">
+          <p class="kpi-hint mb-1">Операций / измерений</p>
+          <p class="kpi-value text-secondary mb-0">{{ operations_count }} / {{ measurements_count }}</p>
+        </div>
+      </div>
+    </div>
   </div>
 
-  {# Показатели по операциям и мониторингу #}
-  <h2 class="h6 text-uppercase text-muted fw-semibold mb-3 mt-4">Показатели — операции и контроль</h2>
+  <h2 class="h6 text-uppercase text-muted fw-semibold mb-3">Объёмы операций за период, т</h2>
   <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl" data-tour="eco-kpi-volume">
+    <div class="col-6 col-md-3" data-tour="eco-kpi-volume">
       <div class="card kpi-tile h-100 border-start border-4 border-dark">
         <div class="card-body">
-          <p class="kpi-hint mb-1">Общий объём, т</p>
+          <p class="kpi-hint mb-1">Всего</p>
           <p class="kpi-value text-dark mb-0">{{ total_volume }}</p>
         </div>
       </div>
     </div>
-    <div class="col-sm-6 col-xl" data-tour="eco-kpi-recycled">
+    <div class="col-6 col-md-3">
+      <div class="card kpi-tile h-100 border-start border-4 border-warning">
+        <div class="card-body">
+          <p class="kpi-hint mb-1">Накопление</p>
+          <p class="kpi-value text-warning mb-0">{{ accumulation_volume }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3" data-tour="eco-kpi-recycled">
       <div class="card kpi-tile h-100 border-start border-4 border-success">
         <div class="card-body">
-          <p class="kpi-hint mb-1">Переработано, т</p>
+          <p class="kpi-hint mb-1">Переработка</p>
           <p class="kpi-value text-success mb-0">{{ recycling_volume }}</p>
         </div>
       </div>
     </div>
-    <div class="col-sm-6 col-xl">
+    <div class="col-6 col-md-3">
       <div class="card kpi-tile h-100 border-start border-4 border-secondary">
         <div class="card-body">
-          <p class="kpi-hint mb-1">Вывезено, т</p>
+          <p class="kpi-hint mb-1">Вывоз</p>
           <p class="kpi-value text-secondary mb-0">{{ removal_volume }}</p>
         </div>
       </div>
     </div>
-    <div class="col-sm-6 col-xl">
-      <div class="card kpi-tile h-100 border-start border-4 border-info">
-        <div class="card-body">
-          <p class="kpi-hint mb-1">Доля переработки</p>
-          <p class="kpi-value text-info mb-0">{{ recycling_percent }}%</p>
-          <p class="kpi-hint mb-0 mt-1">от общего объёма операций</p>
-        </div>
+  </div>
+
+  <div class="card eco-card eco-report-link-card">
+    <div class="card-body d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <div>
+        <h2 class="h6 fw-semibold mb-1">Нужны графики, план и детализация по организации?</h2>
+        <p class="eco-page-lead mb-0">
+          Во вкладке «Отчётность» — сводка по классам опасности, показатели платформы,
+          таблицы партий, операций и измерений, экспорт в Excel, PDF и XML.
+        </p>
       </div>
-    </div>
-    <div class="col-sm-6 col-xl">
-      <div class="card kpi-tile h-100 border-start border-4 border-danger">
-        <div class="card-body">
-          <p class="kpi-hint mb-1">Превышения норматива</p>
-          <p class="kpi-value text-danger mb-0">{{ exceed_count }}</p>
-          <p class="kpi-hint mb-0 mt-1">измерений, где значение превышает норматив</p>
-        </div>
-      </div>
+      <a class="btn btn-success" href="{% url 'reporting' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Открыть отчётность</a>
     </div>
   </div>
 
-  <div class="row g-4" data-tour="eco-kpi-charts">
-    <div class="col-lg-4">
-      <div class="card chart-card chart-triple h-100">
-        <div class="card-body d-flex flex-column">
-          <h2 class="h5 card-title">Распределение операций по типам</h2>
-          <p class="text-muted small">Количество операций движения отходов по типу.</p>
-          <div class="flex-grow-1 position-relative" style="min-height: 240px;">
-            <canvas id="chartOperations"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card chart-card chart-triple h-100">
-        <div class="card-body d-flex flex-column">
-          <h2 class="h5 card-title">Объём по типам операций</h2>
-          <p class="text-muted small">Суммарный объём, т: накопление, переработка, вывоз.</p>
-          <div class="flex-grow-1 position-relative" style="min-height: 240px;">
-            <canvas id="chartVolumeByOperation"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-lg-4">
-      <div class="card chart-card chart-triple h-100">
-        <div class="card-body d-flex flex-column">
-          <h2 class="h5 card-title">Объём отходов по организациям</h2>
-          <p class="text-muted small">Суммарный объём отходов, т, по каждой организации.</p>
-          <div class="flex-grow-1 position-relative" style="min-height: 240px;">
-            <canvas id="chartVolumeByOrg"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {{ chart_operations|json_script:"chart-operations-data" }}
-  {{ chart_volume_by_operation|json_script:"chart-volume-operation-data" }}
-  {{ chart_volume_by_org|json_script:"chart-volume-org-data" }}
-{% endblock %}
-
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script>
-  (function () {
-    const operationsData = JSON.parse(document.getElementById('chart-operations-data').textContent);
-    const volumeByOpData = JSON.parse(document.getElementById('chart-volume-operation-data').textContent);
-    const volumeData = JSON.parse(document.getElementById('chart-volume-org-data').textContent);
-
-    const formatVolume = (value) => {
-      const n = Number(value);
-      if (!Number.isFinite(n)) return String(value);
-      return n.toLocaleString('ru-RU', { maximumFractionDigits: 3 });
-    };
-
-    const volumeAxis = {
-      beginAtZero: true,
-      ticks: { callback: (v) => formatVolume(v) }
-    };
-
-    const commonOptions = {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'bottom' },
-        tooltip: {
-          callbacks: {
-            label: (ctx) => {
-              const label = ctx.dataset.label || '';
-              const val = formatVolume(ctx.parsed.y ?? ctx.parsed);
-              return label ? `${label}: ${val} т` : `${val} т`;
-            }
-          }
-        }
-      }
-    };
-
-    new Chart(document.getElementById('chartOperations'), {
-      type: 'doughnut',
-      data: {
-        labels: operationsData.labels,
-        datasets: [{
-          data: operationsData.values,
-          backgroundColor: ['#198754', '#0d6efd', '#6c757d'],
-          borderWidth: 0
-        }]
-      },
-      options: commonOptions
-    });
-
-    new Chart(document.getElementById('chartVolumeByOperation'), {
-      type: 'bar',
-      data: {
-        labels: volumeByOpData.labels,
-        datasets: [{
-          label: 'Объём, т',
-          data: volumeByOpData.values,
-          backgroundColor: ['rgba(25, 135, 84, 0.75)', 'rgba(13, 110, 253, 0.75)', 'rgba(108, 117, 125, 0.75)'],
-          borderRadius: 8
-        }]
-      },
-      options: {
-        ...commonOptions,
-        scales: { y: volumeAxis }
-      }
-    });
-
-    new Chart(document.getElementById('chartVolumeByOrg'), {
-      type: 'bar',
-      data: {
-        labels: volumeData.labels,
-        datasets: [{
-          label: 'Объём, т',
-          data: volumeData.values,
-          backgroundColor: 'rgba(25, 135, 84, 0.65)',
-          borderRadius: 8
-        }]
-      },
-      options: {
-        ...commonOptions,
-        scales: { y: volumeAxis }
-      }
-    });
-  })();
-</script>
+  <p class="text-muted small text-center mt-4 mb-0">
+    Оперативный контроль — данные с сервера платформы. Обновлено: {{ data_updated_at }}.
+  </p>
 {% endblock %}

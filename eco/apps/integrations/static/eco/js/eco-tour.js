@@ -27,7 +27,7 @@
   function commonNavSteps() {
     return [
       step('[data-tour="eco-modules"]', "Модули комплекса", "Переход к API платформы и модулю планирования.", "bottom"),
-      step('[data-tour="eco-nav-tabs"]', "Вкладки раздела", "Меню зависит от роли: руководитель видит KPI, эколог — операции и измерения.", "bottom"),
+      step('[data-tour="eco-nav-tabs"]', "Вкладки раздела", "Контроль — оперативные задачи; Отчётность — аналитика и экспорт.", "bottom"),
     ].filter(Boolean);
   }
 
@@ -35,12 +35,10 @@
     dashboard: function () {
       return commonNavSteps().concat(
         [
-          step('[data-tour="eco-page-title"]', "Панель KPI", "Сводные цифры по данным общей базы на сервере.", "bottom"),
-          step('[data-tour="eco-kpi-orgs"]', "Организации", "Сколько организаций заведено в справочнике.", "bottom"),
-          step('[data-tour="eco-kpi-waste"]', "Виды отходов", "Сколько позиций в справочнике отходов.", "bottom"),
-          step('[data-tour="eco-kpi-volume"]', "Общий объём", "Суммарный объём операций в тоннах.", "bottom"),
-          step('[data-tour="eco-kpi-recycled"]', "Переработано", "Объём, прошедший переработку.", "bottom"),
-          step('[data-tour="eco-kpi-charts"]', "Графики", "Наглядное распределение по видам и периодам.", "top"),
+          step('[data-tour="eco-page-title"]', "Оперативный контроль", "Задачи и цифры за период без детальных отчётов.", "bottom"),
+          step('[data-tour="eco-kpi-attention"]', "Требует внимания", "Превышения и организации без измерений.", "top"),
+          step('[data-tour="eco-kpi-orgs"]', "Справочники", "Организации, отходы, партии за период.", "bottom"),
+          step('[data-tour="eco-kpi-volume"]', "Объёмы", "Накопление, переработка и вывоз за период.", "bottom"),
           step("#trainingToggle", "Обучение", "Повторный запуск тура для текущей страницы.", "left"),
         ].filter(Boolean)
       );
@@ -48,17 +46,25 @@
     reporting: function () {
       return commonNavSteps().concat(
         [
-          step('[data-tour="eco-page-title"]', "Отчётность", "Формирование и просмотр отчётов.", "bottom"),
-          step('[data-tour="eco-report-actions"]', "Действия", "Экспорт и фильтры отчётов.", "bottom"),
-          step('[data-tour="eco-main"]', "Содержимое", "Таблицы и формы отчёта.", "top"),
+          step('[data-tour="eco-page-title"]', "Аналитическая отчётность", "План, классы опасности, таблицы, экспорт.", "bottom"),
+          step('[data-tour="eco-report-actions"]', "Экспорт и журнал", "Excel, PDF и XML — операции с датами и организацией из фильтра; полный список — в «Операции».", "bottom"),
+          step('[data-tour="eco-report-detail"]', "Детализация", "Краткий просмотр; полные журналы — в «Операции» и «Измерения».", "top"),
         ].filter(Boolean)
       );
     },
     operations: function () {
+      var remote = document.body.getAttribute("data-use-remote-api") === "1";
       return commonNavSteps().concat(
         [
-          step('[data-tour="eco-page-title"]', "Журнал операций", "Все движения отходов: приём, переработка, вывоз.", "bottom"),
-          step('[data-tour="eco-page-actions"]', "Действия", "Добавление записи и экспорт в Excel/PDF/XML.", "bottom"),
+          step('[data-tour="eco-page-title"]', "Журнал операций", "Все движения отходов: накопление, переработка, вывоз.", "bottom"),
+          step(
+            '[data-tour="eco-page-actions"]',
+            "Действия",
+            remote
+              ? "Просмотр и экспорт в Excel/PDF/XML по фильтрам (даты, организация)."
+              : "Добавление записи и экспорт в Excel/PDF/XML.",
+            "bottom"
+          ),
           step('[data-tour="eco-page-table"]', "Таблица", "Каждая строка — операция с датой, типом и объёмом.", "top"),
         ].filter(Boolean)
       );
@@ -68,7 +74,7 @@
         [
           step('[data-tour="eco-page-title"]', "Измерения", "Результаты экологического мониторинга.", "bottom"),
           step('[data-tour="eco-page-actions"]', "Добавить измерение", "Новая запись уходит на API платформы.", "bottom"),
-          step('[data-tour="eco-page-table"]', "Список измерений", "Показатели, нормативы и дата замера.", "top"),
+          step('[data-tour="eco-page-table"]', "Список измерений", "Показатели, норматив, партия (если есть) и статус.", "top"),
         ].filter(Boolean)
       );
     },

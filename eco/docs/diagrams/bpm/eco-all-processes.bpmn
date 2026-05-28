@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:definitions xmlns:ns0="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:ns1="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:ns2="http://www.omg.org/spec/DD/20100524/DC" xmlns:ns3="http://www.omg.org/spec/DD/20100524/DI" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Eco" targetNamespace="http://eco.local/bpmn" exporter="eco-diploma" exporterVersion="2.0">
+  <ns0:process id="Process_Eco_Module" name="Работа с модулем отчётности ECO" isExecutable="false">
+    <ns0:laneSet id="LaneSet_1">
+      <ns0:lane id="Lane_User" name="Пользователь">
+        <ns0:flowNodeRef>Start_1</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_Login</ns0:flowNodeRef>
+        <ns0:flowNodeRef>End_Denied</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_OrgList</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_OrgCard</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_DataControl</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_Batches</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_Register</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_WasteTypes</ns0:flowNodeRef>
+        <ns0:flowNodeRef>End_Admin</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_Movements</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_Export</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_MeasList</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_MeasNew</ns0:flowNodeRef>
+        <ns0:flowNodeRef>End_Ecologist</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_KPI</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_Report</ns0:flowNodeRef>
+        <ns0:flowNodeRef>End_Manager</ns0:flowNodeRef>
+        <ns0:flowNodeRef>U_Logout</ns0:flowNodeRef>
+        <ns0:flowNodeRef>End_Logout</ns0:flowNodeRef>
+      </ns0:lane>
+      <ns0:lane id="Lane_System" name="Система ECO">
+        <ns0:flowNodeRef>S_CheckForm</ns0:flowNodeRef>
+        <ns0:flowNodeRef>G_FormOk</ns0:flowNodeRef>
+        <ns0:flowNodeRef>G_AuthOk</ns0:flowNodeRef>
+        <ns0:flowNodeRef>S_Session</ns0:flowNodeRef>
+        <ns0:flowNodeRef>G_Role</ns0:flowNodeRef>
+        <ns0:flowNodeRef>S_OrgQuality</ns0:flowNodeRef>
+        <ns0:flowNodeRef>G_Superuser</ns0:flowNodeRef>
+        <ns0:flowNodeRef>G_RemoteApi</ns0:flowNodeRef>
+        <ns0:flowNodeRef>S_BlockWaste</ns0:flowNodeRef>
+        <ns0:flowNodeRef>S_MeasValidate</ns0:flowNodeRef>
+        <ns0:flowNodeRef>G_MeasOk</ns0:flowNodeRef>
+        <ns0:flowNodeRef>S_BlockMeasEdit</ns0:flowNodeRef>
+        <ns0:flowNodeRef>S_Aggregate</ns0:flowNodeRef>
+      </ns0:lane>
+      <ns0:lane id="Lane_API" name="API платформы">
+        <ns0:flowNodeRef>A_Auth</ns0:flowNodeRef>
+        <ns0:flowNodeRef>A_LoadOrg</ns0:flowNodeRef>
+        <ns0:flowNodeRef>A_Register</ns0:flowNodeRef>
+        <ns0:flowNodeRef>A_LoadOps</ns0:flowNodeRef>
+        <ns0:flowNodeRef>A_SaveMeas</ns0:flowNodeRef>
+        <ns0:flowNodeRef>A_Dashboard</ns0:flowNodeRef>
+      </ns0:lane>
+    </ns0:laneSet>
+    <ns0:startEvent id="Start_1" name="Обращение к модулю"/>
+    <ns0:userTask id="U_Login" name="Войти в систему
+(email и пароль)"/>
+    <ns0:serviceTask id="S_CheckForm" name="Проверить
+корректность формы"/>
+    <ns0:exclusiveGateway id="G_FormOk" name=""/>
+    <ns0:endEvent id="End_Denied" name="Отказ в доступе"/>
+    <ns0:serviceTask id="A_Auth" name="Аутентифицировать
+пользователя"/>
+    <ns0:exclusiveGateway id="G_AuthOk" name=""/>
+    <ns0:serviceTask id="S_Session" name="Определить роль
+и открыть сессию"/>
+    <ns0:exclusiveGateway id="G_Role" name="Роль?"/>
+    <ns0:userTask id="U_OrgList" name="Просмотреть реестр
+организаций"/>
+    <ns0:serviceTask id="A_LoadOrg" name="Загрузить организации,
+партии и измерения"/>
+    <ns0:serviceTask id="S_OrgQuality" name="Оценить качество
+и целостность данных"/>
+    <ns0:userTask id="U_OrgCard" name="Просмотреть карточку
+организации"/>
+    <ns0:userTask id="U_DataControl" name="Выполнить контроль
+качества данных"/>
+    <ns0:userTask id="U_Batches" name="Просмотреть партии
+отходов"/>
+    <ns0:exclusiveGateway id="G_Superuser" name="Супер-
+пользователь?"/>
+    <ns0:userTask id="U_Register" name="Зарегистрировать
+нового пользователя"/>
+    <ns0:serviceTask id="A_Register" name="Создать учётную
+запись"/>
+    <ns0:userTask id="U_WasteTypes" name="Просмотреть справочник
+типов отходов (ФККО)"/>
+    <ns0:exclusiveGateway id="G_RemoteApi" name="Удалённое
+API?"/>
+    <ns0:serviceTask id="S_BlockWaste" name="Запретить изменение
+справочника"/>
+    <ns0:endEvent id="End_Admin" name="Завершение работы
+администратора"/>
+    <ns0:userTask id="U_Movements" name="Просмотреть журнал
+операций с отходами"/>
+    <ns0:serviceTask id="A_LoadOps" name="Загрузить журнал
+операций"/>
+    <ns0:userTask id="U_Export" name="Выгрузить журнал
+(xlsx / pdf / xml)"/>
+    <ns0:userTask id="U_MeasList" name="Просмотреть
+экологические измерения"/>
+    <ns0:userTask id="U_MeasNew" name="Зафиксировать
+новое измерение"/>
+    <ns0:serviceTask id="S_MeasValidate" name="Проверить данные
+и связь с партией"/>
+    <ns0:exclusiveGateway id="G_MeasOk" name=""/>
+    <ns0:serviceTask id="A_SaveMeas" name="Сохранить
+измерение"/>
+    <ns0:serviceTask id="S_BlockMeasEdit" name="Запретить изменение
+и удаление измерений"/>
+    <ns0:endEvent id="End_Ecologist" name="Завершение работы
+эколога"/>
+    <ns0:userTask id="U_KPI" name="Просмотреть дашборд KPI"/>
+    <ns0:serviceTask id="S_Aggregate" name="Сформировать
+показатели и графики"/>
+    <ns0:userTask id="U_Report" name="Просмотреть
+отчётный дашборд"/>
+    <ns0:serviceTask id="A_Dashboard" name="Получить сводку
+отчётности"/>
+    <ns0:endEvent id="End_Manager" name="Завершение
+просмотра отчётов"/>
+    <ns0:userTask id="U_Logout" name="Выйти из системы"/>
+    <ns0:endEvent id="End_Logout" name="Сессия завершена"/>
+    <ns0:sequenceFlow id="f01" sourceRef="Start_1" targetRef="U_Login"/>
+    <ns0:sequenceFlow id="f02" sourceRef="U_Login" targetRef="S_CheckForm"/>
+    <ns0:sequenceFlow id="f03" sourceRef="S_CheckForm" targetRef="G_FormOk"/>
+    <ns0:sequenceFlow id="f04" sourceRef="G_FormOk" targetRef="End_Denied" name="Нет"/>
+    <ns0:sequenceFlow id="f05" sourceRef="G_FormOk" targetRef="A_Auth" name="Да"/>
+    <ns0:sequenceFlow id="f06" sourceRef="A_Auth" targetRef="G_AuthOk"/>
+    <ns0:sequenceFlow id="f07" sourceRef="G_AuthOk" targetRef="End_Denied" name="Нет"/>
+    <ns0:sequenceFlow id="f08" sourceRef="G_AuthOk" targetRef="S_Session" name="Да"/>
+    <ns0:sequenceFlow id="f09" sourceRef="S_Session" targetRef="G_Role"/>
+    <ns0:sequenceFlow id="f10" sourceRef="G_Role" targetRef="U_OrgList" name="Администратор"/>
+    <ns0:sequenceFlow id="f11" sourceRef="G_Role" targetRef="U_Movements" name="Эколог"/>
+    <ns0:sequenceFlow id="f12" sourceRef="G_Role" targetRef="U_KPI" name="Руководитель"/>
+    <ns0:sequenceFlow id="f20" sourceRef="U_OrgList" targetRef="A_LoadOrg"/>
+    <ns0:sequenceFlow id="f21" sourceRef="A_LoadOrg" targetRef="S_OrgQuality"/>
+    <ns0:sequenceFlow id="f22" sourceRef="S_OrgQuality" targetRef="U_OrgCard"/>
+    <ns0:sequenceFlow id="f23" sourceRef="U_OrgCard" targetRef="U_DataControl"/>
+    <ns0:sequenceFlow id="f24" sourceRef="U_DataControl" targetRef="U_Batches"/>
+    <ns0:sequenceFlow id="f25" sourceRef="U_Batches" targetRef="G_Superuser"/>
+    <ns0:sequenceFlow id="f26" sourceRef="G_Superuser" targetRef="U_Register" name="Да"/>
+    <ns0:sequenceFlow id="f27" sourceRef="U_Register" targetRef="A_Register"/>
+    <ns0:sequenceFlow id="f28" sourceRef="A_Register" targetRef="U_WasteTypes"/>
+    <ns0:sequenceFlow id="f29" sourceRef="G_Superuser" targetRef="U_WasteTypes" name="Нет"/>
+    <ns0:sequenceFlow id="f30" sourceRef="U_WasteTypes" targetRef="G_RemoteApi"/>
+    <ns0:sequenceFlow id="f31" sourceRef="G_RemoteApi" targetRef="S_BlockWaste" name="Да"/>
+    <ns0:sequenceFlow id="f32" sourceRef="G_RemoteApi" targetRef="End_Admin" name="Нет"/>
+    <ns0:sequenceFlow id="f33" sourceRef="S_BlockWaste" targetRef="End_Admin"/>
+    <ns0:sequenceFlow id="f40" sourceRef="U_Movements" targetRef="A_LoadOps"/>
+    <ns0:sequenceFlow id="f41" sourceRef="A_LoadOps" targetRef="U_Export"/>
+    <ns0:sequenceFlow id="f42" sourceRef="U_Export" targetRef="U_MeasList"/>
+    <ns0:sequenceFlow id="f43" sourceRef="U_MeasList" targetRef="U_MeasNew"/>
+    <ns0:sequenceFlow id="f44" sourceRef="U_MeasNew" targetRef="S_MeasValidate"/>
+    <ns0:sequenceFlow id="f45" sourceRef="S_MeasValidate" targetRef="G_MeasOk"/>
+    <ns0:sequenceFlow id="f46" sourceRef="G_MeasOk" targetRef="U_MeasNew" name="Нет"/>
+    <ns0:sequenceFlow id="f47" sourceRef="G_MeasOk" targetRef="A_SaveMeas" name="Да"/>
+    <ns0:sequenceFlow id="f48" sourceRef="A_SaveMeas" targetRef="S_BlockMeasEdit"/>
+    <ns0:sequenceFlow id="f49" sourceRef="S_BlockMeasEdit" targetRef="End_Ecologist"/>
+    <ns0:sequenceFlow id="f50" sourceRef="U_KPI" targetRef="S_Aggregate"/>
+    <ns0:sequenceFlow id="f51" sourceRef="S_Aggregate" targetRef="U_Report"/>
+    <ns0:sequenceFlow id="f52" sourceRef="U_Report" targetRef="A_Dashboard"/>
+    <ns0:sequenceFlow id="f53" sourceRef="A_Dashboard" targetRef="End_Manager"/>
+    <ns0:sequenceFlow id="f60" sourceRef="End_Admin" targetRef="U_Logout"/>
+    <ns0:sequenceFlow id="f61" sourceRef="End_Ecologist" targetRef="U_Logout"/>
+    <ns0:sequenceFlow id="f62" sourceRef="End_Manager" targetRef="U_Logout"/>
+    <ns0:sequenceFlow id="f64" sourceRef="U_Logout" targetRef="End_Logout"/>
+  </ns0:process>
+  <ns1:BPMNDiagram id="BPMNDiagram_1">
+    <ns1:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_Eco_Module">
+      <ns1:BPMNShape id="Lane_User_di" bpmnElement="Lane_User" isHorizontal="true">
+        <ns2:Bounds x="30" y="60" width="3700" height="140"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="Lane_System_di" bpmnElement="Lane_System" isHorizontal="true">
+        <ns2:Bounds x="30" y="200" width="3700" height="140"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="Lane_API_di" bpmnElement="Lane_API" isHorizontal="true">
+        <ns2:Bounds x="30" y="340" width="3700" height="140"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="Start_1_di" bpmnElement="Start_1">
+        <ns2:Bounds x="80" y="120" width="36" height="36"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_Login_di" bpmnElement="U_Login">
+        <ns2:Bounds x="180" y="108" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="S_CheckForm_di" bpmnElement="S_CheckForm">
+        <ns2:Bounds x="340" y="258" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="G_FormOk_di" bpmnElement="G_FormOk">
+        <ns2:Bounds x="500" y="273" width="50" height="50"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="End_Denied_di" bpmnElement="End_Denied">
+        <ns2:Bounds x="500" y="108" width="36" height="36"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="A_Auth_di" bpmnElement="A_Auth">
+        <ns2:Bounds x="660" y="408" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="G_AuthOk_di" bpmnElement="G_AuthOk">
+        <ns2:Bounds x="820" y="273" width="50" height="50"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="S_Session_di" bpmnElement="S_Session">
+        <ns2:Bounds x="980" y="258" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="G_Role_di" bpmnElement="G_Role">
+        <ns2:Bounds x="1140" y="273" width="50" height="50"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_OrgList_di" bpmnElement="U_OrgList">
+        <ns2:Bounds x="1320" y="48" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="A_LoadOrg_di" bpmnElement="A_LoadOrg">
+        <ns2:Bounds x="1480" y="408" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="S_OrgQuality_di" bpmnElement="S_OrgQuality">
+        <ns2:Bounds x="1640" y="258" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_OrgCard_di" bpmnElement="U_OrgCard">
+        <ns2:Bounds x="1800" y="48" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_DataControl_di" bpmnElement="U_DataControl">
+        <ns2:Bounds x="1960" y="48" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_Batches_di" bpmnElement="U_Batches">
+        <ns2:Bounds x="2120" y="48" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="G_Superuser_di" bpmnElement="G_Superuser">
+        <ns2:Bounds x="2280" y="273" width="50" height="50"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_Register_di" bpmnElement="U_Register">
+        <ns2:Bounds x="2440" y="48" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="A_Register_di" bpmnElement="A_Register">
+        <ns2:Bounds x="2600" y="408" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_WasteTypes_di" bpmnElement="U_WasteTypes">
+        <ns2:Bounds x="2760" y="48" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="G_RemoteApi_di" bpmnElement="G_RemoteApi">
+        <ns2:Bounds x="2920" y="273" width="50" height="50"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="S_BlockWaste_di" bpmnElement="S_BlockWaste">
+        <ns2:Bounds x="3080" y="258" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="End_Admin_di" bpmnElement="End_Admin">
+        <ns2:Bounds x="3240" y="108" width="36" height="36"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_Movements_di" bpmnElement="U_Movements">
+        <ns2:Bounds x="1320" y="168" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="A_LoadOps_di" bpmnElement="A_LoadOps">
+        <ns2:Bounds x="1480" y="468" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_Export_di" bpmnElement="U_Export">
+        <ns2:Bounds x="1640" y="168" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_MeasList_di" bpmnElement="U_MeasList">
+        <ns2:Bounds x="1800" y="168" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_MeasNew_di" bpmnElement="U_MeasNew">
+        <ns2:Bounds x="1960" y="168" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="S_MeasValidate_di" bpmnElement="S_MeasValidate">
+        <ns2:Bounds x="2120" y="318" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="G_MeasOk_di" bpmnElement="G_MeasOk">
+        <ns2:Bounds x="2280" y="333" width="50" height="50"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="A_SaveMeas_di" bpmnElement="A_SaveMeas">
+        <ns2:Bounds x="2440" y="468" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="S_BlockMeasEdit_di" bpmnElement="S_BlockMeasEdit">
+        <ns2:Bounds x="2600" y="318" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="End_Ecologist_di" bpmnElement="End_Ecologist">
+        <ns2:Bounds x="2760" y="198" width="36" height="36"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_KPI_di" bpmnElement="U_KPI">
+        <ns2:Bounds x="1320" y="288" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="S_Aggregate_di" bpmnElement="S_Aggregate">
+        <ns2:Bounds x="1480" y="438" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_Report_di" bpmnElement="U_Report">
+        <ns2:Bounds x="1640" y="288" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="A_Dashboard_di" bpmnElement="A_Dashboard">
+        <ns2:Bounds x="1800" y="528" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="End_Manager_di" bpmnElement="End_Manager">
+        <ns2:Bounds x="1960" y="318" width="36" height="36"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="U_Logout_di" bpmnElement="U_Logout">
+        <ns2:Bounds x="3400" y="168" width="120" height="70"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNShape id="End_Logout_di" bpmnElement="End_Logout">
+        <ns2:Bounds x="3560" y="198" width="36" height="36"/>
+      </ns1:BPMNShape>
+      <ns1:BPMNEdge id="f01_di" bpmnElement="f01">
+        <ns3:waypoint x="98" y="138"/>
+        <ns3:waypoint x="169" y="138"/>
+        <ns3:waypoint x="169" y="143"/>
+        <ns3:waypoint x="240" y="143"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f02_di" bpmnElement="f02">
+        <ns3:waypoint x="240" y="143"/>
+        <ns3:waypoint x="320" y="143"/>
+        <ns3:waypoint x="320" y="293"/>
+        <ns3:waypoint x="400" y="293"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f03_di" bpmnElement="f03">
+        <ns3:waypoint x="400" y="293"/>
+        <ns3:waypoint x="462" y="293"/>
+        <ns3:waypoint x="462" y="298"/>
+        <ns3:waypoint x="525" y="298"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f04_di" bpmnElement="f04">
+        <ns3:waypoint x="525" y="298"/>
+        <ns3:waypoint x="521" y="298"/>
+        <ns3:waypoint x="521" y="126"/>
+        <ns3:waypoint x="518" y="126"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f05_di" bpmnElement="f05">
+        <ns3:waypoint x="525" y="298"/>
+        <ns3:waypoint x="622" y="298"/>
+        <ns3:waypoint x="622" y="443"/>
+        <ns3:waypoint x="720" y="443"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f06_di" bpmnElement="f06">
+        <ns3:waypoint x="720" y="443"/>
+        <ns3:waypoint x="782" y="443"/>
+        <ns3:waypoint x="782" y="298"/>
+        <ns3:waypoint x="845" y="298"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f07_di" bpmnElement="f07">
+        <ns3:waypoint x="845" y="298"/>
+        <ns3:waypoint x="681" y="298"/>
+        <ns3:waypoint x="681" y="126"/>
+        <ns3:waypoint x="518" y="126"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f08_di" bpmnElement="f08">
+        <ns3:waypoint x="845" y="298"/>
+        <ns3:waypoint x="942" y="298"/>
+        <ns3:waypoint x="942" y="293"/>
+        <ns3:waypoint x="1040" y="293"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f09_di" bpmnElement="f09">
+        <ns3:waypoint x="1040" y="293"/>
+        <ns3:waypoint x="1102" y="293"/>
+        <ns3:waypoint x="1102" y="298"/>
+        <ns3:waypoint x="1165" y="298"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f10_di" bpmnElement="f10">
+        <ns3:waypoint x="1165" y="298"/>
+        <ns3:waypoint x="1272" y="298"/>
+        <ns3:waypoint x="1272" y="83"/>
+        <ns3:waypoint x="1380" y="83"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f11_di" bpmnElement="f11">
+        <ns3:waypoint x="1165" y="298"/>
+        <ns3:waypoint x="1272" y="298"/>
+        <ns3:waypoint x="1272" y="203"/>
+        <ns3:waypoint x="1380" y="203"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f12_di" bpmnElement="f12">
+        <ns3:waypoint x="1165" y="298"/>
+        <ns3:waypoint x="1272" y="298"/>
+        <ns3:waypoint x="1272" y="323"/>
+        <ns3:waypoint x="1380" y="323"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f20_di" bpmnElement="f20">
+        <ns3:waypoint x="1380" y="83"/>
+        <ns3:waypoint x="1460" y="83"/>
+        <ns3:waypoint x="1460" y="443"/>
+        <ns3:waypoint x="1540" y="443"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f21_di" bpmnElement="f21">
+        <ns3:waypoint x="1540" y="443"/>
+        <ns3:waypoint x="1620" y="443"/>
+        <ns3:waypoint x="1620" y="293"/>
+        <ns3:waypoint x="1700" y="293"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f22_di" bpmnElement="f22">
+        <ns3:waypoint x="1700" y="293"/>
+        <ns3:waypoint x="1780" y="293"/>
+        <ns3:waypoint x="1780" y="83"/>
+        <ns3:waypoint x="1860" y="83"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f23_di" bpmnElement="f23">
+        <ns3:waypoint x="1860" y="83"/>
+        <ns3:waypoint x="1940" y="83"/>
+        <ns3:waypoint x="1940" y="83"/>
+        <ns3:waypoint x="2020" y="83"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f24_di" bpmnElement="f24">
+        <ns3:waypoint x="2020" y="83"/>
+        <ns3:waypoint x="2100" y="83"/>
+        <ns3:waypoint x="2100" y="83"/>
+        <ns3:waypoint x="2180" y="83"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f25_di" bpmnElement="f25">
+        <ns3:waypoint x="2180" y="83"/>
+        <ns3:waypoint x="2242" y="83"/>
+        <ns3:waypoint x="2242" y="298"/>
+        <ns3:waypoint x="2305" y="298"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f26_di" bpmnElement="f26">
+        <ns3:waypoint x="2305" y="298"/>
+        <ns3:waypoint x="2402" y="298"/>
+        <ns3:waypoint x="2402" y="83"/>
+        <ns3:waypoint x="2500" y="83"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f27_di" bpmnElement="f27">
+        <ns3:waypoint x="2500" y="83"/>
+        <ns3:waypoint x="2580" y="83"/>
+        <ns3:waypoint x="2580" y="443"/>
+        <ns3:waypoint x="2660" y="443"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f28_di" bpmnElement="f28">
+        <ns3:waypoint x="2660" y="443"/>
+        <ns3:waypoint x="2740" y="443"/>
+        <ns3:waypoint x="2740" y="83"/>
+        <ns3:waypoint x="2820" y="83"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f29_di" bpmnElement="f29">
+        <ns3:waypoint x="2305" y="298"/>
+        <ns3:waypoint x="2562" y="298"/>
+        <ns3:waypoint x="2562" y="83"/>
+        <ns3:waypoint x="2820" y="83"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f30_di" bpmnElement="f30">
+        <ns3:waypoint x="2820" y="83"/>
+        <ns3:waypoint x="2882" y="83"/>
+        <ns3:waypoint x="2882" y="298"/>
+        <ns3:waypoint x="2945" y="298"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f31_di" bpmnElement="f31">
+        <ns3:waypoint x="2945" y="298"/>
+        <ns3:waypoint x="3042" y="298"/>
+        <ns3:waypoint x="3042" y="293"/>
+        <ns3:waypoint x="3140" y="293"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f32_di" bpmnElement="f32">
+        <ns3:waypoint x="2945" y="298"/>
+        <ns3:waypoint x="3101" y="298"/>
+        <ns3:waypoint x="3101" y="126"/>
+        <ns3:waypoint x="3258" y="126"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f33_di" bpmnElement="f33">
+        <ns3:waypoint x="3140" y="293"/>
+        <ns3:waypoint x="3199" y="293"/>
+        <ns3:waypoint x="3199" y="126"/>
+        <ns3:waypoint x="3258" y="126"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f40_di" bpmnElement="f40">
+        <ns3:waypoint x="1380" y="203"/>
+        <ns3:waypoint x="1460" y="203"/>
+        <ns3:waypoint x="1460" y="503"/>
+        <ns3:waypoint x="1540" y="503"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f41_di" bpmnElement="f41">
+        <ns3:waypoint x="1540" y="503"/>
+        <ns3:waypoint x="1620" y="503"/>
+        <ns3:waypoint x="1620" y="203"/>
+        <ns3:waypoint x="1700" y="203"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f42_di" bpmnElement="f42">
+        <ns3:waypoint x="1700" y="203"/>
+        <ns3:waypoint x="1780" y="203"/>
+        <ns3:waypoint x="1780" y="203"/>
+        <ns3:waypoint x="1860" y="203"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f43_di" bpmnElement="f43">
+        <ns3:waypoint x="1860" y="203"/>
+        <ns3:waypoint x="1940" y="203"/>
+        <ns3:waypoint x="1940" y="203"/>
+        <ns3:waypoint x="2020" y="203"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f44_di" bpmnElement="f44">
+        <ns3:waypoint x="2020" y="203"/>
+        <ns3:waypoint x="2100" y="203"/>
+        <ns3:waypoint x="2100" y="353"/>
+        <ns3:waypoint x="2180" y="353"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f45_di" bpmnElement="f45">
+        <ns3:waypoint x="2180" y="353"/>
+        <ns3:waypoint x="2242" y="353"/>
+        <ns3:waypoint x="2242" y="358"/>
+        <ns3:waypoint x="2305" y="358"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f46_di" bpmnElement="f46">
+        <ns3:waypoint x="2305" y="358"/>
+        <ns3:waypoint x="2162" y="358"/>
+        <ns3:waypoint x="2162" y="203"/>
+        <ns3:waypoint x="2020" y="203"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f47_di" bpmnElement="f47">
+        <ns3:waypoint x="2305" y="358"/>
+        <ns3:waypoint x="2402" y="358"/>
+        <ns3:waypoint x="2402" y="503"/>
+        <ns3:waypoint x="2500" y="503"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f48_di" bpmnElement="f48">
+        <ns3:waypoint x="2500" y="503"/>
+        <ns3:waypoint x="2580" y="503"/>
+        <ns3:waypoint x="2580" y="353"/>
+        <ns3:waypoint x="2660" y="353"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f49_di" bpmnElement="f49">
+        <ns3:waypoint x="2660" y="353"/>
+        <ns3:waypoint x="2719" y="353"/>
+        <ns3:waypoint x="2719" y="216"/>
+        <ns3:waypoint x="2778" y="216"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f50_di" bpmnElement="f50">
+        <ns3:waypoint x="1380" y="323"/>
+        <ns3:waypoint x="1460" y="323"/>
+        <ns3:waypoint x="1460" y="473"/>
+        <ns3:waypoint x="1540" y="473"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f51_di" bpmnElement="f51">
+        <ns3:waypoint x="1540" y="473"/>
+        <ns3:waypoint x="1620" y="473"/>
+        <ns3:waypoint x="1620" y="323"/>
+        <ns3:waypoint x="1700" y="323"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f52_di" bpmnElement="f52">
+        <ns3:waypoint x="1700" y="323"/>
+        <ns3:waypoint x="1780" y="323"/>
+        <ns3:waypoint x="1780" y="563"/>
+        <ns3:waypoint x="1860" y="563"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f53_di" bpmnElement="f53">
+        <ns3:waypoint x="1860" y="563"/>
+        <ns3:waypoint x="1919" y="563"/>
+        <ns3:waypoint x="1919" y="336"/>
+        <ns3:waypoint x="1978" y="336"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f60_di" bpmnElement="f60">
+        <ns3:waypoint x="3258" y="126"/>
+        <ns3:waypoint x="3359" y="126"/>
+        <ns3:waypoint x="3359" y="203"/>
+        <ns3:waypoint x="3460" y="203"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f61_di" bpmnElement="f61">
+        <ns3:waypoint x="2778" y="216"/>
+        <ns3:waypoint x="3119" y="216"/>
+        <ns3:waypoint x="3119" y="203"/>
+        <ns3:waypoint x="3460" y="203"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f62_di" bpmnElement="f62">
+        <ns3:waypoint x="1978" y="336"/>
+        <ns3:waypoint x="2719" y="336"/>
+        <ns3:waypoint x="2719" y="203"/>
+        <ns3:waypoint x="3460" y="203"/>
+      </ns1:BPMNEdge>
+      <ns1:BPMNEdge id="f64_di" bpmnElement="f64">
+        <ns3:waypoint x="3460" y="203"/>
+        <ns3:waypoint x="3519" y="203"/>
+        <ns3:waypoint x="3519" y="216"/>
+        <ns3:waypoint x="3578" y="216"/>
+      </ns1:BPMNEdge>
+    </ns1:BPMNPlane>
+  </ns1:BPMNDiagram>
+</ns0:definitions>

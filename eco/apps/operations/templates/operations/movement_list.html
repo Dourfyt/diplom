@@ -6,7 +6,11 @@
 <div class="eco-page-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3" data-tour="eco-page-title">
   <div>
     <h1 class="eco-page-title h3 mb-1">Движение отходов</h1>
-    <p class="eco-page-lead">Журнал операций: накопление, переработка, вывоз.</p>
+    <p class="eco-page-lead mb-0">
+      Полный журнал операций по тоннажу (накопление, переработка, вывоз).
+      {% if use_remote_api %}Данные с сервера — только просмотр и экспорт.{% endif %}
+      Экологические показатели — во вкладке <strong>«Измерения»</strong>.
+    </p>
   </div>
   <div class="d-flex flex-wrap gap-2 justify-content-lg-end" data-tour="eco-page-actions">
     {# Тот же фильтр organization передаётся в экспорт — в файле будут те же строки, что и в отфильтрованном списке #}
@@ -23,6 +27,14 @@
 <div class="card eco-card eco-card-filter mb-4">
   <div class="card-body py-3">
     <form class="row g-2 align-items-end" method="get" action="{% url 'operations:list' %}">
+      <div class="col-md-3 col-lg-2">
+        <label class="form-label small text-muted mb-1" for="movement-date-from">Дата от</label>
+        <input type="date" class="form-control" id="movement-date-from" name="date_from" value="{{ date_from }}">
+      </div>
+      <div class="col-md-3 col-lg-2">
+        <label class="form-label small text-muted mb-1" for="movement-date-to">Дата до</label>
+        <input type="date" class="form-control" id="movement-date-to" name="date_to" value="{{ date_to }}">
+      </div>
       <div class="col-md-4 col-lg-3">
         <label class="form-label small text-muted mb-1" for="filter-org">Организация</label>
         <select class="form-select" id="filter-org" name="organization">
@@ -34,14 +46,14 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-md-5 col-lg-4">
+      <div class="col-md-5 col-lg-3">
         <label class="form-label small text-muted mb-1" for="movement-search-q">Поиск</label>
         <input type="search" class="form-control" id="movement-search-q" name="q" value="{{ search_query }}"
                placeholder="Организация или вид отхода">
       </div>
       <div class="col-auto d-flex flex-wrap gap-2">
         <button type="submit" class="btn btn-success">Показать</button>
-        {% if selected_organization or search_query %}
+        {% if selected_organization or search_query or date_from or date_to %}
           <a class="btn btn-outline-secondary" href="{% url 'operations:list' %}">Сбросить</a>
         {% endif %}
       </div>
@@ -83,7 +95,13 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="6" class="text-center text-muted py-5">Нет записей. Добавьте операцию или смените фильтр.</td>
+              <td colspan="6" class="text-center text-muted py-5">
+                {% if use_remote_api %}
+                  Нет записей за выбранные фильтры.
+                {% else %}
+                  Нет записей. Добавьте операцию или смените фильтр.
+                {% endif %}
+              </td>
             </tr>
           {% endfor %}
         </tbody>

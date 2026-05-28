@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             id="Definitions_P08"
+             targetNamespace="http://eco.local/bpmn">
+  <process id="P08_DataQuality" name="P-08 Контроль качества данных" isExecutable="false">
+    <laneSet id="LaneSet_P08">
+      <lane id="Lane_Admin" name="Администратор">
+        <flowNodeRef>StartEvent_1</flowNodeRef>
+        <flowNodeRef>Task_ViewPanel</flowNodeRef>
+        <flowNodeRef>EndEvent_1</flowNodeRef>
+      </lane>
+      <lane id="Lane_ECO" name="ECO (Django)">
+        <flowNodeRef>Task_LoadData</flowNodeRef>
+        <flowNodeRef>Task_OrgSummary</flowNodeRef>
+        <flowNodeRef>Gateway_OrgSeverity</flowNodeRef>
+        <flowNodeRef>Task_BatchCheck</flowNodeRef>
+        <flowNodeRef>Task_Aggregate</flowNodeRef>
+      </lane>
+      <lane id="Lane_API" name="API платформы">
+        <flowNodeRef>Task_GetOrgs</flowNodeRef>
+        <flowNodeRef>Task_GetBatches</flowNodeRef>
+        <flowNodeRef>Task_GetOpsMeas</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <startEvent id="StartEvent_1" name="GET /manage/data-control/"/>
+    <parallelGateway id="Gateway_ParallelLoad" name="Параллельная загрузка"/>
+    <serviceTask id="Task_GetOrgs" name="GET organizations"/>
+    <serviceTask id="Task_GetBatches" name="GET batches"/>
+    <serviceTask id="Task_GetOpsMeas" name="GET operations + measurements"/>
+    <parallelGateway id="Gateway_JoinLoad" name="Слияние данных"/>
+    <serviceTask id="Task_LoadData" name="Построение индексов cross-module"/>
+    <serviceTask id="Task_OrgSummary" name="compute_organization_summary для каждой организации"/>
+    <exclusiveGateway id="Gateway_OrgSeverity" name="severity организации"/>
+    <serviceTask id="Task_CountOk" name="ok++"/>
+    <serviceTask id="Task_CountWarning" name="warning++"/>
+    <serviceTask id="Task_CountProblem" name="problem++"/>
+    <serviceTask id="Task_BatchCheck" name="check_batch_integrity для каждой партии"/>
+    <serviceTask id="Task_Aggregate" name="Агрегаты и список проблемных"/>
+    <userTask id="Task_ViewPanel" name="Просмотр панели контроля"/>
+    <endEvent id="EndEvent_1" name="Панель отображена"/>
+
+    <sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Gateway_ParallelLoad"/>
+    <sequenceFlow id="Flow_2" sourceRef="Gateway_ParallelLoad" targetRef="Task_GetOrgs"/>
+    <sequenceFlow id="Flow_3" sourceRef="Gateway_ParallelLoad" targetRef="Task_GetBatches"/>
+    <sequenceFlow id="Flow_4" sourceRef="Gateway_ParallelLoad" targetRef="Task_GetOpsMeas"/>
+    <sequenceFlow id="Flow_5" sourceRef="Task_GetOrgs" targetRef="Gateway_JoinLoad"/>
+    <sequenceFlow id="Flow_6" sourceRef="Task_GetBatches" targetRef="Gateway_JoinLoad"/>
+    <sequenceFlow id="Flow_7" sourceRef="Task_GetOpsMeas" targetRef="Gateway_JoinLoad"/>
+    <sequenceFlow id="Flow_8" sourceRef="Gateway_JoinLoad" targetRef="Task_LoadData"/>
+    <sequenceFlow id="Flow_9" sourceRef="Task_LoadData" targetRef="Task_OrgSummary"/>
+    <sequenceFlow id="Flow_10" sourceRef="Task_OrgSummary" targetRef="Gateway_OrgSeverity"/>
+    <sequenceFlow id="Flow_11" name="ok" sourceRef="Gateway_OrgSeverity" targetRef="Task_CountOk"/>
+    <sequenceFlow id="Flow_12" name="warning" sourceRef="Gateway_OrgSeverity" targetRef="Task_CountWarning"/>
+    <sequenceFlow id="Flow_13" name="problem" sourceRef="Gateway_OrgSeverity" targetRef="Task_CountProblem"/>
+    <sequenceFlow id="Flow_14" sourceRef="Task_CountOk" targetRef="Task_BatchCheck"/>
+    <sequenceFlow id="Flow_15" sourceRef="Task_CountWarning" targetRef="Task_BatchCheck"/>
+    <sequenceFlow id="Flow_16" sourceRef="Task_CountProblem" targetRef="Task_BatchCheck"/>
+    <sequenceFlow id="Flow_17" sourceRef="Task_BatchCheck" targetRef="Task_Aggregate"/>
+    <sequenceFlow id="Flow_18" sourceRef="Task_Aggregate" targetRef="Task_ViewPanel"/>
+    <sequenceFlow id="Flow_19" sourceRef="Task_ViewPanel" targetRef="EndEvent_1"/>
+  </process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_P08">
+    <bpmndi:BPMNPlane id="BPMNPlane_P08" bpmnElement="P08_DataQuality">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="192" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ParallelLoad_di" bpmnElement="Gateway_ParallelLoad">
+        <dc:Bounds x="245" y="185" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GetOrgs_di" bpmnElement="Task_GetOrgs">
+        <dc:Bounds x="360" y="80" width="140" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GetBatches_di" bpmnElement="Task_GetBatches">
+        <dc:Bounds x="360" y="192" width="140" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GetOpsMeas_di" bpmnElement="Task_GetOpsMeas">
+        <dc:Bounds x="360" y="304" width="180" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_JoinLoad_di" bpmnElement="Gateway_JoinLoad">
+        <dc:Bounds x="585" y="185" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_LoadData_di" bpmnElement="Task_LoadData">
+        <dc:Bounds x="680" y="170" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_OrgSummary_di" bpmnElement="Task_OrgSummary">
+        <dc:Bounds x="880" y="170" width="200" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_OrgSeverity_di" bpmnElement="Gateway_OrgSeverity" isMarkerVisible="true">
+        <dc:Bounds x="1125" y="185" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BatchCheck_di" bpmnElement="Task_BatchCheck">
+        <dc:Bounds x="880" y="320" width="200" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Aggregate_di" bpmnElement="Task_Aggregate">
+        <dc:Bounds x="1120" y="320" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ViewPanel_di" bpmnElement="Task_ViewPanel">
+        <dc:Bounds x="1320" y="170" width="140" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="1512" y="192" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

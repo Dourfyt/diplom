@@ -344,6 +344,8 @@ class RemoteDataService:
         *,
         organization_id: str | None = None,
         search: str = "",
+        date_from: date | None = None,
+        date_to: date | None = None,
     ) -> list[MovementRecord]:
         org_map = self._load_organizations()
         waste_map = self._load_waste_types()
@@ -381,6 +383,10 @@ class RemoteDataService:
                 if q not in hay:
                     continue
 
+            op_date = _parse_date(item.get("operation_at"))
+            if not _in_date_range(op_date, date_from, date_to):
+                continue
+
             result.append(
                 MovementRecord(
                     pk=int(item["id"]),
@@ -389,7 +395,7 @@ class RemoteDataService:
                     operation_type=op_type,
                     operation_type_display=display,
                     volume=_to_decimal(item.get("quantity_tons")),
-                    operation_date=_parse_date(item.get("operation_at")),
+                    operation_date=op_date,
                     notes=item.get("notes") or "",
                 )
             )
@@ -424,6 +430,7 @@ class RemoteDataService:
                 org_filter = None
 
         q = search.strip().lower()
+        batches_map = {b.pk: b for b in self.batches_list()}
         result: list[MeasurementRecord] = []
 
         for item in raw:
@@ -448,8 +455,25 @@ class RemoteDataService:
 
             if q:
                 hay = f"{org.name} {parameter}".lower()
+                batch_id_raw = item.get("batch_id")
+                if batch_id_raw:
+                    batch = batches_map.get(int(batch_id_raw))
+                    if batch:
+                        hay += f" {batch.code} {batch.name}".lower()
                 if q not in hay:
                     continue
+
+            batch_id_raw = item.get("batch_id")
+            batch_id = int(batch_id_raw) if batch_id_raw is not None else None
+            batch_display = ""
+            if batch_id is not None:
+                batch = batches_map.get(batch_id)
+                if batch:
+                    batch_display = batch.code
+                    if batch.name:
+                        batch_display = f"{batch.code} — {batch.name}"
+                else:
+                    batch_display = f"Партия #{batch_id}"
 
             result.append(
                 MeasurementRecord(
@@ -461,6 +485,8 @@ class RemoteDataService:
                     norm=norm,
                     measurement_date=_parse_date(item.get("measured_at")),
                     unit=item.get("unit") or "",
+                    batch_id=batch_id,
+                    batch_display=batch_display,
                 )
             )
 
@@ -483,6 +509,7 @@ class RemoteDataService:
         parameter: str,
         value: Decimal,
         unit: str,
+        batch_id: int | None = None,
     ) -> dict:
         return self._client.post(
             "/api/v1/reporting/measurements",
@@ -491,7 +518,7 @@ class RemoteDataService:
                 "parameter": parameter,
                 "value": float(value),
                 "unit": unit,
-                "batch_id": None,
+                "batch_id": batch_id,
             },
         )
 
@@ -596,8 +623,9 @@ class RemoteDataService:
             "batch_volume": batch_volume,
             "movements": movements[:15],
             "movements_total": len(movements),
-            "operation_volume": op_volume,
+            "measurements": measurements[:15],
             "measurements_total": len(measurements),
+            "operation_volume": op_volume,
             "exceed_count": exceed_count,
             "remote_organization_name": remote.get("organization_name", ""),
             "remote_total_batches": int(remote.get("total_batches") or 0),
@@ -610,52 +638,146 @@ class RemoteDataService:
             "line_utilization": remote.get("line_utilization") or {},
         }
 
-    def dashboard_kpi_bundle(self) -> dict:
+    def _movements_in_period(
+        self,
+        *,
+        date_from: date | None,
+        date_to: date | None,
+    ) -> list[MovementRecord]:
+        movements = self.movements_list()
+        if date_from or date_to:
+            movements = [
+                m
+                for m in movements
+                if _in_date_range(m.operation_date, date_from, date_to)
+            ]
+        return movements
+
+    def _measurements_in_period(
+        self,
+        *,
+        date_from: date | None,
+        date_to: date | None,
+    ) -> list[MeasurementRecord]:
+        measurements = self.measurements_list()
+        if date_from or date_to:
+            measurements = [
+                m
+                for m in measurements
+                if _in_date_range(m.measurement_date, date_from, date_to)
+            ]
+        return measurements
+
+    def _kpi_attention_items(
+        self,
+        *,
+        date_from: date | None,
+        date_to: date | None,
+    ) -> dict:
+        movements = self._movements_in_period(date_from=date_from, date_to=date_to)
+        measurements = self._measurements_in_period(
+            date_from=date_from, date_to=date_to
+        )
+        org_map = self._load_organizations()
+
+        recent_exceedances = sorted(
+            [m for m in measurements if m.is_exceed],
+            key=lambda m: (m.measurement_date, m.pk),
+            reverse=True,
+        )[:5]
+
+        orgs_with_ops = {m.organization.pk for m in movements}
+        orgs_with_meas = {m.organization.pk for m in measurements}
+        orgs_without_measurements = []
+        for org_id in sorted(orgs_with_ops - orgs_with_meas):
+            org = org_map.get(org_id)
+            if org:
+                orgs_without_measurements.append(org)
+            if len(orgs_without_measurements) >= 5:
+                break
+
+        return {
+            "recent_exceedances": recent_exceedances,
+            "orgs_without_measurements": orgs_without_measurements,
+            "exceed_count": sum(1 for m in measurements if m.is_exceed),
+            "operations_count": len(movements),
+            "measurements_count": len(measurements),
+        }
+
+    def dashboard_kpi_bundle(
+        self,
+        *,
+        date_from: date | None = None,
+        date_to: date | None = None,
+    ) -> dict:
         """
-        Данные для дашборда руководителя: сначала один быстрый запрос KPI,
-        графики — отдельно (при таймауте KPI всё равно показываются).
+        Данные для дашборда KPI: справочники, операции и измерения за период.
         """
-        remote = self.reporting_dashboard()
-        total_dec = _to_decimal(remote.get("total_volume_tons"))
+        organizations = self.organizations_list()
+        waste_types = self.waste_types_list()
+        batches = self.batches_list()
+        if date_from or date_to:
+            batches = [
+                b
+                for b in batches
+                if _in_date_range(b.received_at.date(), date_from, date_to)
+            ]
+
+        attention = self._kpi_attention_items(date_from=date_from, date_to=date_to)
 
         bundle = {
-            "remote_dashboard": remote,
-            "count_organizations": 1 if remote.get("organization_name") else 0,
-            "count_waste_types": int(remote.get("total_batches") or 0),
-            "total_volume": total_dec,
-            "accumulation_volume": total_dec,
+            "count_organizations": len(organizations),
+            "count_waste_types": len(waste_types),
+            "count_batches": len(batches),
+            "total_volume": Decimal("0"),
+            "accumulation_volume": Decimal("0"),
             "recycling_volume": Decimal("0"),
             "removal_volume": Decimal("0"),
             "recycling_percent": Decimal("0"),
-            "exceed_count": 0,
-            "remote_organization_name": remote.get("organization_name", ""),
-            "remote_total_batches": remote.get("total_batches", 0),
-            "remote_plan_completion": remote.get("plan_completion_percent"),
+            "exceed_count": attention["exceed_count"],
+            "operations_count": attention["operations_count"],
+            "measurements_count": attention["measurements_count"],
+            "attention": attention,
+            "date_from": date_from,
+            "date_to": date_to,
         }
-        if total_dec > 0:
-            bundle["recycling_percent"] = Decimal("0")
 
         try:
-            charts = self.dashboard_charts()
+            charts = self.dashboard_charts(date_from=date_from, date_to=date_to)
             bundle["charts"] = charts
         except Exception:
             bundle["charts"] = None
+            return bundle
+
+        group_volumes = charts["group_volumes"]
+        total_from_ops = sum(group_volumes.values(), Decimal("0"))
+        recycling_dec = group_volumes.get("recycling", Decimal("0"))
+        bundle["total_volume"] = total_from_ops
+        bundle["accumulation_volume"] = group_volumes["accumulation"]
+        bundle["recycling_volume"] = group_volumes["recycling"]
+        bundle["removal_volume"] = group_volumes["removal"]
+        if total_from_ops > 0:
+            bundle["recycling_percent"] = recycling_dec / total_from_ops * Decimal(100)
         return bundle
 
-    def dashboard_charts(self) -> dict:
-        """Данные для Chart.js на дашборде."""
-        movements = self.movements_list()
-        org_map = self._load_organizations()
+    def dashboard_charts(
+        self,
+        *,
+        date_from: date | None = None,
+        date_to: date | None = None,
+    ) -> dict:
+        """Данные для Chart.js на дашборде (операции за выбранный период)."""
+        movements = self._movements_in_period(date_from=date_from, date_to=date_to)
+        measurements = self._measurements_in_period(
+            date_from=date_from, date_to=date_to
+        )
 
         type_counts: dict[str, int] = {}
-        type_volumes: dict[str, Decimal] = {}
         org_volumes: dict[str, Decimal] = {}
 
         for m in movements:
             label = OPERATION_TYPE_LABELS.get(m.operation_type, m.operation_type)
             type_counts[label] = type_counts.get(label, 0) + 1
-            type_volumes[label] = type_volumes.get(label, Decimal("0")) + m.volume
-
             org_name = m.organization.name
             org_volumes[org_name] = org_volumes.get(org_name, Decimal("0")) + m.volume
 
@@ -663,7 +785,6 @@ class RemoteDataService:
             for label in OPERATION_TYPE_LABELS.values():
                 type_counts.setdefault(label, 0)
 
-        group_counts = {"accumulation": 0, "recycling": 0, "removal": 0}
         group_volumes = {
             "accumulation": Decimal("0"),
             "recycling": Decimal("0"),
@@ -671,7 +792,6 @@ class RemoteDataService:
         }
         for m in movements:
             group = OPERATION_VOLUME_GROUP.get(m.operation_type, "accumulation")
-            group_counts[group] = group_counts.get(group, 0) + 1
             group_volumes[group] = group_volumes.get(group, Decimal("0")) + m.volume
 
         return {
@@ -688,9 +808,8 @@ class RemoteDataService:
                 "values": [float(group_volumes[k]) for k in group_volumes],
             },
             "group_volumes": group_volumes,
-            "org_count": len(org_map),
-            "waste_count": len(self._load_waste_types()),
-            "exceed_count": sum(1 for m in self.measurements_list() if m.is_exceed),
+            "exceed_count": sum(1 for m in measurements if m.is_exceed),
+            "has_operations": len(movements) > 0,
         }
 
 
@@ -702,4 +821,6 @@ def movements_for_request(request) -> list[MovementRecord]:
     return get_remote_service().movements_list(
         organization_id=request.GET.get("organization"),
         search=request.GET.get("q", ""),
+        date_from=_parse_optional_date(request.GET.get("date_from")),
+        date_to=_parse_optional_date(request.GET.get("date_to")),
     )

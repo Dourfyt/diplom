@@ -80,6 +80,8 @@ class MeasurementRecord:
   norm: Decimal | None
   measurement_date: date
   unit: str = ""
+  batch_id: int | None = None
+  batch_display: str = ""
 
   def get_indicator_type_display(self) -> str:
     return self.indicator_type_display

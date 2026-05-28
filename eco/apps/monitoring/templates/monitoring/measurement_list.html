@@ -6,7 +6,10 @@
 <div class="eco-page-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3" data-tour="eco-page-title">
   <div>
     <h1 class="eco-page-title h3 mb-1">Измерения</h1>
-    <p class="eco-page-lead">Журнал показателей: значение, норматив, статус.</p>
+    <p class="eco-page-lead mb-0">
+      Экологические показатели по организации (выбросы, концентрации и т.п.) — не тоннаж отходов.
+      При необходимости запись можно привязать к партии на площадке; движение отходов — в журнале «Операции».
+    </p>
   </div>
   <a class="btn btn-monitoring-accent text-white shadow-sm" href="{% url 'monitoring:create' %}" data-tour="eco-page-actions">+ Добавить измерение</a>
 </div>
@@ -55,6 +58,7 @@
           <tr>
             <th scope="col">Дата</th>
             <th scope="col">Организация</th>
+            <th scope="col">Партия</th>
             <th scope="col">Показатель</th>
             <th scope="col" class="text-end">Значение</th>
             <th scope="col" class="text-end">Норматив</th>
@@ -64,14 +68,17 @@
         </thead>
         <tbody>
           {% for m in measurements %}
-            <tr class="{% if m.is_exceed %}table-danger{% elif m.value > m.norm %}table-danger{% endif %}">
+            <tr class="{% if m.is_exceed %}table-danger{% elif m.norm and m.value > m.norm %}table-danger{% endif %}">
               <td class="text-nowrap">{{ m.measurement_date|date:"d.m.Y" }}</td>
               <td>{{ m.organization.name }}</td>
+              <td class="small text-muted">
+                {% if m.batch_display %}{{ m.batch_display }}{% else %}<span class="text-muted">—</span>{% endif %}
+              </td>
               <td><span class="badge bg-secondary">{{ m.get_indicator_type_display }}</span></td>
               <td class="text-end font-monospace">{{ m.value }}</td>
               <td class="text-end font-monospace text-muted">{% if m.norm_display %}{{ m.norm_display }}{% else %}{{ m.norm }}{% endif %}</td>
               <td class="text-center">
-                {% if m.is_exceed or m.value > m.norm %}
+                {% if m.is_exceed or m.norm and m.value > m.norm %}
                   <span class="badge rounded-pill bg-danger">Превышение</span>
                 {% elif m.norm is None and use_remote_api %}
                   <span class="badge rounded-pill bg-secondary">н/д</span>
@@ -90,7 +97,7 @@
             </tr>
           {% empty %}
             <tr>
-              <td colspan="7" class="text-center text-muted py-5">Нет записей. Измените фильтр или добавьте измерение.</td>
+              <td colspan="8" class="text-center text-muted py-5">Нет записей. Измените фильтр или добавьте измерение.</td>
             </tr>
           {% endfor %}
         </tbody>

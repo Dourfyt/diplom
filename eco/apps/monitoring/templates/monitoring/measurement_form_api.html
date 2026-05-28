@@ -9,8 +9,9 @@
       <div class="card-body">
         <h1 class="h4 eco-page-title mb-1">Добавить измерение</h1>
         <p class="eco-page-lead mb-4">
-          Данные отправляются на сервер платформы (REST API). Норматив на сервере не хранится —
-          для демонстрации превышений используются учебные пороги для известных показателей.
+          Экологический показатель по организации (выбросы, концентрации и т.п.) — не операция по тоннажу.
+          Данные уходят на сервер (REST API). Норматив на сервере не хранится; для превышений
+          используются учебные пороги известных показателей. Партию можно указать по желанию.
         </p>
 
         <form method="post" novalidate>
@@ -23,6 +24,13 @@
             <label class="form-label" for="{{ form.organization.id_for_label }}">{{ form.organization.label }}</label>
             {{ form.organization }}
             {% if form.organization.errors %}<div class="text-danger small">{{ form.organization.errors }}</div>{% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="{{ form.batch.id_for_label }}">{{ form.batch.label }}</label>
+            {{ form.batch }}
+            {% if form.batch.help_text %}<div class="form-text">{{ form.batch.help_text }}</div>{% endif %}
+            {% if form.batch.errors %}<div class="text-danger small">{{ form.batch.errors }}</div>{% endif %}
           </div>
 
           <div class="mb-3">
@@ -53,4 +61,38 @@
     </div>
   </div>
 </div>
+
+{{ batches_by_org|json_script:"batches-by-org" }}
+<script>
+(function () {
+  const orgSelect = document.getElementById("id_organization");
+  const batchSelect = document.getElementById("id_batch");
+  const dataEl = document.getElementById("batches-by-org");
+  if (!orgSelect || !batchSelect || !dataEl) return;
+
+  const batchesByOrg = JSON.parse(dataEl.textContent);
+  const savedBatch = batchSelect.value;
+
+  function fillBatches() {
+    const orgId = orgSelect.value;
+    batchSelect.innerHTML = "";
+    const empty = document.createElement("option");
+    empty.value = "";
+    empty.textContent = "— без привязки к партии —";
+    batchSelect.appendChild(empty);
+    (batchesByOrg[orgId] || []).forEach(function (b) {
+      const opt = document.createElement("option");
+      opt.value = String(b.id);
+      opt.textContent = b.label;
+      batchSelect.appendChild(opt);
+    });
+    if (savedBatch && Array.from(batchSelect.options).some(function (o) { return o.value === savedBatch; })) {
+      batchSelect.value = savedBatch;
+    }
+  }
+
+  orgSelect.addEventListener("change", fillBatches);
+  fillBatches();
+})();
+</script>
 {% endblock %}

@@ -1,6 +1,6 @@
 {% if can_access_dashboard %}
   <a class="btn btn-sm {% if nav_active == 'dashboard' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'dashboard' %}" data-tour="nav-dashboard"{% if nav_active == 'dashboard' %} aria-current="page"{% endif %}>KPI</a>
+     href="{% url 'dashboard' %}" data-tour="nav-dashboard"{% if nav_active == 'dashboard' %} aria-current="page"{% endif %}>Контроль</a>
   <a class="btn btn-sm {% if nav_active == 'reporting' %}btn-light active{% else %}btn-outline-light{% endif %}"
      href="{% url 'reporting' %}" data-tour="nav-reporting"{% if nav_active == 'reporting' %} aria-current="page"{% endif %}>Отчётность</a>
 {% endif %}

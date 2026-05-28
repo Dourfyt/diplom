@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             id="Definitions_P01"
+             targetNamespace="http://eco.local/bpmn">
+  <process id="P01_Authentication" name="P-01 Аутентификация через API" isExecutable="false">
+    <laneSet id="LaneSet_P01">
+      <lane id="Lane_User" name="Пользователь">
+        <flowNodeRef>StartEvent_1</flowNodeRef>
+        <flowNodeRef>Task_EnterCredentials</flowNodeRef>
+        <flowNodeRef>EndEvent_Success</flowNodeRef>
+        <flowNodeRef>EndEvent_Fail</flowNodeRef>
+      </lane>
+      <lane id="Lane_ECO" name="ECO (Django)">
+        <flowNodeRef>Gateway_FieldsFilled</flowNodeRef>
+        <flowNodeRef>Task_ShowError</flowNodeRef>
+        <flowNodeRef>Task_SyncUser</flowNodeRef>
+        <flowNodeRef>Task_SaveSession</flowNodeRef>
+        <flowNodeRef>Gateway_Role</flowNodeRef>
+        <flowNodeRef>Task_RedirectAdmin</flowNodeRef>
+        <flowNodeRef>Task_RedirectDashboard</flowNodeRef>
+      </lane>
+      <lane id="Lane_API" name="API платформы">
+        <flowNodeRef>Task_ApiLogin</flowNodeRef>
+        <flowNodeRef>Gateway_ApiOk</flowNodeRef>
+        <flowNodeRef>Task_ApiUser</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <startEvent id="StartEvent_1" name="Запрос /accounts/login/"/>
+    <userTask id="Task_EnterCredentials" name="Ввод email и пароля"/>
+    <exclusiveGateway id="Gateway_FieldsFilled" name="Поля заполнены?"/>
+    <serviceTask id="Task_ApiLogin" name="POST /api/v1/auth/login"/>
+    <exclusiveGateway id="Gateway_ApiOk" name="Успех API?"/>
+    <serviceTask id="Task_ApiUser" name="GET /api/v1/auth/user"/>
+    <serviceTask id="Task_SyncUser" name="Синхронизация Django user и группы роли"/>
+    <serviceTask id="Task_SaveSession" name="Сохранение JWT в сессии"/>
+    <exclusiveGateway id="Gateway_Role" name="Роль пользователя"/>
+    <userTask id="Task_RedirectAdmin" name="Редирект /manage/organizations/"/>
+    <userTask id="Task_RedirectDashboard" name="Редирект /dashboard/"/>
+    <userTask id="Task_ShowError" name="Сообщение об ошибке"/>
+    <endEvent id="EndEvent_Success" name="Сессия активна"/>
+    <endEvent id="EndEvent_Fail" name="Не авторизован"/>
+
+    <sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_EnterCredentials"/>
+    <sequenceFlow id="Flow_2" sourceRef="Task_EnterCredentials" targetRef="Gateway_FieldsFilled"/>
+    <sequenceFlow id="Flow_3" name="Нет" sourceRef="Gateway_FieldsFilled" targetRef="Task_ShowError"/>
+    <sequenceFlow id="Flow_4" name="Да" sourceRef="Gateway_FieldsFilled" targetRef="Task_ApiLogin"/>
+    <sequenceFlow id="Flow_5" sourceRef="Task_ApiLogin" targetRef="Gateway_ApiOk"/>
+    <sequenceFlow id="Flow_6" name="Нет" sourceRef="Gateway_ApiOk" targetRef="Task_ShowError"/>
+    <sequenceFlow id="Flow_7" name="Да" sourceRef="Gateway_ApiOk" targetRef="Task_ApiUser"/>
+    <sequenceFlow id="Flow_8" sourceRef="Task_ApiUser" targetRef="Task_SyncUser"/>
+    <sequenceFlow id="Flow_9" sourceRef="Task_SyncUser" targetRef="Task_SaveSession"/>
+    <sequenceFlow id="Flow_10" sourceRef="Task_SaveSession" targetRef="Gateway_Role"/>
+    <sequenceFlow id="Flow_11" name="admin / superuser" sourceRef="Gateway_Role" targetRef="Task_RedirectAdmin"/>
+    <sequenceFlow id="Flow_12" name="ecologist / manager" sourceRef="Gateway_Role" targetRef="Task_RedirectDashboard"/>
+    <sequenceFlow id="Flow_13" sourceRef="Task_RedirectAdmin" targetRef="EndEvent_Success"/>
+    <sequenceFlow id="Flow_14" sourceRef="Task_RedirectDashboard" targetRef="EndEvent_Success"/>
+    <sequenceFlow id="Flow_15" sourceRef="Task_ShowError" targetRef="EndEvent_Fail"/>
+  </process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_P01">
+    <bpmndi:BPMNPlane id="BPMNPlane_P01" bpmnElement="P01_Authentication">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="82" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_EnterCredentials_di" bpmnElement="Task_EnterCredentials">
+        <dc:Bounds x="240" y="60" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_FieldsFilled_di" bpmnElement="Gateway_FieldsFilled" isMarkerVisible="true">
+        <dc:Bounds x="405" y="75" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ApiLogin_di" bpmnElement="Task_ApiLogin">
+        <dc:Bounds x="500" y="180" width="140" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ApiOk_di" bpmnElement="Gateway_ApiOk" isMarkerVisible="true">
+        <dc:Bounds x="685" y="195" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ApiUser_di" bpmnElement="Task_ApiUser">
+        <dc:Bounds x="780" y="180" width="140" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SyncUser_di" bpmnElement="Task_SyncUser">
+        <dc:Bounds x="500" y="320" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SaveSession_di" bpmnElement="Task_SaveSession">
+        <dc:Bounds x="700" y="320" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Role_di" bpmnElement="Gateway_Role" isMarkerVisible="true">
+        <dc:Bounds x="905" y="335" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RedirectAdmin_di" bpmnElement="Task_RedirectAdmin">
+        <dc:Bounds x="1000" y="280" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RedirectDashboard_di" bpmnElement="Task_RedirectDashboard">
+        <dc:Bounds x="1000" y="400" width="160" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ShowError_di" bpmnElement="Task_ShowError">
+        <dc:Bounds x="500" y="60" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Success_di" bpmnElement="EndEvent_Success">
+        <dc:Bounds x="1212" y="342" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Fail_di" bpmnElement="EndEvent_Fail">
+        <dc:Bounds x="672" y="82" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

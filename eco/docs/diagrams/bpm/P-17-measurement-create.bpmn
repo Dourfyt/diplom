@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             id="Definitions_P17"
+             targetNamespace="http://eco.local/bpmn">
+  <process id="P17_MeasurementCreate" name="P-17 Создание измерения" isExecutable="false">
+    <laneSet id="LaneSet_P17">
+      <lane id="Lane_Ecologist" name="Эколог">
+        <flowNodeRef>StartEvent_1</flowNodeRef>
+        <flowNodeRef>Task_OpenForm</flowNodeRef>
+        <flowNodeRef>Task_FillForm</flowNodeRef>
+        <flowNodeRef>EndEvent_Success</flowNodeRef>
+      </lane>
+      <lane id="Lane_ECO" name="ECO (Django)">
+        <flowNodeRef>Task_LoadChoices</flowNodeRef>
+        <flowNodeRef>Gateway_Valid</flowNodeRef>
+        <flowNodeRef>Gateway_Batch</flowNodeRef>
+        <flowNodeRef>Gateway_BatchOrg</flowNodeRef>
+        <flowNodeRef>Task_ShowErrors</flowNodeRef>
+      </lane>
+      <lane id="Lane_API" name="API платформы">
+        <flowNodeRef>Task_PostMeasurement</flowNodeRef>
+        <flowNodeRef>Gateway_ApiOk</flowNodeRef>
+      </lane>
+    </laneSet>
+
+    <startEvent id="StartEvent_1" name="POST /monitoring/measurements/add/"/>
+    <userTask id="Task_OpenForm" name="Открыть форму измерения"/>
+    <serviceTask id="Task_LoadChoices" name="Загрузка организаций и партий (API)"/>
+    <userTask id="Task_FillForm" name="Заполнить организацию, параметр, значение, партию"/>
+    <exclusiveGateway id="Gateway_Valid" name="Форма валидна?"/>
+    <exclusiveGateway id="Gateway_Batch" name="Партия указана?"/>
+    <exclusiveGateway id="Gateway_BatchOrg" name="Партия принадлежит организации?"/>
+    <serviceTask id="Task_PostMeasurement" name="POST /api/v1/reporting/measurements"/>
+    <exclusiveGateway id="Gateway_ApiOk" name="API OK?"/>
+    <userTask id="Task_ShowErrors" name="Показать ошибки формы"/>
+    <userTask id="Task_SuccessRedirect" name="Сообщение + редирект на список"/>
+    <endEvent id="EndEvent_Success" name="Измерение создано"/>
+
+    <sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_OpenForm"/>
+    <sequenceFlow id="Flow_2" sourceRef="Task_OpenForm" targetRef="Task_LoadChoices"/>
+    <sequenceFlow id="Flow_3" sourceRef="Task_LoadChoices" targetRef="Task_FillForm"/>
+    <sequenceFlow id="Flow_4" sourceRef="Task_FillForm" targetRef="Gateway_Valid"/>
+    <sequenceFlow id="Flow_5" name="Нет" sourceRef="Gateway_Valid" targetRef="Task_ShowErrors"/>
+    <sequenceFlow id="Flow_6" name="Да" sourceRef="Gateway_Valid" targetRef="Gateway_Batch"/>
+    <sequenceFlow id="Flow_7" name="Нет" sourceRef="Gateway_Batch" targetRef="Task_PostMeasurement"/>
+    <sequenceFlow id="Flow_8" name="Да" sourceRef="Gateway_Batch" targetRef="Gateway_BatchOrg"/>
+    <sequenceFlow id="Flow_9" name="Нет" sourceRef="Gateway_BatchOrg" targetRef="Task_ShowErrors"/>
+    <sequenceFlow id="Flow_10" name="Да" sourceRef="Gateway_BatchOrg" targetRef="Task_PostMeasurement"/>
+    <sequenceFlow id="Flow_11" sourceRef="Task_PostMeasurement" targetRef="Gateway_ApiOk"/>
+    <sequenceFlow id="Flow_12" name="Нет" sourceRef="Gateway_ApiOk" targetRef="Task_ShowErrors"/>
+    <sequenceFlow id="Flow_13" name="Да" sourceRef="Gateway_ApiOk" targetRef="Task_SuccessRedirect"/>
+    <sequenceFlow id="Flow_14" sourceRef="Task_SuccessRedirect" targetRef="EndEvent_Success"/>
+    <sequenceFlow id="Flow_15" sourceRef="Task_ShowErrors" targetRef="Task_FillForm"/>
+  </process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_P17">
+    <bpmndi:BPMNPlane id="BPMNPlane_P17" bpmnElement="P17_MeasurementCreate">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="192" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_OpenForm_di" bpmnElement="Task_OpenForm">
+        <dc:Bounds x="240" y="170" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_LoadChoices_di" bpmnElement="Task_LoadChoices">
+        <dc:Bounds x="400" y="300" width="180" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_FillForm_di" bpmnElement="Task_FillForm">
+        <dc:Bounds x="400" y="170" width="140" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Valid_di" bpmnElement="Gateway_Valid" isMarkerVisible="true">
+        <dc:Bounds x="585" y="185" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Batch_di" bpmnElement="Gateway_Batch" isMarkerVisible="true">
+        <dc:Bounds x="680" y="185" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_BatchOrg_di" bpmnElement="Gateway_BatchOrg" isMarkerVisible="true">
+        <dc:Bounds x="775" y="185" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PostMeasurement_di" bpmnElement="Task_PostMeasurement">
+        <dc:Bounds x="870" y="300" width="200" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_ApiOk_di" bpmnElement="Gateway_ApiOk" isMarkerVisible="true">
+        <dc:Bounds x="1115" y="315" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ShowErrors_di" bpmnElement="Task_ShowErrors">
+        <dc:Bounds x="620" y="60" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SuccessRedirect_di" bpmnElement="Task_SuccessRedirect">
+        <dc:Bounds x="1200" y="300" width="180" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Success_di" bpmnElement="EndEvent_Success">
+        <dc:Bounds x="1422" y="322" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

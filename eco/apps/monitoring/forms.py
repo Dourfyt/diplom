@@ -64,8 +64,15 @@ class MeasurementApiForm(forms.Form):
         initial="мг/м³",
         widget=forms.TextInput(attrs={"class": "form-control"}),
     )
+    batch = forms.ChoiceField(
+        label="Партия отходов",
+        required=False,
+        widget=forms.Select(attrs={"class": "form-select"}),
+        help_text="Необязательно: привязка к партии на площадке. Операции по тоннажу — в журнале «Операции».",
+    )
 
     def __init__(self, *args, organization_choices=None, **kwargs):
         super().__init__(*args, **kwargs)
         choices = organization_choices or []
         self.fields["organization"].choices = [("", "— выберите —")] + list(choices)
+        self.fields["batch"].choices = [("", "— без привязки к партии —")]

@@ -58,7 +58,7 @@
   </style>
   {% block extra_css %}{% endblock %}
 </head>
-<body data-nav-active="{{ nav_active }}">
+<body data-nav-active="{{ nav_active }}" data-use-remote-api="{% if use_remote_api %}1{% else %}0{% endif %}">
 <nav class="navbar navbar-expand-lg navbar-dark navbar-eco sticky-top mb-4">
   <div class="container eco-main">
     <a class="navbar-brand" href="{% if user.is_authenticated %}{{ user_home_url }}{% else %}{% url 'login' %}{% endif %}">Эко-учёт отходов</a>

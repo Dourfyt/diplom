@@ -30,6 +30,7 @@ from apps.integrations.mixins import EcologistRequiredMixin, RemoteApiReadOnlyMi
 from apps.integrations.remote_data import get_remote_service, movements_for_request
 from apps.operations.forms import MovementForm
 from apps.operations.models import Movement
+from apps.operations.pdf_fonts import ensure_pdf_cyrillic_fonts
 
 
 def movements_queryset_for_request(request):
@@ -43,6 +44,10 @@ def movement_list_querystring(request) -> str:
     org = request.GET.get("organization")
     if org not in (None, ""):
         params["organization"] = org
+    for key in ("date_from", "date_to"):
+        value = request.GET.get(key, "").strip()
+        if value:
+            params[key] = value
     q = request.GET.get("q", "").strip()
     if q:
         params["q"] = q
@@ -65,6 +70,8 @@ class MovementListView(EcologistRequiredMixin, ListView):
         ctx["organizations"] = get_remote_service().organizations_list()
         ctx["selected_organization"] = self.request.GET.get("organization") or ""
         ctx["search_query"] = self.request.GET.get("q", "").strip()
+        ctx["date_from"] = self.request.GET.get("date_from", "").strip()
+        ctx["date_to"] = self.request.GET.get("date_to", "").strip()
         ctx["list_filter_query"] = movement_list_querystring(self.request)
         return ctx
 
@@ -140,6 +147,11 @@ class MovementExportPdfView(EcologistRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         queryset = list(movements_queryset_for_request(request))
 
+        try:
+            font_regular, font_bold = ensure_pdf_cyrillic_fonts()
+        except FileNotFoundError as exc:
+            return HttpResponse(str(exc), status=500, content_type="text/plain; charset=utf-8")
+
         buffer = BytesIO()
         doc = SimpleDocTemplate(
             buffer,
@@ -154,6 +166,7 @@ class MovementExportPdfView(EcologistRequiredMixin, View):
         title_style = ParagraphStyle(
             name="ReportTitle",
             parent=styles["Title"],
+            fontName=font_regular,
             fontSize=16,
             alignment=1,
             spaceAfter=6,
@@ -161,6 +174,7 @@ class MovementExportPdfView(EcologistRequiredMixin, View):
         sub_style = ParagraphStyle(
             name="ReportSub",
             parent=styles["Normal"],
+            fontName=font_regular,
             fontSize=10,
             alignment=1,
             textColor=colors.HexColor("#555555"),
@@ -204,8 +218,9 @@ class MovementExportPdfView(EcologistRequiredMixin, View):
                 [
                     ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#6c757d")),
                     ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTNAME", (0, 0), (-1, 0), font_bold),
                     ("FONTSIZE", (0, 0), (-1, 0), 10),
+                    ("FONTNAME", (0, 1), (-1, -1), font_regular),
                     ("ALIGN", (0, 0), (-1, -1), "CENTER"),
                     ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
                     ("FONTSIZE", (0, 1), (-1, -1), 9),
