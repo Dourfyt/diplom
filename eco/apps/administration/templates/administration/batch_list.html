@@ -33,6 +33,13 @@
   </div>
 </div>
 
+<div class="alert alert-light border d-flex flex-wrap gap-3 align-items-center mb-3">
+  <span class="small text-muted">Контроль связности с модулями Операции/Измерения:</span>
+  <span class="badge text-bg-success">OK: {{ integrity_totals.ok|default:0 }}</span>
+  <span class="badge text-bg-warning">Предупреждение: {{ integrity_totals.warning|default:0 }}</span>
+  <span class="badge text-bg-danger">Проблема: {{ integrity_totals.problem|default:0 }}</span>
+</div>
+
 <div class="card border-0 shadow-sm" data-tour="eco-page-table">
   <div class="card-body p-0">
     <div class="table-responsive">
@@ -48,10 +55,12 @@
             <th scope="col">Организация</th>
             <th scope="col">Вид отхода</th>
             <th scope="col">Поступление</th>
+            <th scope="col">Контроль данных</th>
           </tr>
         </thead>
         <tbody>
           {% for item in batches %}
+            {% with check=item.integrity_check %}
             <tr>
               <td class="font-monospace">{{ item.code }}</td>
               <td>{{ item.name }}</td>
@@ -62,10 +71,28 @@
               <td>{% if item.organization %}{{ item.organization.name }}{% else %}—{% endif %}</td>
               <td>{% if item.waste_type %}{{ item.waste_type.name }}{% else %}—{% endif %}</td>
               <td class="text-nowrap">{{ item.received_at|date:"d.m.Y H:i" }}</td>
+              <td class="small">
+                {% if check %}
+                  {% if check.severity == "ok" %}
+                    <span class="badge text-bg-success">OK {{ check.score }}%</span>
+                  {% elif check.severity == "warning" %}
+                    <span class="badge text-bg-warning">Предупр. {{ check.score }}%</span>
+                  {% else %}
+                    <span class="badge text-bg-danger">Проблема {{ check.score }}%</span>
+                  {% endif %}
+                  <div class="text-muted mt-1">Операций: {{ check.ops_count }}, измерений: {{ check.measures_count }}</div>
+                  {% if check.issues %}
+                    <div class="text-danger mt-1">{{ check.issues|join:"; " }}</div>
+                  {% endif %}
+                {% else %}
+                  —
+                {% endif %}
+              </td>
             </tr>
+            {% endwith %}
           {% empty %}
             <tr>
-              <td colspan="9" class="text-center text-muted py-5">Нет записей</td>
+              <td colspan="10" class="text-center text-muted py-5">Нет записей</td>
             </tr>
           {% endfor %}
         </tbody>

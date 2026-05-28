@@ -32,7 +32,7 @@ def api_integration(request):
                 "can_access_organizations": su or is_admin(user),
                 "can_access_batches": su or is_admin(user),
                 "can_access_users": su,
-                "can_access_modules": su or is_admin(user),
+                "can_access_modules": su,
                 "can_access_waste": su or is_admin(user),
                 "can_access_operations": su or is_ecologist(user),
                 "can_access_monitoring": su or is_ecologist(user),
