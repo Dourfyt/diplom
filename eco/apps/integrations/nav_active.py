@@ -19,6 +19,8 @@ def resolve_nav_active(request) -> str:
         return "monitoring"
     if path.startswith("/waste"):
         return "waste"
+    if path.startswith("/manage/data-control"):
+        return "data_control"
     if path.startswith("/manage/organizations"):
         return "organizations"
     if path.startswith("/manage/batches"):
@@ -39,6 +41,8 @@ def resolve_nav_active(request) -> str:
     if namespace == "administration":
         mapping = {
             "organizations": "organizations",
+            "organization_detail": "organizations",
+            "data_control": "data_control",
             "batches": "batches",
             "modules": "modules",
             "user_register": "users",

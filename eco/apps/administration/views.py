@@ -2,19 +2,33 @@
 Разделы администратора: справочники и учётные записи через REST API.
 """
 
-from collections import defaultdict
-
 from django.contrib import messages
+from django.http import Http404
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import FormView, ListView
+from django.views.generic import FormView, ListView, TemplateView
 
+from apps.administration.data_quality import (
+    attach_batch_integrity_checks,
+    compute_organization_summary,
+    load_cross_module_indexes,
+    organization_matches_filter,
+    SEVERITY_RANK,
+)
 from apps.administration.forms import UserRegisterForm
 from apps.integrations.auth_api import API_ROLE_LABELS, api_register
 from apps.integrations.exceptions import ApiError
 from apps.integrations.mixins import AdminRequiredMixin
 from apps.integrations.remote_data import BATCH_STATUS_LABELS, get_remote_service
 from apps.organizations.models import Organization
+
+ORGANIZATION_FILTER_CHOICES = [
+    ("", "Все организации"),
+    ("problems", "С замечаниями"),
+    ("no_batches", "Без партий"),
+    ("no_measurements", "Без измерений"),
+    ("incomplete_requisites", "Неполные реквизиты"),
+]
 
 
 class OrganizationListView(AdminRequiredMixin, ListView):
@@ -25,21 +39,127 @@ class OrganizationListView(AdminRequiredMixin, ListView):
 
     def get_queryset(self):
         q = self.request.GET.get("q", "").strip().lower()
-        items = get_remote_service().organizations_list()
-        if q:
-            items = [
-                o
-                for o in items
-                if q in o.name.lower()
-                or q in o.address.lower()
-                or q in o.email.lower()
-                or q in o.phone.lower()
-            ]
-        return items
+        filter_key = self.request.GET.get("filter", "").strip()
+
+        service = get_remote_service()
+        indexes = load_cross_module_indexes(service)
+
+        items = service.organizations_list()
+        result = []
+        for org in items:
+            summary = compute_organization_summary(org, indexes)
+            org.data_summary = summary
+            if not organization_matches_filter(summary, filter_key):
+                continue
+            if q:
+                hay = " ".join(
+                    [org.name, org.address, org.email, org.phone]
+                ).lower()
+                if q not in hay:
+                    continue
+            result.append(org)
+
+        result.sort(
+            key=lambda o: (
+                -SEVERITY_RANK[o.data_summary["severity"]],
+                o.name.lower(),
+            )
+        )
+        totals = {"ok": 0, "warning": 0, "problem": 0}
+        for org in result:
+            totals[org.data_summary["severity"]] += 1
+        self._org_integrity_totals = totals
+        return result
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["search_query"] = self.request.GET.get("q", "").strip()
+        ctx["selected_filter"] = self.request.GET.get("filter", "").strip()
+        ctx["filter_choices"] = ORGANIZATION_FILTER_CHOICES
+        ctx["org_integrity_totals"] = getattr(
+            self,
+            "_org_integrity_totals",
+            {"ok": 0, "warning": 0, "problem": 0},
+        )
+        return ctx
+
+
+class OrganizationDetailView(AdminRequiredMixin, TemplateView):
+    template_name = "administration/organization_detail.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        pk = int(kwargs["pk"])
+        service = get_remote_service()
+        org = service.organization_by_id(pk)
+        if org is None:
+            raise Http404
+
+        indexes = load_cross_module_indexes(service)
+        summary = compute_organization_summary(org, indexes)
+        batches = sorted(
+            indexes["batches_by_org"][pk],
+            key=lambda b: (b.received_at, b.pk),
+            reverse=True,
+        )
+        recent_movements = [
+            m
+            for m in indexes["movements"]
+            if m.organization.pk == pk
+        ][:10]
+        recent_measurements = [
+            m
+            for m in indexes["measurements"]
+            if m.organization.pk == pk
+        ][:10]
+
+        ctx.update(
+            {
+                "organization": org,
+                "summary": summary,
+                "batches": batches,
+                "recent_movements": recent_movements,
+                "recent_measurements": recent_measurements,
+            }
+        )
+        return ctx
+
+
+class DataControlView(AdminRequiredMixin, TemplateView):
+    template_name = "administration/data_control.html"
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        service = get_remote_service()
+        indexes = load_cross_module_indexes(service)
+
+        org_totals = {"ok": 0, "warning": 0, "problem": 0}
+        problematic = []
+        for org in service.organizations_list():
+            summary = compute_organization_summary(org, indexes)
+            org.data_summary = summary
+            org_totals[summary["severity"]] += 1
+            if summary["severity"] != "ok":
+                problematic.append(org)
+
+        problematic.sort(
+            key=lambda o: (
+                -SEVERITY_RANK[o.data_summary["severity"]],
+                o.name.lower(),
+            )
+        )
+
+        batch_totals = attach_batch_integrity_checks(indexes["batches"], indexes)
+
+        ctx["org_totals"] = org_totals
+        ctx["batch_totals"] = batch_totals
+        ctx["problematic_organizations"] = problematic
+        ctx["stats"] = {
+            "org_total": sum(org_totals.values()),
+            "org_with_issues": org_totals["warning"] + org_totals["problem"],
+            "batch_total": len(indexes["batches"]),
+            "batch_problems": batch_totals["problem"] + batch_totals["warning"],
+        }
         return ctx
 
 
@@ -63,63 +183,9 @@ class BatchListView(AdminRequiredMixin, ListView):
             BATCH_STATUS_LABELS.items()
         )
         batches = list(ctx.get("batches", []))
-        totals = self._attach_integrity_checks(batches)
-        ctx["integrity_totals"] = totals
+        indexes = load_cross_module_indexes(get_remote_service())
+        ctx["integrity_totals"] = attach_batch_integrity_checks(batches, indexes)
         return ctx
-
-    def _attach_integrity_checks(self, batches):
-        service = get_remote_service()
-        movements = service.movements_list()
-        measurements = service.measurements_list()
-
-        movement_count_by_org_waste = defaultdict(int)
-        movement_volume_by_org_waste = defaultdict(float)
-        for row in movements:
-            key = (row.organization.pk, row.waste_type.pk)
-            movement_count_by_org_waste[key] += 1
-            movement_volume_by_org_waste[key] += float(row.volume)
-
-        measurement_count_by_org = defaultdict(int)
-        for row in measurements:
-            measurement_count_by_org[row.organization.pk] += 1
-
-        totals = {"ok": 0, "warning": 0, "problem": 0}
-        for batch in batches:
-            org_id = batch.organization.pk if batch.organization else 0
-            waste_id = batch.waste_type.pk if batch.waste_type else 0
-
-            ops_count = movement_count_by_org_waste[(org_id, waste_id)]
-            measures_count = measurement_count_by_org[org_id]
-            ops_volume = movement_volume_by_org_waste[(org_id, waste_id)]
-            batch_volume = float(batch.volume_tons)
-
-            issues = []
-            if ops_count == 0:
-                issues.append("нет операций по этой партии отходов")
-            if measures_count == 0:
-                issues.append("нет измерений по организации")
-            if batch_volume > 0 and ops_volume < batch_volume * 0.5:
-                issues.append("объём операций заметно ниже объёма партии")
-
-            passed = 3 - len(issues)
-            score = int((passed / 3) * 100)
-
-            severity = "ok"
-            if len(issues) >= 2:
-                severity = "problem"
-            elif len(issues) == 1:
-                severity = "warning"
-            totals[severity] += 1
-
-            batch.integrity_check = {
-                "severity": severity,
-                "score": score,
-                "issues": issues,
-                "ops_count": ops_count,
-                "measures_count": measures_count,
-            }
-
-        return totals
 
 
 class ModuleListView(AdminRequiredMixin, ListView):

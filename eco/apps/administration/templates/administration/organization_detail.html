@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+
+{% block title %}{{ organization.name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+  <div>
+  <a class="btn btn-sm btn-outline-secondary mb-2" href="{% url 'administration:organizations' %}">← К списку организаций</a>
+    <h1 class="h3 fw-bold text-dark mb-0">{{ organization.name }}</h1>
+  </div>
+  {% if summary.severity == "ok" %}
+    <span class="badge text-bg-success fs-6">Контроль данных: OK {{ summary.score }}%</span>
+  {% elif summary.severity == "warning" %}
+    <span class="badge text-bg-warning fs-6">Предупреждение {{ summary.score }}%</span>
+  {% else %}
+    <span class="badge text-bg-danger fs-6">Проблема {{ summary.score }}%</span>
+  {% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Партии</div>
+        <div class="h4 mb-0">{{ summary.batch_count }}</div>
+        <div class="small text-muted">объём {{ summary.total_volume|floatformat:2 }} т</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Операции</div>
+        <div class="h4 mb-0">{{ summary.ops_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Измерения</div>
+        <div class="h4 mb-0">{{ summary.measures_count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="text-muted small">Проблемные партии</div>
+        <div class="h4 mb-0">{{ summary.batch_problems }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">Реквизиты</div>
+      <div class="card-body small">
+        <p class="mb-2"><span class="text-muted">Адрес:</span> {{ organization.address|default:"—" }}</p>
+        <p class="mb-2"><span class="text-muted">Email:</span> {{ organization.email|default:"—" }}</p>
+        <p class="mb-0"><span class="text-muted">Телефон:</span> {{ organization.phone|default:"—" }}</p>
+        {% if summary.issues %}
+          <hr>
+          <div class="text-danger">{{ summary.issues|join:"; " }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">Партии организации</div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0 align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>Код</th>
+                <th>Статус</th>
+                <th class="text-end">Объём, т</th>
+                <th>Контроль</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for batch in batches %}
+                <tr>
+                  <td class="font-monospace">{{ batch.code }}</td>
+                  <td>{{ batch.status_display }}</td>
+                  <td class="text-end">{{ batch.volume_tons }}</td>
+                  <td>
+                    {% with check=batch.integrity_check %}
+                      {% if check.severity == "ok" %}
+                        <span class="badge text-bg-success">OK</span>
+                      {% elif check.severity == "warning" %}
+                        <span class="badge text-bg-warning">!</span>
+                      {% else %}
+                        <span class="badge text-bg-danger">!!</span>
+                      {% endif %}
+                    {% endwith %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr><td colspan="4" class="text-muted text-center py-4">Партий нет</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">Последние операции (модуль «Операции»)</div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush small">
+          {% for m in recent_movements %}
+            <li class="list-group-item d-flex justify-content-between">
+              <span>{{ m.get_operation_type_display }} — {{ m.waste_type.name }}</span>
+              <span class="text-muted">{{ m.operation_date|date:"d.m.Y" }}, {{ m.volume }} т</span>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">Нет операций</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold">Последние измерения (модуль «Измерения»)</div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush small">
+          {% for m in recent_measurements %}
+            <li class="list-group-item d-flex justify-content-between">
+              <span>{{ m.indicator_type_display }}</span>
+              <span class="text-muted">{{ m.measurement_date|date:"d.m.Y" }} — {{ m.value }} {{ m.unit }}</span>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-muted">Нет измерений</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

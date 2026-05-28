@@ -12,6 +12,10 @@
   <a class="btn btn-sm {% if nav_active == 'batches' %}btn-light active{% else %}btn-outline-light{% endif %}"
      href="{% url 'administration:batches' %}" data-tour="nav-batches"{% if nav_active == 'batches' %} aria-current="page"{% endif %}>Партии</a>
 {% endif %}
+{% if can_access_data_control %}
+  <a class="btn btn-sm {% if nav_active == 'data_control' %}btn-light active{% else %}btn-outline-light{% endif %}"
+     href="{% url 'administration:data_control' %}" data-tour="nav-data-control"{% if nav_active == 'data_control' %} aria-current="page"{% endif %}>Контроль данных</a>
+{% endif %}
 {% if can_access_waste %}
   <a class="btn btn-sm {% if nav_active == 'waste' %}btn-light active{% else %}btn-outline-light{% endif %}"
      href="{% url 'waste:list' %}" data-tour="nav-waste"{% if nav_active == 'waste' %} aria-current="page"{% endif %}>Отходы</a>
