@@ -3,21 +3,33 @@
 {% block title %}Список операций{% endblock %}
 
 {% block content %}
-<div class="eco-page-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3" data-tour="eco-page-title">
+{% if api_error %}
+  <div class="alert alert-danger">
+    <strong>Нет данных с сервера платформы.</strong><br>{{ api_error }}
+  </div>
+{% endif %}
+{% include "includes/eco_manager_breadcrumb.html" %}
+<div class="eco-page-header{% if is_manager_only %} eco-page-header--manager{% endif %} d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3" data-tour="eco-page-title">
   <div>
     <h1 class="eco-page-title h3 mb-1">Движение отходов</h1>
     <p class="eco-page-lead mb-0">
-      Полный журнал операций по тоннажу (накопление, переработка, вывоз).
-      {% if use_remote_api %}Данные с сервера — только просмотр и экспорт.{% endif %}
-      Экологические показатели — во вкладке <strong>«Измерения»</strong>.
+      {% if is_manager_only %}
+        Просмотр журнала операций (тоннаж). Редактирование — у эколога.
+      {% else %}
+        Полный журнал операций по тоннажу (накопление, переработка, вывоз).
+        {% if use_remote_api %}Данные с сервера — только просмотр и экспорт.{% endif %}
+        Экологические показатели — во вкладке <strong>«Измерения»</strong>.
+      {% endif %}
     </p>
   </div>
   <div class="d-flex flex-wrap gap-2 justify-content-lg-end" data-tour="eco-page-actions">
     {# Тот же фильтр organization передаётся в экспорт — в файле будут те же строки, что и в отфильтрованном списке #}
-    <a class="btn btn-success" href="{% url 'operations:export_excel' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать Excel</a>
-    <a class="btn btn-outline-danger" href="{% url 'operations:export_pdf' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать PDF</a>
-    <a class="btn btn-outline-secondary" href="{% url 'operations:export_xml' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать XML</a>
-    {% if not use_remote_api %}
+    {% if can_edit_operations %}
+      <a class="btn btn-success" href="{% url 'operations:export_excel' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать Excel</a>
+      <a class="btn btn-outline-danger" href="{% url 'operations:export_pdf' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать PDF</a>
+      <a class="btn btn-outline-secondary" href="{% url 'operations:export_xml' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать XML</a>
+    {% endif %}
+    {% if can_edit_operations and not use_remote_api %}
       <a class="btn btn-primary" href="{% url 'operations:create' %}">+ Добавить операцию</a>
     {% endif %}
   </div>
@@ -85,11 +97,11 @@
               <td><span class="badge bg-secondary">{{ m.get_operation_type_display }}</span></td>
               <td class="text-end text-nowrap">{{ m.volume }}</td>
               <td class="text-end text-nowrap">
-                {% if not use_remote_api %}
+                {% if can_edit_operations and not use_remote_api %}
                   <a class="btn btn-sm btn-outline-primary" href="{% url 'operations:update' m.pk %}">Изменить</a>
                   <a class="btn btn-sm btn-outline-danger" href="{% url 'operations:delete' m.pk %}">Удалить</a>
                 {% else %}
-                  <span class="text-muted small">только чтение</span>
+                  <span class="text-muted small">{% if is_manager_only %}просмотр{% else %}только чтение{% endif %}</span>
                 {% endif %}
               </td>
             </tr>

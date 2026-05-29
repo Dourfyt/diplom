@@ -62,6 +62,13 @@ class EcologistRequiredMixin(GroupRequiredMixin):
     access_denied_message = "Раздел доступен только экологу."
 
 
+class EcologistOrManagerRequiredMixin(GroupRequiredMixin):
+    """Журналы и просмотр данных — эколог (с правкой) и руководитель (только чтение)."""
+
+    required_groups = (GROUP_ECOLOGIST, GROUP_MANAGER)
+    access_denied_message = "Раздел доступен экологу и руководителю."
+
+
 class ManagerRequiredMixin(GroupRequiredMixin):
     required_groups = (GROUP_MANAGER,)
     access_denied_message = "Раздел доступен только руководителю."

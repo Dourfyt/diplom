@@ -66,6 +66,144 @@ body {
   opacity: 0.9;
 }
 
+/* Навигация руководителя в шапке */
+.eco-nav-divider {
+  display: inline-block;
+  width: 1px;
+  height: 1.25rem;
+  background: rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.navbar-eco-actions--manager {
+  width: 100%;
+}
+
+@media (min-width: 992px) {
+  .navbar-eco--manager .navbar-eco-collapse > div {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+  }
+
+  .navbar-eco-actions--manager {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .navbar-eco--manager .navbar-eco-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .navbar-eco--manager .navbar-eco-tabs .btn {
+    flex-shrink: 0;
+  }
+
+  .navbar-eco--manager .navbar-eco-user {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .navbar-eco--manager .navbar-eco-utils {
+    flex-shrink: 0;
+    margin-left: 0;
+  }
+}
+
+.navbar-eco--manager .navbar-brand {
+  font-size: 1.05rem;
+}
+
+.navbar-eco--manager .module-nav-bar .btn {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.55rem;
+}
+
+.navbar-eco--manager .module-nav-bar > .small {
+  display: none;
+}
+
+.navbar-eco--manager .navbar-eco-utils .btn {
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+
+.navbar-eco--manager .navbar-eco-utils .btn-warning {
+  background: rgba(255, 193, 7, 0.92);
+  border: none;
+  color: #1a2e24;
+  font-weight: 600;
+}
+
+/* Хлебные крошки на подстраницах руководителя */
+.eco-breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+}
+
+.eco-breadcrumb-link {
+  color: var(--eco-green-dark);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.eco-breadcrumb-link:hover {
+  text-decoration: underline;
+}
+
+.eco-breadcrumb-sep {
+  color: var(--eco-muted);
+  user-select: none;
+}
+
+.eco-breadcrumb-current {
+  color: var(--eco-muted);
+}
+
+.eco-page-header--manager .eco-report-actions .btn {
+  border-radius: 999px;
+}
+
+@media (min-width: 1200px) {
+  .navbar-eco--manager .module-nav-bar {
+    margin-right: 0.25rem;
+    padding-right: 0.65rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .navbar-eco--manager .navbar-eco-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .navbar-eco--manager .navbar-eco-utils {
+    width: 100%;
+    justify-content: flex-end;
+    border-left: none;
+    padding-left: 0;
+    margin-left: 0;
+    padding-top: 0.35rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+}
+
 .module-nav-bar .btn {
   border-radius: 999px;
   font-size: 0.75rem;

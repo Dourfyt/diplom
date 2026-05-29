@@ -27,25 +27,32 @@
     </div>
   {% endif %}
 
-  <div class="eco-page-header d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3" data-tour="eco-page-title">
+  <div class="eco-page-header{% if is_manager_only %} eco-page-header--manager{% endif %} d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3" data-tour="eco-page-title">
     <div>
-      <h1 class="eco-page-title h3 mb-1">Аналитическая отчётность</h1>
+      <h1 class="eco-page-title h3 mb-1">{% if is_manager_only %}KPI и отчётность{% else %}Аналитическая отчётность{% endif %}</h1>
       <p class="eco-page-lead mb-0">
-        Отчёт за период {{ period_label }}
-        {% if remote_organization_name %} · {{ remote_organization_name }}{% endif %}
-        — план, классы опасности, детальные таблицы.
-        Оперативные задачи — во вкладке <strong>«Контроль»</strong>.
+        {% if is_manager_only %}
+          Сводка для руководителя за период {{ period_label }}
+          {% if remote_organization_name %} · {{ remote_organization_name }}{% endif %}
+          — план, классы опасности, объёмы. Только просмотр.
+        {% else %}
+          Отчёт за период {{ period_label }}
+          {% if remote_organization_name %} · {{ remote_organization_name }}{% endif %}
+          — план, классы опасности, детальные таблицы.
+          Оперативные задачи — во вкладке <strong>«Контроль»</strong>.
+        {% endif %}
       </p>
     </div>
-    <div class="d-flex flex-wrap gap-2" data-tour="eco-report-actions">
-      <a class="btn btn-outline-secondary btn-sm" href="{% url 'dashboard' %}{% if filter_query %}?{{ filter_query }}{% endif %}">← Контроль</a>
-      {% if can_access_operations %}
-        <a class="btn btn-success btn-sm" href="{% url 'operations:export_excel' %}{% if filter_query %}?{{ filter_query }}{% endif %}"
-           title="Операции за период и организацию из фильтра выше">Excel</a>
-        <a class="btn btn-outline-danger btn-sm" href="{% url 'operations:export_pdf' %}{% if filter_query %}?{{ filter_query }}{% endif %}"
-           title="Операции за период и организацию из фильтра выше">PDF</a>
-        <a class="btn btn-outline-secondary btn-sm" href="{% url 'operations:export_xml' %}{% if filter_query %}?{{ filter_query }}{% endif %}"
-           title="Операции за период и организацию из фильтра выше">XML</a>
+    <div class="d-flex flex-wrap gap-2 eco-report-actions" data-tour="eco-report-actions">
+      {% if can_access_control %}
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'dashboard' %}{% if filter_query %}?{{ filter_query }}{% endif %}">← Контроль</a>
+      {% endif %}
+      {% if can_access_reporting_export %}
+        <a class="btn btn-success btn-sm" href="{% url 'reporting_export_excel' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Excel KPI</a>
+        <a class="btn btn-outline-danger btn-sm" href="{% url 'reporting_export_pdf' %}{% if filter_query %}?{{ filter_query }}{% endif %}">PDF KPI</a>
+      {% endif %}
+      {% if can_access_operations and not is_manager_only %}
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'operations:export_excel' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Excel операций</a>
         <a class="btn btn-outline-secondary btn-sm" href="{% url 'operations:list' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Журнал операций</a>
       {% endif %}
     </div>
@@ -80,6 +87,39 @@
       </form>
     </div>
   </div>
+
+  {% if is_manager_only and manager_insights %}
+    <div class="card eco-card mb-4 border-start border-4 border-warning" data-tour="eco-manager-insights">
+      <div class="card-header bg-white fw-semibold">Обзор для руководителя</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <p class="small text-muted mb-1">Доля переработки за период</p>
+            <p class="fs-4 fw-bold text-success mb-0">{{ manager_insights.recycling_percent }}%</p>
+          </div>
+          <div class="col-md-4">
+            <p class="small text-muted mb-1">Превышения норматива</p>
+            <p class="fs-4 fw-bold {% if exceed_count %}text-danger{% else %}text-success{% endif %} mb-0">{{ exceed_count }}</p>
+          </div>
+          <div class="col-md-4">
+            <p class="small text-muted mb-1">Выполнение плана</p>
+            <p class="fs-4 fw-bold text-info mb-0">{{ remote_plan_completion }}%</p>
+          </div>
+        </div>
+        {% if manager_insights.recent_exceedances %}
+          <p class="small text-muted mt-3 mb-2">Последние превышения:</p>
+          <ul class="list-group list-group-flush small">
+            {% for m in manager_insights.recent_exceedances %}
+              <li class="list-group-item px-0 d-flex justify-content-between">
+                <span>{{ m.organization.name }} — {{ m.indicator_type_display }}</span>
+                <span class="text-danger">{{ m.value }} {{ m.unit }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
 
   <h2 class="h6 text-uppercase text-muted fw-semibold mb-3">Показатели платформы (сводка сервера)</h2>
   <div class="row g-3 mb-4">
@@ -152,7 +192,7 @@
   {% endif %}
 
   <div class="row g-4 mb-4">
-    <div class="col-lg-7">
+    <div class="col-lg-{% if is_manager_only %}7{% else %}7{% endif %}">
       <div class="card chart-card chart-box h-100">
         <div class="card-body d-flex flex-column">
           <h2 class="h5 card-title">Объём отходов по классу опасности</h2>
@@ -180,7 +220,11 @@
                 <tbody>
                   {% for row in hazard_rows %}
                     <tr>
-                      <td>{{ row.hazard_label }}</td>
+                      <td>
+                        <span class="badge hazard-class-badge hazard-class-{{ row.hazard_class }}">
+                          {{ row.hazard_label }}
+                        </span>
+                      </td>
                       <td class="text-end">{{ row.batch_count }}</td>
                       <td class="text-end">{{ row.volume_tons }}</td>
                     </tr>
@@ -194,10 +238,36 @@
     </div>
   </div>
 
+  {% if is_manager_only and chart_operations.labels %}
+    <div class="row g-4 mb-4">
+      <div class="col-lg-5">
+        <div class="card chart-card h-100">
+          <div class="card-body">
+            <h2 class="h5 card-title">Операции за период по типу</h2>
+            <p class="eco-page-lead small">Распределение записей журнала операций (не объём в тоннах).</p>
+            <div style="min-height: 240px;">
+              <canvas id="chartOperations"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7 d-flex align-items-center">
+        <div class="small text-muted">
+          Полные журналы — во вкладках <strong>«Операции»</strong> и <strong>«Измерения»</strong> (только просмотр).
+          Сводку KPI можно скачать в Excel или PDF кнопками выше.
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
   <h2 class="h6 text-uppercase text-muted fw-semibold mb-3">Детализация за выбранный период</h2>
   <p class="small text-muted mb-3">
-    Краткий просмотр (до 15 строк). Полные журналы — во вкладках «Операции» и «Измерения».
-    {% if can_access_operations %}Экспорт Excel, PDF и XML — по операциям с теми же датами и организацией, что в фильтре.{% endif %}
+    {% if is_manager_only %}
+      Краткий просмотр показателей (до 15 строк в таблице). Ввод и правки данных выполняет эколог.
+    {% else %}
+      Краткий просмотр (до 15 строк). Полные журналы — во вкладках «Операции» и «Измерения».
+      {% if can_access_operations %}Экспорт Excel, PDF и XML — по операциям с теми же датами и организацией, что в фильтре.{% endif %}
+    {% endif %}
   </p>
   <div class="row g-4" data-tour="eco-report-detail">
     <div class="col-lg-4">
@@ -305,6 +375,7 @@
   </div>
 
   {{ chart_hazard|json_script:"chart-hazard-data" }}
+  {% if chart_operations %}{{ chart_operations|json_script:"chart-operations-data" }}{% endif %}
 {% endblock %}
 
 {% block extra_js %}
@@ -319,6 +390,19 @@
       return n.toLocaleString('ru-RU', { maximumFractionDigits: 3 });
     };
 
+    // Те же цвета, что у бейджей класса опасности в справочнике (eco-ui.css)
+    const hazardBarColors = {
+      0: 'rgba(134, 142, 148, 0.88)',
+      1: 'rgba(176, 42, 55, 0.88)',
+      2: 'rgba(232, 89, 12, 0.88)',
+      3: 'rgba(245, 159, 0, 0.88)',
+      4: 'rgba(255, 224, 102, 0.95)',
+      5: 'rgba(47, 158, 68, 0.88)',
+    };
+    const barColors = (hazardData.classes || []).map(
+      (cls) => hazardBarColors[cls] || hazardBarColors[0]
+    );
+
     new Chart(document.getElementById('chartHazard'), {
       type: 'bar',
       data: {
@@ -326,7 +410,7 @@
         datasets: [{
           label: 'Объём, т',
           data: hazardData.volumes,
-          backgroundColor: 'rgba(25, 135, 84, 0.7)',
+          backgroundColor: barColors.length ? barColors : hazardBarColors[0],
           borderRadius: 8
         }]
       },
@@ -334,7 +418,7 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { display: false },
           tooltip: {
             callbacks: {
               afterLabel: (ctx) => {
@@ -352,6 +436,33 @@
         }
       }
     });
+
+    const opsEl = document.getElementById('chart-operations-data');
+    const opsCanvas = document.getElementById('chartOperations');
+    if (opsEl && opsCanvas) {
+      const opsData = JSON.parse(opsEl.textContent);
+      new Chart(opsCanvas, {
+        type: 'doughnut',
+        data: {
+          labels: opsData.labels,
+          datasets: [{
+            data: opsData.values,
+            backgroundColor: [
+              'rgba(255, 193, 7, 0.85)',
+              'rgba(25, 135, 84, 0.85)',
+              'rgba(108, 117, 125, 0.85)',
+              'rgba(13, 110, 253, 0.85)',
+            ],
+            borderWidth: 1,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } },
+        },
+      });
+    }
   })();
 </script>
 {% endblock %}

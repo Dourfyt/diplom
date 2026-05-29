@@ -1,38 +1,60 @@
-{% if can_access_dashboard %}
-  <a class="btn btn-sm {% if nav_active == 'dashboard' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'dashboard' %}" data-tour="nav-dashboard"{% if nav_active == 'dashboard' %} aria-current="page"{% endif %}>Контроль</a>
+{% if is_manager_only %}
   <a class="btn btn-sm {% if nav_active == 'reporting' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'reporting' %}" data-tour="nav-reporting"{% if nav_active == 'reporting' %} aria-current="page"{% endif %}>Отчётность</a>
-{% endif %}
-{% if can_access_organizations %}
-  <a class="btn btn-sm {% if nav_active == 'organizations' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'administration:organizations' %}" data-tour="nav-organizations"{% if nav_active == 'organizations' %} aria-current="page"{% endif %}>Организации</a>
-{% endif %}
-{% if can_access_batches %}
-  <a class="btn btn-sm {% if nav_active == 'batches' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'administration:batches' %}" data-tour="nav-batches"{% if nav_active == 'batches' %} aria-current="page"{% endif %}>Партии</a>
-{% endif %}
-{% if can_access_data_control %}
-  <a class="btn btn-sm {% if nav_active == 'data_control' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'administration:data_control' %}" data-tour="nav-data-control"{% if nav_active == 'data_control' %} aria-current="page"{% endif %}>Контроль данных</a>
-{% endif %}
-{% if can_access_waste %}
-  <a class="btn btn-sm {% if nav_active == 'waste' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'waste:list' %}" data-tour="nav-waste"{% if nav_active == 'waste' %} aria-current="page"{% endif %}>Отходы</a>
-{% endif %}
-{% if can_access_users %}
-  <a class="btn btn-sm {% if nav_active == 'users' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'administration:user_register' %}" data-tour="nav-users"{% if nav_active == 'users' %} aria-current="page"{% endif %}>Пользователи</a>
-{% endif %}
-{% if can_access_modules %}
-  <a class="btn btn-sm {% if nav_active == 'modules' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'administration:modules' %}" data-tour="nav-modules"{% if nav_active == 'modules' %} aria-current="page"{% endif %}>Модули</a>
-{% endif %}
-{% if can_access_operations %}
-  <a class="btn btn-sm {% if nav_active == 'operations' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'operations:list' %}" data-tour="nav-operations"{% if nav_active == 'operations' %} aria-current="page"{% endif %}>Операции</a>
-{% endif %}
-{% if can_access_monitoring %}
-  <a class="btn btn-sm {% if nav_active == 'monitoring' %}btn-light active{% else %}btn-outline-light{% endif %}"
-     href="{% url 'monitoring:list' %}" data-tour="nav-monitoring"{% if nav_active == 'monitoring' %} aria-current="page"{% endif %}>Измерения</a>
+     href="{% url 'reporting' %}" data-tour="nav-reporting"{% if nav_active == 'reporting' %} aria-current="page"{% endif %}>KPI</a>
+  {% if can_access_batches_readonly or can_access_operations or can_access_monitoring %}
+    <span class="eco-nav-divider d-none d-md-inline" aria-hidden="true"></span>
+  {% endif %}
+  {% if can_access_batches_readonly %}
+    <a class="btn btn-sm {% if nav_active == 'manager_batches' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'manager_batches' %}"{% if nav_active == 'manager_batches' %} aria-current="page"{% endif %}>Партии</a>
+  {% endif %}
+  {% if can_access_operations %}
+    <a class="btn btn-sm {% if nav_active == 'operations' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'operations:list' %}"{% if nav_active == 'operations' %} aria-current="page"{% endif %}>Операции</a>
+  {% endif %}
+  {% if can_access_monitoring %}
+    <a class="btn btn-sm {% if nav_active == 'monitoring' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'monitoring:list' %}"{% if nav_active == 'monitoring' %} aria-current="page"{% endif %}>Измерения</a>
+  {% endif %}
+{% else %}
+  {% if can_access_control %}
+    <a class="btn btn-sm {% if nav_active == 'dashboard' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'dashboard' %}" data-tour="nav-dashboard"{% if nav_active == 'dashboard' %} aria-current="page"{% endif %}>Контроль</a>
+  {% endif %}
+  {% if can_access_reporting %}
+    <a class="btn btn-sm {% if nav_active == 'reporting' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'reporting' %}" data-tour="nav-reporting"{% if nav_active == 'reporting' %} aria-current="page"{% endif %}>Отчётность</a>
+  {% endif %}
+  {% if can_access_organizations %}
+    <a class="btn btn-sm {% if nav_active == 'organizations' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'administration:organizations' %}" data-tour="nav-organizations"{% if nav_active == 'organizations' %} aria-current="page"{% endif %}>Организации</a>
+  {% endif %}
+  {% if can_access_batches %}
+    <a class="btn btn-sm {% if nav_active == 'batches' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'administration:batches' %}" data-tour="nav-batches"{% if nav_active == 'batches' %} aria-current="page"{% endif %}>Партии</a>
+  {% endif %}
+  {% if can_access_data_control %}
+    <a class="btn btn-sm {% if nav_active == 'data_control' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'administration:data_control' %}" data-tour="nav-data-control"{% if nav_active == 'data_control' %} aria-current="page"{% endif %}>Контроль данных</a>
+  {% endif %}
+  {% if can_access_waste %}
+    <a class="btn btn-sm {% if nav_active == 'waste' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'waste:list' %}" data-tour="nav-waste"{% if nav_active == 'waste' %} aria-current="page"{% endif %}>Отходы</a>
+  {% endif %}
+  {% if can_access_users %}
+    <a class="btn btn-sm {% if nav_active == 'users' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'administration:user_register' %}" data-tour="nav-users"{% if nav_active == 'users' %} aria-current="page"{% endif %}>Пользователи</a>
+  {% endif %}
+  {% if can_access_modules %}
+    <a class="btn btn-sm {% if nav_active == 'modules' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'administration:modules' %}" data-tour="nav-modules"{% if nav_active == 'modules' %} aria-current="page"{% endif %}>Модули</a>
+  {% endif %}
+  {% if can_access_operations %}
+    <a class="btn btn-sm {% if nav_active == 'operations' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'operations:list' %}" data-tour="nav-operations"{% if nav_active == 'operations' %} aria-current="page"{% endif %}>Операции</a>
+  {% endif %}
+  {% if can_access_monitoring %}
+    <a class="btn btn-sm {% if nav_active == 'monitoring' %}btn-light active{% else %}btn-outline-light{% endif %}"
+       href="{% url 'monitoring:list' %}" data-tour="nav-monitoring"{% if nav_active == 'monitoring' %} aria-current="page"{% endif %}>Измерения</a>
+  {% endif %}
 {% endif %}

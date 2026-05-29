@@ -26,7 +26,12 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from apps.integrations.mixins import EcologistRequiredMixin, RemoteApiReadOnlyMixin
+from apps.integrations.exceptions import ApiError
+from apps.integrations.mixins import (
+    EcologistOrManagerRequiredMixin,
+    EcologistRequiredMixin,
+    RemoteApiReadOnlyMixin,
+)
 from apps.integrations.remote_data import get_remote_service, movements_for_request
 from apps.operations.forms import MovementForm
 from apps.operations.models import Movement
@@ -54,7 +59,7 @@ def movement_list_querystring(request) -> str:
     return urlencode(params)
 
 
-class MovementListView(EcologistRequiredMixin, ListView):
+class MovementListView(EcologistOrManagerRequiredMixin, ListView):
     """Список операций: пагинация, фильтр по организации, поиск по названию организации и отхода."""
 
     model = Movement
@@ -63,11 +68,21 @@ class MovementListView(EcologistRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        return movements_queryset_for_request(self.request)
+        self.api_error = None
+        try:
+            return movements_queryset_for_request(self.request)
+        except ApiError as exc:
+            self.api_error = str(exc)
+            return []
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["organizations"] = get_remote_service().organizations_list()
+        ctx["api_error"] = getattr(self, "api_error", None)
+        try:
+            ctx["organizations"] = get_remote_service().organizations_list()
+        except ApiError as exc:
+            ctx["api_error"] = ctx["api_error"] or str(exc)
+            ctx["organizations"] = []
         ctx["selected_organization"] = self.request.GET.get("organization") or ""
         ctx["search_query"] = self.request.GET.get("q", "").strip()
         ctx["date_from"] = self.request.GET.get("date_from", "").strip()

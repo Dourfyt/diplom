@@ -3,12 +3,16 @@ from django.conf import settings
 from apps.integrations.module_links import get_sibling_modules
 from apps.integrations.nav_active import resolve_nav_active
 from apps.integrations.roles import (
+    can_access_control_dashboard,
     can_access_dashboard,
+    can_access_reporting_dashboard,
     get_home_redirect_url_for_user,
     get_user_role_label,
     is_admin,
     is_ecologist,
     is_manager,
+    is_manager_only,
+    can_edit_operations_data,
 )
 
 
@@ -35,9 +39,16 @@ def api_integration(request):
                 "can_access_users": su,
                 "can_access_modules": su,
                 "can_access_waste": su or is_admin(user),
-                "can_access_operations": su or is_ecologist(user),
-                "can_access_monitoring": su or is_ecologist(user),
+                "can_access_operations": su or is_ecologist(user) or is_manager(user),
+                "can_access_monitoring": su or is_ecologist(user) or is_manager(user),
+                "can_access_batches_readonly": su or is_admin(user) or is_manager(user),
+                "can_edit_operations": su or can_edit_operations_data(user),
+                "can_edit_monitoring": su or can_edit_operations_data(user),
+                "can_access_reporting_export": su or is_manager(user) or is_ecologist(user),
                 "can_access_dashboard": su or can_access_dashboard(user),
+                "can_access_control": su or can_access_control_dashboard(user),
+                "can_access_reporting": su or can_access_reporting_dashboard(user),
+                "is_manager_only": is_manager_only(user),
             }
         )
     else:
@@ -54,7 +65,14 @@ def api_integration(request):
                 "can_access_waste": False,
                 "can_access_operations": False,
                 "can_access_monitoring": False,
+                "can_access_batches_readonly": False,
+                "can_edit_operations": False,
+                "can_edit_monitoring": False,
+                "can_access_reporting_export": False,
                 "can_access_dashboard": False,
+                "can_access_control": False,
+                "can_access_reporting": False,
+                "is_manager_only": False,
             }
         )
     return ctx

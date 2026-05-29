@@ -52,6 +52,30 @@ def can_access_dashboard(user: User) -> bool:
     return user_has_any_group(user, GROUP_ECOLOGIST, GROUP_MANAGER)
 
 
+def can_access_control_dashboard(user: User) -> bool:
+    """Оперативный контроль — задачи эколога (превышения, пробелы в измерениях)."""
+    return user_has_any_group(user, GROUP_ECOLOGIST)
+
+
+def can_access_reporting_dashboard(user: User) -> bool:
+    """Аналитическая отчётность — KPI и сводки для эколога и руководителя."""
+    return user_has_any_group(user, GROUP_ECOLOGIST, GROUP_MANAGER)
+
+
+def can_edit_operations_data(user: User) -> bool:
+    """Ввод и правка операций и измерений — только эколог."""
+    return user_has_any_group(user, GROUP_ECOLOGIST)
+
+
+def is_manager_only(user: User) -> bool:
+    """Руководитель без роли эколога — только просмотр отчётности."""
+    if not user.is_authenticated or user.is_superuser:
+        return False
+    if is_ecologist(user) or is_admin(user):
+        return False
+    return is_manager(user)
+
+
 def get_user_role_label(user: User) -> str:
     if not user.is_authenticated:
         return ""
@@ -73,7 +97,7 @@ def get_home_url_name_for_user(user: User) -> str:
     if is_ecologist(user):
         return "dashboard"
     if is_manager(user):
-        return "dashboard"
+        return "reporting"
     return "login"
 
 
