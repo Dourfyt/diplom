@@ -11,7 +11,7 @@ def require_roles(*allowed_roles: str):
         if current_user.role not in allowed:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Недостаточно прав: требуется одна из ролей {sorted(allowed)}",
+                detail="Недостаточно прав",
             )
         return current_user
 

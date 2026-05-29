@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.database import get_db
 from app.models import User
 from app.schemas import TokenOut, UserLogin, UserOut, UserPasswordChange, UserRegister
@@ -13,13 +14,13 @@ router = APIRouter(tags=["auth"])
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
 def register(body: UserRegister, db: Session = Depends(get_db)):
-    # bootstrap: первый пользователь может быть создан без admin
-    users_count = db.query(User).count()
-    if users_count > 0:
-        raise HTTPException(
-            status_code=403,
-            detail="Публичная регистрация отключена. Используйте /api/v1/admin/users",
-        )
+    if not settings.allow_public_registration:
+        users_count = db.query(User).count()
+        if users_count > 0:
+            raise HTTPException(
+                status_code=403,
+                detail="Публичная регистрация отключена. Используйте /api/v1/admin/users",
+            )
     email = body.email.strip().lower()
     if db.query(User).filter(User.email == email).first():
         raise HTTPException(status_code=400, detail="Пользователь с таким email уже существует")
@@ -47,7 +48,11 @@ def login(body: UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Учётная запись деактивирована")
     log_action(db, user=user, action="login", entity_type="auth", details="Успешный вход")
     db.commit()
-    return TokenOut(access_token=create_access_token(user.id))
+    return TokenOut(
+        access_token=create_access_token(user.id),
+        role=user.role,
+        full_name=user.full_name,
+    )
 
 
 @router.get("/user", response_model=UserOut)

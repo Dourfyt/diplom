@@ -34,6 +34,10 @@ services:
         http://178.57.217.79:5173,
         http://178.57.217.79:8001
       JWT_SECRET: ${JWT_SECRET:-waste-complex-dev-secret-change-in-production}
+      FILE_STORAGE_ROOT: /app/storage
+      ALLOW_PUBLIC_REGISTRATION: "true"
+    volumes:
+      - api_storage:/app/storage
     depends_on:
       db:
         condition: service_healthy
@@ -89,4 +93,5 @@ services:
 
 volumes:
   pgdata:
+  api_storage:
   eco_sqlite:

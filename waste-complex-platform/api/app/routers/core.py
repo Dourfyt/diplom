@@ -3,7 +3,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.database import engine, get_db
-from app.models import Organization, User, WasteBatch, WasteType
+from app.models import Department, Organization, User, WasteType
 from app.schemas import (
     DepartmentOut,
     HealthOut,
@@ -131,11 +131,10 @@ def list_departments(
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    names = (
-        db.query(WasteBatch.source_department)
-        .filter(WasteBatch.source_department != "")
-        .distinct()
-        .order_by(WasteBatch.source_department)
-        .all()
-    )
-    return [DepartmentOut(name=row[0]) for row in names]
+    rows = db.query(Department).order_by(Department.name).all()
+    if rows:
+        return rows
+    return [
+        DepartmentOut(id=1, code="CEH-1", name="Цех-1"),
+        DepartmentOut(id=2, code="CEH-2", name="Цех-2"),
+    ]

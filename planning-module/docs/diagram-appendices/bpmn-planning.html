@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>BPMN — Процесс планирования переработки</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background:#f8fafc; }
+    h1 { font-size: 22px; margin-bottom: 12px; }
+    svg { width: 100%; max-width: 1400px; height: 760px; background: white; border: 1px solid #cbd5e1; }
+    .lane { fill: #f1f5f9; stroke: #94a3b8; }
+    .task { fill: #dbeafe; stroke: #1d4ed8; rx: 8; ry: 8; }
+    .event { fill: #dcfce7; stroke: #15803d; }
+    .gateway { fill: #fef3c7; stroke: #b45309; }
+    .label { font-size: 13px; fill: #0f172a; }
+    .title { font-size: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>BPMN-диаграмма процесса планирования переработки отходов</h1>
+  <svg viewBox="0 0 1400 760" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+      </marker>
+    </defs>
+    <rect class="lane" x="20" y="60" width="1360" height="150"/>
+    <text x="35" y="85" class="title">Диспетчер</text>
+    <rect class="lane" x="20" y="220" width="1360" height="220"/>
+    <text x="35" y="245" class="title">Модуль planning-module</text>
+    <rect class="lane" x="20" y="450" width="1360" height="270"/>
+    <text x="35" y="475" class="title">Производство / Технолог</text>
+
+    <circle class="event" cx="90" cy="135" r="22"/><text class="label" x="62" y="172">Старт</text>
+    <rect class="task" x="150" y="105" width="180" height="60"/><text class="label" x="170" y="140">Ввод сменных данных</text>
+    <rect class="task" x="360" y="105" width="200" height="60"/><text class="label" x="385" y="140">Подтверждение ограничений</text>
+
+    <rect class="task" x="220" y="290" width="210" height="70"/><text class="label" x="240" y="330">Расчёт приоритетов партий</text>
+    <rect class="task" x="470" y="290" width="210" height="70"/><text class="label" x="497" y="330">Построение расписания</text>
+    <polygon class="gateway" points="740,325 780,285 820,325 780,365"/><text class="label" x="728" y="385">Конфликты?</text>
+    <rect class="task" x="860" y="290" width="210" height="70"/><text class="label" x="885" y="330">Сценарная симуляция</text>
+    <rect class="task" x="1110" y="290" width="210" height="70"/><text class="label" x="1135" y="330">Фиксация версии плана</text>
+
+    <rect class="task" x="980" y="535" width="230" height="70"/><text class="label" x="1002" y="575">Выполнение и мониторинг</text>
+    <circle class="event" cx="1270" cy="570" r="24"/><circle cx="1270" cy="570" r="18" fill="none" stroke="#15803d"/><text class="label" x="1238" y="610">Завершение</text>
+
+    <line x1="112" y1="135" x2="150" y2="135" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="330" y1="135" x2="360" y2="135" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="560" y1="135" x2="560" y2="290" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="430" y1="325" x2="470" y2="325" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="680" y1="325" x2="740" y2="325" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="820" y1="325" x2="860" y2="325" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="1070" y1="325" x2="1110" y2="325" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="1210" y1="360" x2="1210" y2="535" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="1210" y1="570" x2="1246" y2="570" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="780" y1="365" x2="780" y2="415" stroke="#334155"/>
+    <line x1="780" y1="415" x2="575" y2="415" stroke="#334155"/>
+    <line x1="575" y1="415" x2="575" y2="360" stroke="#334155" marker-end="url(#arr)"/>
+    <text class="label" x="827" y="317">нет</text>
+    <text class="label" x="786" y="406">да</text>
+  </svg>
+</body>
+</html>

@@ -69,6 +69,8 @@ class UserAdminUpdate(BaseModel):
 class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    role: str | None = None
+    full_name: str | None = None
 
 
 # ——— Organizations / waste types ———
@@ -110,10 +112,27 @@ class WasteTypeImportResult(BaseModel):
 
 
 class DepartmentOut(BaseModel):
+    id: int
+    code: str
     name: str
+
+    model_config = {"from_attributes": True}
 
 
 # ——— Batches (shared) ———
+
+
+class BatchDocumentOut(BaseModel):
+    id: int
+    batch_id: int
+    document_type: str
+    file_name: str
+    content_type: str
+    file_size: int
+    uploaded_by: int | None = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
 
 
 class BatchOut(BaseModel):
@@ -128,19 +147,31 @@ class BatchOut(BaseModel):
     storage_deadline_hours: float
     received_at: datetime
     status: str
-    economic_value: float
-    route_codes: str
+    economic_value: float = 0
+    route_codes: str = ""
     organization_id: int | None = None
     waste_type_id: int | None = None
     source_department: str = ""
+    composition: str = ""
     qr_token: str = ""
     priority_score: float | None = None
     storage_risk_hours: float | None = None
     processed_tons: float | None = None
     disposed_tons: float | None = None
     remaining_tons: float | None = None
+    documents: list[BatchDocumentOut] = []
 
     model_config = {"from_attributes": True}
+
+
+class ClassificationHistoryOut(BaseModel):
+    operation_type: str
+    operation_at: datetime
+    user_id: int | None = None
+    user_name: str | None = None
+    old_hazard_class: int | None = None
+    new_hazard_class: int | None = None
+    notes: str = ""
 
 
 class BatchBalanceOut(BaseModel):
@@ -176,6 +207,7 @@ class BatchCreate(BaseModel):
     organization_id: int | None = None
     waste_type_id: int | None = None
     source_department: str = ""
+    composition: str = ""
     classification_note: str = ""
 
 
@@ -405,6 +437,32 @@ class ReportingDashboard(BaseModel):
     plan_completion_percent: float
     measurements_count: int
     operations_count: int
+    pending_classification_count: int = 0
+    overdue_storage_count: int = 0
+    batches_today_count: int = 0
+    rejected_count: int = 0
+
+
+class HazardSummaryOut(BaseModel):
+    hazard_class: int
+    batch_count: int
+    volume_tons: float
+
+
+class StoredReportOut(BaseModel):
+    id: int
+    report_type: str
+    title: str
+    date_from: datetime | None = None
+    date_to: datetime | None = None
+    filters_json: str = "{}"
+    file_name: str
+    content_type: str
+    file_size: int
+    generated_by: int | None = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
 
 
 class AuditLogOut(BaseModel):

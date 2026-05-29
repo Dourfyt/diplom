@@ -9,6 +9,7 @@ from sqlalchemy import text
 from app.database import Base, SessionLocal, engine
 from app.migrate import migrate_schema
 from app.models import (
+    Department,
     EnvironmentalMeasurement,
     Organization,
     PlanStatus,
@@ -56,6 +57,10 @@ def seed():
         )
         db.add(org)
         db.flush()
+
+        for code, name in (("CEH-1", "Цех-1"), ("CEH-2", "Цех-2"), ("CEH-3", "Цех-3")):
+            if not db.query(Department).filter(Department.code == code).first():
+                db.add(Department(code=code, name=name))
 
         users = [
             User(

@@ -1,10 +1,12 @@
 """Единая схема БД программного комплекса (учёт · планирование · мониторинг · отчётность)."""
 
 import enum
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
+    Date,
     DateTime,
     Enum,
     Float,
@@ -50,6 +52,14 @@ class Organization(Base):
     measurements: Mapped[list["EnvironmentalMeasurement"]] = relationship(
         back_populates="organization"
     )
+
+
+class Department(Base):
+    __tablename__ = "departments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    code: Mapped[str] = mapped_column(String(32), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(128), unique=True)
 
 
 class WasteType(Base):
@@ -119,6 +129,7 @@ class WasteBatch(Base):
     source_department: Mapped[str] = mapped_column(String(128), default="")
     qr_token: Mapped[str] = mapped_column(String(64), default="", index=True)
     classification_note: Mapped[str] = mapped_column(Text, default="")
+    composition: Mapped[str] = mapped_column(Text, default="")
 
     organization: Mapped["Organization | None"] = relationship(back_populates="batches")
     waste_type: Mapped["WasteType | None"] = relationship(back_populates="batches")
@@ -261,11 +272,37 @@ class BatchDocument(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     batch_id: Mapped[int] = mapped_column(ForeignKey("waste_batches.id", ondelete="CASCADE"))
-    doc_type: Mapped[str] = mapped_column(String(64))
+    document_type: Mapped[str] = mapped_column(String(32), default="confirming")
+    doc_type: Mapped[str] = mapped_column(String(64), default="")
     doc_number: Mapped[str] = mapped_column(String(64), default="")
+    file_name: Mapped[str] = mapped_column(String(255), default="")
+    content_type: Mapped[str] = mapped_column(String(128), default="")
+    file_size: Mapped[int] = mapped_column(BigInteger, default=0)
+    storage_path: Mapped[str] = mapped_column(String(512), default="")
+    uploaded_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     batch: Mapped["WasteBatch"] = relationship(back_populates="documents")
+    uploader: Mapped["User | None"] = relationship()
+
+
+class StoredReport(Base):
+    __tablename__ = "stored_reports"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    report_type: Mapped[str] = mapped_column(String(64))
+    title: Mapped[str] = mapped_column(String(255))
+    date_from: Mapped[date | None] = mapped_column(Date, nullable=True)
+    date_to: Mapped[date | None] = mapped_column(Date, nullable=True)
+    filters_json: Mapped[str] = mapped_column(Text, default="{}")
+    file_name: Mapped[str] = mapped_column(String(255))
+    content_type: Mapped[str] = mapped_column(String(128), default="")
+    file_size: Mapped[int] = mapped_column(BigInteger, default=0)
+    storage_path: Mapped[str] = mapped_column(String(512))
+    generated_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    author: Mapped["User | None"] = relationship()
 
 
 # ——— Отчётность (Журавлёва) ———

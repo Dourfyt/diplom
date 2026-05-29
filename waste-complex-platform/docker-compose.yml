@@ -20,6 +20,10 @@ services:
     environment:
       DATABASE_URL: postgresql://complex:complex@db:5432/waste_complex
       CORS_ORIGINS: http://localhost:8080,http://localhost:5173,http://localhost:3000
+      FILE_STORAGE_ROOT: /app/storage
+      ALLOW_PUBLIC_REGISTRATION: "true"
+    volumes:
+      - api_storage:/app/storage
     depends_on:
       db:
         condition: service_healthy
@@ -35,3 +39,4 @@ services:
 
 volumes:
   pgdata:
+  api_storage:

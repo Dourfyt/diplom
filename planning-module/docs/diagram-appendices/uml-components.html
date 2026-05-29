@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>UML Компоненты planning-module</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 24px; background:#f8fafc; }
+    h1 { font-size: 22px; margin-bottom: 12px; }
+    svg { width: 100%; max-width: 1400px; height: 760px; background: #fff; border: 1px solid #cbd5e1; }
+    .comp { fill: #ecfeff; stroke: #0891b2; }
+    .txt { font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>UML-диаграмма компонентов архитектуры</h1>
+  <svg viewBox="0 0 1400 760" xmlns="http://www.w3.org/2000/svg">
+    <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#334155"/></marker></defs>
+    <rect class="comp" x="70" y="120" width="260" height="120"/><text class="txt" x="95" y="155">Web Client (React)</text><text class="txt" x="95" y="180">Gantt / Dashboard / Forms</text>
+    <rect class="comp" x="420" y="120" width="280" height="140"/><text class="txt" x="445" y="155">API Gateway (FastAPI)</text><text class="txt" x="445" y="180">REST + Auth + Validation</text>
+    <rect class="comp" x="790" y="70" width="280" height="120"/><text class="txt" x="815" y="105">Planning Engine</text><text class="txt" x="815" y="130">Prioritization + Scheduler</text>
+    <rect class="comp" x="790" y="240" width="280" height="120"/><text class="txt" x="815" y="275">Simulation Service</text><text class="txt" x="815" y="300">What-if сценарии</text>
+    <rect class="comp" x="790" y="410" width="280" height="120"/><text class="txt" x="815" y="445">Notification Service</text><text class="txt" x="815" y="470">SSE/WebSocket + E-mail</text>
+    <rect class="comp" x="1140" y="120" width="200" height="120"/><text class="txt" x="1160" y="155">PostgreSQL</text><text class="txt" x="1160" y="180">plans, batches, logs</text>
+    <rect class="comp" x="1140" y="320" width="200" height="120"/><text class="txt" x="1160" y="355">External Systems</text><text class="txt" x="1160" y="380">MES/SCADA/ERP</text>
+
+    <line x1="330" y1="180" x2="420" y2="180" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="700" y1="140" x2="790" y2="120" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="700" y1="190" x2="790" y2="300" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="700" y1="220" x2="790" y2="470" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="1070" y1="130" x2="1140" y2="180" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="1070" y1="300" x2="1140" y2="180" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="1070" y1="470" x2="1140" y2="380" stroke="#334155" marker-end="url(#arr)"/>
+    <line x1="1140" y1="350" x2="700" y2="190" stroke="#334155" marker-end="url(#arr)"/>
+  </svg>
+</body>
+</html>
