@@ -2,54 +2,50 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>ER-диаграмма planning-module</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 24px; background:#f8fafc; }
-    h1 { font-size: 22px; margin-bottom: 12px; }
-    svg { width: 100%; max-width: 1400px; height: 840px; background: #fff; border: 1px solid #cbd5e1; }
-    .ent { fill: #eff6ff; stroke: #1d4ed8; }
-    .hdr { font-size: 14px; font-weight: bold; }
-    .txt { font-size: 12px; }
-  </style>
+  <link rel="stylesheet" href="appendix-viewer.css" />
 </head>
 <body>
-  <h1>ER-диаграмма базы данных модуля планирования</h1>
-  <svg viewBox="0 0 1400 840" xmlns="http://www.w3.org/2000/svg">
-    <defs><marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#334155"/></marker></defs>
+  <h1>Приложение Б. ER-диаграмма базы данных</h1>
+  <p class="subtitle">Crow's Foot · PostgreSQL · Mermaid.js · файл <code>er-model.mmd</code></p>
 
-    <rect class="ent" x="60" y="70" width="280" height="180"/>
-    <text class="hdr" x="80" y="95">waste_batches</text>
-    <text class="txt" x="80" y="120">PK id</text><text class="txt" x="80" y="140">fkko_code</text><text class="txt" x="80" y="160">hazard_class</text><text class="txt" x="80" y="180">volume_tons</text><text class="txt" x="80" y="200">due_at</text><text class="txt" x="80" y="220">status</text>
+  <section class="panel">
+    <h2>Исходный код</h2>
+    <pre class="source" id="source"></pre>
+    <p class="note">PK/FK — в именах атрибутов; разделители зон — в комментариях к сущностям ниже (для отчёта).</p>
+    <pre class="source secondary" id="source-legend">%% Зоны сущности (ГОСТ / IDEF1X):
+%% [Заголовок таблицы]
+%% --- PK ---
+%% --- FK ---
+%% --- атрибуты ---</pre>
+  </section>
 
-    <rect class="ent" x="420" y="70" width="280" height="180"/>
-    <text class="hdr" x="440" y="95">processing_lines</text>
-    <text class="txt" x="440" y="120">PK id</text><text class="txt" x="440" y="140">line_name</text><text class="txt" x="440" y="160">capacity_tph</text><text class="txt" x="440" y="180">shift_calendar_id</text><text class="txt" x="440" y="200">is_active</text>
+  <section class="panel">
+    <h2>Предпросмотр</h2>
+    <div class="canvas"><pre class="mermaid" id="diagram"></pre></div>
+    <p class="legend">|| — ровно один · } — «много» (воронка Crow's Foot) · |o — ноль или один</p>
+  </section>
 
-    <rect class="ent" x="780" y="70" width="280" height="180"/>
-    <text class="hdr" x="800" y="95">plans</text>
-    <text class="txt" x="800" y="120">PK id</text><text class="txt" x="800" y="140">plan_date</text><text class="txt" x="800" y="160">version_no</text><text class="txt" x="800" y="180">status</text><text class="txt" x="800" y="200">approved_by</text>
-
-    <rect class="ent" x="1140" y="70" width="220" height="180"/>
-    <text class="hdr" x="1160" y="95">plan_items</text>
-    <text class="txt" x="1160" y="120">PK id</text><text class="txt" x="1160" y="140">FK plan_id</text><text class="txt" x="1160" y="160">FK batch_id</text><text class="txt" x="1160" y="180">FK line_id</text><text class="txt" x="1160" y="200">start_at / end_at</text>
-
-    <rect class="ent" x="300" y="380" width="280" height="180"/>
-    <text class="hdr" x="320" y="405">simulations</text>
-    <text class="txt" x="320" y="430">PK id</text><text class="txt" x="320" y="450">FK base_plan_id</text><text class="txt" x="320" y="470">scenario_type</text><text class="txt" x="320" y="490">delta_kpi_json</text>
-
-    <rect class="ent" x="720" y="380" width="280" height="180"/>
-    <text class="hdr" x="740" y="405">notifications</text>
-    <text class="txt" x="740" y="430">PK id</text><text class="txt" x="740" y="450">severity</text><text class="txt" x="740" y="470">event_type</text><text class="txt" x="740" y="490">batch_id / line_id</text><text class="txt" x="740" y="510">is_acknowledged</text>
-
-    <line x1="340" y1="160" x2="420" y2="160" stroke="#334155" marker-end="url(#a)"/>
-    <line x1="700" y1="160" x2="780" y2="160" stroke="#334155" marker-end="url(#a)"/>
-    <line x1="1060" y1="160" x2="1140" y2="160" stroke="#334155" marker-end="url(#a)"/>
-    <line x1="1140" y1="185" x2="340" y2="185" stroke="#334155" marker-end="url(#a)"/>
-    <line x1="1140" y1="210" x2="560" y2="210" stroke="#334155" marker-end="url(#a)"/>
-    <line x1="920" y1="250" x2="440" y2="380" stroke="#334155" marker-end="url(#a)"/>
-    <line x1="920" y1="250" x2="860" y2="380" stroke="#334155" marker-end="url(#a)"/>
-
-    <text class="txt" x="495" y="150">N:1</text><text class="txt" x="845" y="150">1:N</text><text class="txt" x="1180" y="150">1:N</text>
-  </svg>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    const code = await (await fetch("er-model.mmd")).text();
+    document.getElementById("source").textContent = code;
+    document.getElementById("diagram").textContent = code;
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "neutral",
+      er: { useMaxWidth: false, layoutDirection: "TB", minEntityWidth: 200, entityPadding: 18 },
+      themeVariables: {
+        fontFamily: "Arial, PT Sans, sans-serif",
+        fontSize: "12px",
+        primaryColor: "#ffffff",
+        primaryBorderColor: "#1a1a1a",
+        primaryTextColor: "#1a1a1a",
+        lineColor: "#1a1a1a"
+      }
+    });
+    await mermaid.run({ nodes: [document.getElementById("diagram")] });
+  </script>
 </body>
 </html>

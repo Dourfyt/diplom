@@ -79,6 +79,7 @@ DATABASE_URL=postgresql://complex:complex@localhost:5434/waste_complex
 - `GET /batches/qr/{token}` — по QR-коду партии
 - `PATCH /batches/{id}/stages/{stage_id}` — смена статуса этапа
 - `POST /batches/{id}/stages/{stage_id}/events` — событие
+- `GET/POST /deviations` — отклонения с фото (`/api/v1/deviations` или `/api/v1/monitoring/deviations`)
 
 ### Отчётность (`/api/v1/reporting`)
 - `GET /dashboard` — сводный дашборд (в т.ч. total_processed_tons, total_disposed_tons)

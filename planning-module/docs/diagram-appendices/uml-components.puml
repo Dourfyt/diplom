@@ -1,0 +1,74 @@
+@startuml planning_module_components
+' ISO/IEC 19519 — UML 2.5, диаграмма компонентов
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam monochrome true
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam nodesep 100
+skinparam ranksep 120
+skinparam componentStyle uml2
+skinparam ArrowColor #1A1A1A
+skinparam ComponentBorderColor #1A1A1A
+
+title UML-диаграмма компонентов — модуль planning-module
+
+component "Веб-клиент\n<<компонент>>\nReact + TypeScript" as WC
+
+component "API-шлюз\n<<компонент>>\nFastAPI" as AG
+
+component "Движок планирования\n<<компонент>>\nПриоритизация · Расписание" as PE
+
+component "Сервис симуляции\n<<компонент>>\nСценарии «что если»" as SS
+
+component "Сервис уведомлений\n<<компонент>>\nSSE · E-mail" as NS
+
+database "PostgreSQL" as DB
+
+component "Внешние системы\n<<компонент>>\nMES · SCADA · ERP" as EXT
+
+interface "API REST-клиента" as I_RC
+interface "API REST" as I_RS
+interface "API планирования" as I_PL
+interface "API симуляции" as I_SI
+interface "Поток SSE" as I_SSE
+interface "Доступ к БД" as I_DB
+interface "Входящие события" as I_IN
+
+WC ..> I_RC
+I_RC - I_RS
+note on link
+  HTTPS / JSON
+end note
+AG -0)- I_RS
+
+AG ..> I_PL
+PE -0)- I_PL
+
+AG ..> I_SI
+SS -0)- I_SI
+
+AG ..> I_SSE
+NS -0)- I_SSE
+
+PE ..> I_DB
+SS ..> I_DB
+NS ..> I_DB
+DB -0)- I_DB
+note bottom of I_DB
+  Протокол PostgreSQL
+  SQLAlchemy
+end note
+
+EXT -0)- I_IN
+AG ..> I_IN
+note on link
+  Webhook / JSON
+end note
+
+WC ..> I_SSE
+note bottom of I_SSE
+  SSE / text-event-stream
+end note
+
+@enduml

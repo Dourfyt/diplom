@@ -135,6 +135,7 @@ class WasteBatch(Base):
     waste_type: Mapped["WasteType | None"] = relationship(back_populates="batches")
     schedule_items: Mapped[list["ScheduleItem"]] = relationship(back_populates="batch")
     stage_progress: Mapped[list["BatchStageProgress"]] = relationship(back_populates="batch")
+    deviations: Mapped[list["StageDeviation"]] = relationship(back_populates="batch")
     documents: Mapped[list["BatchDocument"]] = relationship(back_populates="batch")
     operations: Mapped[list["WasteOperation"]] = relationship(back_populates="batch")
 
@@ -249,6 +250,38 @@ class BatchStageProgress(Base):
     batch: Mapped["WasteBatch"] = relationship(back_populates="stage_progress")
     stage: Mapped["ProcessingStage"] = relationship(back_populates="progress_rows")
     events: Mapped[list["StageEvent"]] = relationship(back_populates="progress")
+    deviations: Mapped[list["StageDeviation"]] = relationship(back_populates="progress")
+
+
+class StageDeviation(Base):
+    """Фиксация отклонения по этапу с фото (модуль мониторинга)."""
+
+    __tablename__ = "stage_deviations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    batch_id: Mapped[int] = mapped_column(ForeignKey("waste_batches.id", ondelete="CASCADE"))
+    progress_id: Mapped[int | None] = mapped_column(
+        ForeignKey("batch_stage_progress.id", ondelete="SET NULL"), nullable=True
+    )
+    stage_id: Mapped[int | None] = mapped_column(
+        ForeignKey("processing_stages.id", ondelete="SET NULL"), nullable=True
+    )
+    line_id: Mapped[int | None] = mapped_column(
+        ForeignKey("production_lines.id", ondelete="SET NULL"), nullable=True
+    )
+    deviation_type: Mapped[str] = mapped_column(String(32), default="other")
+    comment: Mapped[str] = mapped_column(Text, default="")
+    operator_name: Mapped[str] = mapped_column(String(128), default="operator")
+    deviation_percent: Mapped[float | None] = mapped_column(Float, nullable=True)
+    status: Mapped[str] = mapped_column(String(32), default="new")
+    file_name: Mapped[str] = mapped_column(String(255), default="")
+    content_type: Mapped[str] = mapped_column(String(128), default="")
+    file_size: Mapped[int] = mapped_column(BigInteger, default=0)
+    storage_path: Mapped[str] = mapped_column(String(512), default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+    batch: Mapped["WasteBatch"] = relationship(back_populates="deviations")
+    progress: Mapped["BatchStageProgress | None"] = relationship(back_populates="deviations")
 
 
 class StageEvent(Base):

@@ -2,46 +2,54 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Макеты интерфейса planning-module</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 24px; background:#f1f5f9; }
-    h1 { font-size: 22px; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; max-width: 1400px; }
-    .card { background:#fff; border:1px solid #cbd5e1; border-radius:8px; padding:14px; }
-    .title { font-weight:bold; margin-bottom:8px; }
-    .bar { height: 14px; background:#e2e8f0; border-radius: 4px; margin: 6px 0; }
-    .gant { display:grid; grid-template-columns: 140px repeat(8, 1fr); gap:4px; align-items:center; }
-    .cell { height:26px; background:#f8fafc; border:1px solid #e2e8f0; }
-    .task { background:#bfdbfe; border:1px solid #60a5fa; }
-    .kpi { display:flex; gap:8px; }
-    .kpi .box { flex:1; background:#ecfeff; border:1px solid #67e8f9; padding:10px; text-align:center; }
-  </style>
+  <link rel="stylesheet" href="appendix-viewer.css" />
 </head>
 <body>
-  <h1>Макеты интерфейса: Gantt-диаграмма и дашборд</h1>
-  <div class="grid">
-    <div class="card">
-      <div class="title">Экран «Планирование смены» (Gantt)</div>
-      <div class="gant">
-        <div>Линия L1</div><div class="cell task"></div><div class="cell task"></div><div class="cell"></div><div class="cell task"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
-        <div>Линия L2</div><div class="cell"></div><div class="cell task"></div><div class="cell task"></div><div class="cell"></div><div class="cell"></div><div class="cell task"></div><div class="cell"></div><div class="cell"></div>
-        <div>Линия L3</div><div class="cell"></div><div class="cell"></div><div class="cell task"></div><div class="cell task"></div><div class="cell"></div><div class="cell"></div><div class="cell task"></div><div class="cell"></div>
-      </div>
-      <div class="bar"></div><div class="bar"></div>
+  <h1>Приложение Г. Макеты интерфейса (Gantt и дашборд)</h1>
+  <p class="subtitle">ГОСТ Р ИСО 9241-210 · PlantUML Salt + Mermaid Gantt</p>
+
+  <section class="panel">
+    <h2>Wireframe — PlantUML Salt (<code>ui-mockups.puml</code>)</h2>
+    <pre class="source" id="source-puml"></pre>
+    <div class="canvas plantuml-canvas">
+      <img id="preview-puml" alt="UI wireframes Salt" />
     </div>
-    <div class="card">
-      <div class="title">Экран «Оперативный дашборд»</div>
-      <div class="kpi">
-        <div class="box">Загрузка: 84%</div>
-        <div class="box">Просрочки: 1</div>
-        <div class="box">Простой: 38 мин</div>
-      </div>
-      <div class="bar" style="width:95%"></div>
-      <div class="bar" style="width:82%"></div>
-      <div class="bar" style="width:76%"></div>
-      <div class="bar" style="width:66%"></div>
-      <div class="bar" style="width:58%"></div>
-    </div>
-  </div>
+  </section>
+
+  <section class="panel">
+    <h2>Gantt — Mermaid (<code>ui-mockups.mmd</code>)</h2>
+    <pre class="source" id="source-mmd"></pre>
+    <div class="canvas"><pre class="mermaid" id="diagram-gantt"></pre></div>
+    <p class="legend">Маркер todayMarker — линия «Сейчас» · crit — риск/просрочка · done/active — статусы смены</p>
+  </section>
+
+  <script type="module">
+    import { encode } from "https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/dist/plantuml-encoder.min.js";
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+    const puml = await (await fetch("ui-mockups.puml")).text();
+    const mmd = await (await fetch("ui-mockups.mmd")).text();
+    document.getElementById("source-puml").textContent = puml;
+    document.getElementById("source-mmd").textContent = mmd;
+    document.getElementById("preview-puml").src =
+      "https://www.plantuml.com/plantuml/svg/" + encode(puml);
+
+    document.getElementById("diagram-gantt").textContent = mmd;
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "neutral",
+      gantt: { useMaxWidth: false, fontSize: 12 },
+      themeVariables: {
+        fontFamily: "Arial, PT Sans, sans-serif",
+        primaryColor: "#3d5a80",
+        primaryTextColor: "#1a1a1a",
+        lineColor: "#1a1a1a",
+        todayLineColor: "#c1121f"
+      }
+    });
+    await mermaid.run({ nodes: [document.getElementById("diagram-gantt")] });
+  </script>
 </body>
 </html>

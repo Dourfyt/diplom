@@ -814,6 +814,12 @@ Django отчётность:
   GET     /api/v1/monitoring/batches/qr/{token}             мониторинг
   PATCH   /api/v1/monitoring/batches/{bid}/stages/{sid}     мониторинг
   POST    /api/v1/monitoring/batches/{bid}/stages/{sid}/events  мониторинг
+  GET     /api/v1/deviations                                мониторинг
+  POST    /api/v1/deviations                                мониторинг (multipart)
+  GET     /api/v1/deviations/{id}                           мониторинг
+  GET     /api/v1/deviations/{id}/photo                     мониторинг
+  PATCH   /api/v1/deviations/{id}                           мониторинг
+  DELETE  /api/v1/deviations/{id}                           мониторинг
   GET     /api/v1/reporting/dashboard                       отчётность
   GET     /api/v1/reporting/operations                      отчётность
   GET     /api/v1/reporting/measurements                    отчётность

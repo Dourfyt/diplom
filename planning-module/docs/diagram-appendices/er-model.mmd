@@ -1,0 +1,75 @@
+---
+title: ER — Модуль планирования (Crow's Foot, PostgreSQL)
+config:
+  er:
+    layoutDirection: TB
+    minEntityWidth: 220
+    minEntityHeight: 88
+    entityPadding: 20
+    useMaxWidth: false
+---
+erDiagram
+    waste_batches {
+        integer id PK
+        varchar code
+        varchar fkko_code
+        integer hazard_class
+        double volume_tons
+        double storage_deadline_hours
+        varchar status
+        timestamp received_at
+    }
+
+    production_lines {
+        integer id PK
+        varchar code
+        varchar name
+        double capacity_t_per_hour
+        boolean is_available
+    }
+
+    schedule_plans {
+        integer id PK
+        integer parent_plan_id FK
+        varchar name
+        double horizon_hours
+        varchar status
+        integer version_no
+        boolean is_simulation
+        timestamp created_at
+        timestamp approved_at
+    }
+
+    schedule_items {
+        integer id PK
+        integer plan_id FK
+        integer batch_id FK
+        integer line_id FK
+        varchar operation_code
+        timestamp start_at
+        timestamp end_at
+        double priority_score
+        double planned_output_tons
+    }
+
+    notifications {
+        integer id PK
+        integer plan_id FK
+        integer batch_id FK
+        integer line_id FK
+        varchar trigger_code
+        varchar title
+        text message
+        varchar channel
+        varchar status
+        timestamp created_at
+        varchar source_module
+    }
+
+    waste_batches ||--|{ schedule_items : "назначается"
+    production_lines ||--|{ schedule_items : "выполняет"
+    schedule_plans ||--|{ schedule_items : "содержит"
+    waste_batches ||--o{ notifications : "оповещает"
+    production_lines ||--o{ notifications : "оповещает"
+    schedule_plans ||--|{ notifications : "уведомляет"
+    schedule_plans ||--o{ schedule_plans : "симуляция"

@@ -1,0 +1,42 @@
+* { box-sizing: border-box; }
+body {
+  font-family: Arial, "PT Sans", sans-serif;
+  margin: 0;
+  padding: 32px;
+  background: #ececec;
+  color: #1a1a1a;
+  max-width: 1280px;
+}
+h1 { font-size: 18px; font-weight: 600; margin: 0 0 6px; }
+h2 { font-size: 14px; font-weight: 600; margin: 0 0 10px; }
+.subtitle { font-size: 12px; color: #4a4a4a; margin: 0 0 24px; }
+.panel {
+  background: #fff;
+  border: 1px solid #9e9e9e;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.source {
+  background: #f8f8f8;
+  border: 1px solid #d0d0d0;
+  padding: 14px;
+  font-size: 11px;
+  line-height: 1.45;
+  overflow: auto;
+  white-space: pre;
+  font-family: "Courier New", Consolas, monospace;
+  max-height: 420px;
+}
+.source.secondary { margin-top: 10px; max-height: 80px; color: #4a4a4a; }
+.canvas {
+  background: #fff;
+  border: 1px solid #d0d0d0;
+  padding: 24px;
+  overflow: auto;
+}
+.canvas .mermaid { min-width: 900px; }
+.plantuml-canvas { text-align: center; padding: 32px; }
+.plantuml-canvas img { max-width: 100%; height: auto; }
+.legend, .note { font-size: 11px; color: #4a4a4a; margin: 12px 0 0; }
+.note a { color: #3d5a80; }
+code { font-size: 11px; background: #f0f0f0; padding: 1px 4px; }

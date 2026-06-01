@@ -1,0 +1,21 @@
+---
+title: Gantt — Планирование смены (дополнение к Salt-макету)
+config:
+  gantt:
+    useMaxWidth: false
+    barHeight: 28
+    fontSize: 12
+    numberSectionStyles: 1
+---
+gantt
+    dateFormat HH:mm
+    axisFormat %H:%M
+    tickInterval 1hour
+    todayMarker on
+    section Смена 08-14
+    L1 Сушка — партия A     :done, l1a, 08:00, 3h
+    L2 Термо — партия B     :active, l2b, 09:00, 3h
+    L3 Сепар. — партия C    :crit, l3c, 10:00, 2h
+    section Смена 14-20
+    L1 Сушка — партия D     :l1d, 14:00, 2h
+    L2 Термо — партия E     :l2e, 15:00, 3h

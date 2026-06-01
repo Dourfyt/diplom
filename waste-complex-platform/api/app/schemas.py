@@ -384,6 +384,33 @@ class MonitoringBatchOut(BaseModel):
     stages: list[StageProgressOut]
 
 
+class DeviationOut(BaseModel):
+    id: int
+    batch_id: int
+    batch_code: str | None = None
+    progress_id: int | None
+    stage_id: int | None
+    stage_code: str | None = None
+    line_id: int | None
+    deviation_type: str
+    comment: str
+    operator_name: str
+    deviation_percent: float | None
+    status: str
+    file_name: str
+    content_type: str
+    file_size: int
+    photo_url: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class DeviationStatusUpdate(BaseModel):
+    status: str = Field(pattern="^(new|reviewed|closed)$")
+    comment: str | None = None
+
+
 # ——— Reporting ———
 
 

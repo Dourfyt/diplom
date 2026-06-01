@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.routers import accounting, admin, auth, core, monitoring, planning, reporting
+from app.routers import accounting, admin, auth, core, deviations, monitoring, planning, reporting
 
 app = FastAPI(
     title="Программный комплекс: учёт и переработка отходов",
@@ -31,6 +31,8 @@ app.include_router(planning.router, prefix="/api/v1/planning")
 # Совместимость с модулем planning-module (те же пути /api/v1/batches, /plans, …)
 app.include_router(planning.router, prefix="/api/v1")
 app.include_router(monitoring.router, prefix="/api/v1/monitoring")
+app.include_router(deviations.router, prefix="/api/v1")
+app.include_router(deviations.router, prefix="/api/v1/monitoring")
 app.include_router(reporting.router, prefix="/api/v1/reporting")
 
 

@@ -251,6 +251,25 @@
   created_at     TIMESTAMP
   operator_name  VARCHAR(128)
 
+--------------------------------------------------------------------------------
+4.4. stage_deviations — отклонения с фото
+--------------------------------------------------------------------------------
+  id                 INTEGER     PK
+  batch_id           INTEGER     FK → waste_batches (ON DELETE CASCADE)
+  progress_id        INTEGER     FK → batch_stage_progress (NULL, SET NULL)
+  stage_id           INTEGER     FK → processing_stages (NULL)
+  line_id            INTEGER     FK → production_lines (NULL)
+  deviation_type     VARCHAR(32) delay | quality | equipment | safety | other
+  comment            TEXT
+  operator_name      VARCHAR(128)
+  deviation_percent  FLOAT       NULL
+  status             VARCHAR(32) new | reviewed | closed
+  file_name          VARCHAR(255)
+  content_type       VARCHAR(128)
+  file_size          BIGINT
+  storage_path       VARCHAR(512)
+  created_at         TIMESTAMP
+
 
 ================================================================================
   5. ТАБЛИЦЫ МОДУЛЯ УЧЁТА (Корчагин Д.Е.)

@@ -1,0 +1,52 @@
+---
+title: BPMN — Планирование переработки (ISO/IEC 19510)
+config:
+  flowchart:
+    curve: linear
+    padding: 28
+    nodeSpacing: 56
+    rankSpacing: 72
+    htmlLabels: true
+---
+flowchart TB
+    classDef task fill:#ffffff,stroke:#1a1a1a,stroke-width:1.5px,color:#1a1a1a
+    classDef evt fill:#ffffff,stroke:#1a1a1a,stroke-width:2px,color:#1a1a1a
+    classDef gw fill:#ffffff,stroke:#1a1a1a,stroke-width:1.5px,color:#1a1a1a
+    classDef cond fill:#ffffff,stroke:#ffffff,color:#1a1a1a,font-size:13px
+
+    subgraph POOL_D["Диспетчер"]
+        direction LR
+        D_START((Старт)):::evt
+        D_T1["Ввести сменные данные"]:::task
+        D_T2["Подтвердить ограничения смены"]:::task
+        D_START --> D_T1 --> D_T2
+    end
+
+    subgraph POOL_M["Модуль planning-module"]
+        direction LR
+        M_CATCH[/Получить данные/]:::task
+        M_T1["Рассчитать приоритеты партий"]:::task
+        M_T2["Построить расписание смены"]:::task
+        M_COND["Обнаружены конфликты?"]:::cond
+        M_XOR{"×"}:::gw
+        M_T3["Выполнить сценарную симуляцию"]:::task
+        M_T4["Зафиксировать версию плана"]:::task
+        M_CATCH --> M_T1 --> M_T2 --> M_COND
+        M_COND --> M_XOR
+        M_XOR -->|"[Конфликты есть]"| M_T3
+        M_T3 --> M_T2
+        M_XOR -->|"[Конфликтов нет]"| M_T4
+    end
+
+    subgraph POOL_P["Производство / Технолог"]
+        direction LR
+        P_CATCH[/Получить план/]:::task
+        P_T1["Выполнить и контролировать смену по плану"]:::task
+        P_END((Завершение)):::evt
+        P_CATCH --> P_T1 --> P_END
+    end
+
+    D_T2 -.->|Сменные данные и ограничения| M_CATCH
+    M_T4 -.->|Утверждённый план смены| P_CATCH
+
+    linkStyle 11,12 stroke-dasharray:6 4
