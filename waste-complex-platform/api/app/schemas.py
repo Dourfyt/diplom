@@ -400,7 +400,7 @@ class DeviationOut(BaseModel):
     file_name: str
     content_type: str
     file_size: int
-    photo_url: str
+    photo_url: str | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
@@ -409,6 +409,22 @@ class DeviationOut(BaseModel):
 class DeviationStatusUpdate(BaseModel):
     status: str = Field(pattern="^(new|reviewed|closed)$")
     comment: str | None = None
+
+
+# ——— Push / devices ———
+
+
+class DeviceRegister(BaseModel):
+    device_id: str = Field(min_length=1, max_length=128)
+    platform: str = Field(default="android", max_length=32)
+    fcm_token: str = Field(min_length=1, max_length=512)
+
+
+class DeviceRegisterOut(BaseModel):
+    ok: bool = True
+    device_id: str
+    platform: str
+    updated_at: datetime
 
 
 # ——— Reporting ———

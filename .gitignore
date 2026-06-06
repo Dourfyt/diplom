@@ -40,6 +40,9 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Firebase Admin SDK (секреты)
+waste-complex-platform/api/secrets/
+
 # Docker / данные
 pgdata/
 *.pid
@@ -47,3 +50,4 @@ pgdata/
 # Временные выгрузки и подготовленные импорты
 ФККО.import.json
 ФККО_с_сервера.json
+waste-complex-platform/api/secrets/

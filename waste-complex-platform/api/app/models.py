@@ -34,6 +34,23 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
+    devices: Mapped[list["UserDevice"]] = relationship(back_populates="user")
+
+
+class UserDevice(Base):
+    """FCM-регистрация мобильного устройства пользователя."""
+
+    __tablename__ = "user_devices"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    device_id: Mapped[str] = mapped_column(String(128), index=True)
+    platform: Mapped[str] = mapped_column(String(32), default="android")
+    fcm_token: Mapped[str] = mapped_column(String(512))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user: Mapped["User"] = relationship(back_populates="devices")
+
 
 # ——— Справочники (модули учёта и отчётности) ———
 

@@ -18,6 +18,8 @@ from app.schemas import (
 )
 from app.services.monitoring_sync import ensure_batch_stages, progress_to_dict
 from app.services.planner import compute_priority, hours_until_deadline
+from app.services.push import notify_emergency_stop
+from app.services.ws_hub import schedule_batch_updated
 from app.schemas import BatchBalanceOut, BatchOut
 from app.services.waste_balance import batch_balance
 
@@ -162,6 +164,7 @@ def update_stage_status(
                     raise HTTPException(400, str(e)) from e
     db.commit()
     db.refresh(prog)
+    schedule_batch_updated(batch_id)
     return StageProgressOut(**progress_to_dict(prog, batch))
 
 
@@ -182,6 +185,7 @@ def add_stage_event(
     )
     if not prog:
         raise HTTPException(404, "Этап не найден")
+    batch = db.query(WasteBatch).filter(WasteBatch.id == batch_id).first()
     ev = StageEvent(
         progress_id=prog.id,
         event_type=body.event_type,
@@ -190,4 +194,12 @@ def add_stage_event(
     )
     db.add(ev)
     db.commit()
+    if body.event_type == "emergency_stop" and batch:
+        notify_emergency_stop(
+            db,
+            batch_code=batch.code,
+            batch_id=batch_id,
+            comment=body.comment,
+        )
+        schedule_batch_updated(batch_id)
     return {"id": ev.id, "created_at": ev.created_at}

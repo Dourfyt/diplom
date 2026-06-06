@@ -226,3 +226,34 @@ def _migrate_wpf_client_schema():
                     """
                 )
             )
+
+    _ensure_user_devices()
+
+
+def _ensure_user_devices():
+    insp = inspect(engine)
+    if "user_devices" in insp.get_table_names():
+        return
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                """
+                CREATE TABLE user_devices (
+                    id SERIAL PRIMARY KEY,
+                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    device_id VARCHAR(128) NOT NULL,
+                    platform VARCHAR(32) DEFAULT 'android',
+                    fcm_token VARCHAR(512) NOT NULL,
+                    updated_at TIMESTAMP DEFAULT NOW()
+                )
+                """
+            )
+        )
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_user_devices_user_id ON user_devices(user_id)"))
+        conn.execute(text("CREATE INDEX IF NOT EXISTS ix_user_devices_device_id ON user_devices(device_id)"))
+        conn.execute(
+            text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_user_devices_user_device "
+                "ON user_devices(user_id, device_id)"
+            )
+        )

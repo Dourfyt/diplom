@@ -10,6 +10,8 @@ from app.database import get_db
 from app.models import BatchStageProgress, ProductionLine, StageDeviation, WasteBatch
 from app.schemas import DeviationOut, DeviationStatusUpdate
 from app.services.files import delete_file, resolve_path, save_upload
+from app.services.push import notify_new_deviation
+from app.services.ws_hub import schedule_batch_updated, schedule_deviation_created
 
 router = APIRouter(tags=["monitoring", "deviations"])
 
@@ -20,7 +22,9 @@ PHOTO_CONTENT_TYPES = frozenset(
 )
 
 
-def _photo_url(deviation_id: int) -> str:
+def _photo_url(deviation_id: int, storage_path: str) -> str | None:
+    if not storage_path:
+        return None
     return f"/api/v1/deviations/{deviation_id}/photo"
 
 
@@ -45,7 +49,7 @@ def _to_out(row: StageDeviation) -> DeviationOut:
         file_name=row.file_name,
         content_type=row.content_type,
         file_size=row.file_size,
-        photo_url=_photo_url(row.id),
+        photo_url=_photo_url(row.id, row.storage_path),
         created_at=row.created_at,
     )
 
@@ -99,7 +103,7 @@ def get_deviation(deviation_id: int, db: Session = Depends(get_db)):
 @router.post("/deviations", response_model=DeviationOut, status_code=201)
 async def create_deviation(
     batch_id: int = Form(...),
-    photo: UploadFile = File(..., description="Фотография отклонения"),
+    photo: UploadFile | None = File(default=None, description="Фотография отклонения (необязательно)"),
     progress_id: int | None = Form(default=None),
     stage_id: int | None = Form(default=None),
     line_id: int | None = Form(default=None),
@@ -111,6 +115,8 @@ async def create_deviation(
 ):
     if deviation_type not in DEVIATION_TYPES:
         raise HTTPException(400, detail=f"deviation_type: {sorted(DEVIATION_TYPES)}")
+    if progress_id is None:
+        raise HTTPException(400, detail="progress_id обязателен")
     batch = db.query(WasteBatch).filter(WasteBatch.id == batch_id).first()
     if not batch:
         raise HTTPException(404, "Партия не найдена")
@@ -154,15 +160,20 @@ async def create_deviation(
         if prog:
             progress_id = prog.id
 
-    if photo.content_type and photo.content_type not in PHOTO_CONTENT_TYPES:
-        raise HTTPException(400, detail=f"Недопустимый тип изображения: {photo.content_type}")
-
-    storage_path, file_name, size = await save_upload(
-        photo,
-        subdir=f"deviations/{batch_id}",
-        max_bytes=10 * 1024 * 1024,
-        allowed_extensions=PHOTO_EXTENSIONS,
-    )
+    storage_path = ""
+    file_name = ""
+    size = 0
+    content_type = ""
+    if photo is not None and (photo.filename or "").strip():
+        if photo.content_type and photo.content_type not in PHOTO_CONTENT_TYPES:
+            raise HTTPException(400, detail=f"Недопустимый тип изображения: {photo.content_type}")
+        storage_path, file_name, size = await save_upload(
+            photo,
+            subdir=f"deviations/{batch_id}",
+            max_bytes=10 * 1024 * 1024,
+            allowed_extensions=PHOTO_EXTENSIONS,
+        )
+        content_type = photo.content_type or "image/jpeg"
 
     row = StageDeviation(
         batch_id=batch_id,
@@ -175,7 +186,7 @@ async def create_deviation(
         deviation_percent=deviation_percent,
         status="new",
         file_name=file_name,
-        content_type=photo.content_type or "image/jpeg",
+        content_type=content_type,
         file_size=size,
         storage_path=storage_path,
     )
@@ -183,6 +194,15 @@ async def create_deviation(
     db.commit()
     db.refresh(row)
     row = _get_or_404(db, row.id)
+    notify_new_deviation(
+        db,
+        batch_code=batch.code,
+        deviation_type=deviation_type,
+        batch_id=batch_id,
+        deviation_id=row.id,
+    )
+    schedule_batch_updated(batch_id)
+    schedule_deviation_created(batch_id, row.id)
     return _to_out(row)
 
 
@@ -206,6 +226,7 @@ def update_deviation(
     if body.comment is not None:
         row.comment = body.comment
     db.commit()
+    schedule_batch_updated(row.batch_id)
     return _to_out(_get_or_404(db, deviation_id))
 
 

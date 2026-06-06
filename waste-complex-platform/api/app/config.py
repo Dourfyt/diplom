@@ -20,6 +20,14 @@ class Settings(BaseSettings):
             "PUBLIC_REGISTER_ENABLED",
         ),
     )
+    firebase_credentials_path: str = Field(
+        default="",
+        description="Путь к JSON сервисного аккаунта Firebase Admin SDK",
+        validation_alias=AliasChoices(
+            "FIREBASE_CREDENTIALS_PATH",
+            "GOOGLE_APPLICATION_CREDENTIALS",
+        ),
+    )
 
 
 settings = Settings()

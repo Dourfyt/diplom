@@ -35,7 +35,7 @@ cd planning-module && docker compose up --build
 ## Подключение модуля Хука (мобильный мониторинг)
 
 - Base URL: `http://<server>:8080/api/v1/monitoring`
-- Отклонения с фото: `POST /api/v1/deviations` (multipart: `photo`, `batch_id`, опционально `progress_id`, `comment`, `deviation_type`)
+- Отклонения: `POST /api/v1/deviations` (multipart: `batch_id` обязателен; `photo` необязателен; опционально `progress_id`, `comment`, `deviation_type`)
 - QR: поле `qr_token` в партии → `GET /batches/qr/{token}`
 - При `PATCH .../stages/{id}` со `status=done` — опциональная запись `processing` в журнал
 
