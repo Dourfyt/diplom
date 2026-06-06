@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="eco-diplom" modified="2026-06-02T00:00:00.000Z" agent="generate_dfd_drawio" version="22.1.0" type="device">
+  <diagram id="dfd-eco-l0" name="DFD ECO Level 0">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="980" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="e1" value="1
+Пользователь" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="200" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p0" value="0
+Веб-модуль
+отчётности ECO" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="370" y="175" width="110" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="2
+API-платформа
+(БД waste_complex)" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#000000;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="680" y="200" width="150" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="f01" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#000000;" edge="1" parent="1" source="e1" target="p0" value="запросы пользователя, параметры">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f02" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#000000;" edge="1" parent="1" source="p0" target="e1" value="отчёты, панели, файлы, подтверждения">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f03" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#000000;" edge="1" parent="1" source="p0" target="e2" value="запросы к REST API">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f04" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=11;strokeColor=#000000;" edge="1" parent="1" source="e2" target="p0" value="данные платформы, статусы операций">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

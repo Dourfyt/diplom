@@ -600,6 +600,7 @@ class RemoteDataService:
             "labels": [r["hazard_label"] for r in hazard_rows] or ["—"],
             "volumes": [float(r["volume_tons"]) for r in hazard_rows] or [0],
             "counts": [r["batch_count"] for r in hazard_rows] or [0],
+            "classes": [r["hazard_class"] for r in hazard_rows] or [0],
         }
 
         op_type_counts: dict[str, int] = {}

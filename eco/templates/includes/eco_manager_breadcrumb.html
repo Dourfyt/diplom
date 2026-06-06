@@ -1,0 +1,13 @@
+{% if is_manager_only and nav_active != 'reporting' %}
+  <nav class="eco-breadcrumb-nav mb-3" aria-label="Путь по разделам">
+    <a class="eco-breadcrumb-link" href="{% url 'reporting' %}">KPI и отчётность</a>
+    <span class="eco-breadcrumb-sep" aria-hidden="true">/</span>
+    <span class="eco-breadcrumb-current">
+      {% if nav_active == 'manager_batches' %}Партии
+      {% elif nav_active == 'operations' %}Операции
+      {% elif nav_active == 'monitoring' %}Измерения
+      {% else %}Раздел
+      {% endif %}
+    </span>
+  </nav>
+{% endif %}

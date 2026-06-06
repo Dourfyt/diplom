@@ -12,7 +12,7 @@ rectangle "Программный комплекс учёта и перераб�
   usecase "Учёт и классификация" as U1
   usecase "Планирование" as U2
   usecase "Мониторинг" as U3
-  usecase "Операции и экспорт" as U4
+  usecase "Операции и экспорт\nPDF / XML" as U4
   usecase "Измерения" as U5
   usecase "Дашборд KPI" as U6
   usecase "Администрирование" as U7

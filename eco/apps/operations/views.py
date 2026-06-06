@@ -2,8 +2,7 @@
 CRUD для журнала движений отходов (Movement).
 
 Список поддерживает фильтр по организации (GET-параметр organization).
-Экспорт в Excel, PDF и XML — см. MovementExportExcelView, MovementExportPdfView,
-MovementExportXmlView.
+Экспорт в PDF и XML — см. MovementExportPdfView, MovementExportXmlView.
 """
 
 from io import BytesIO
@@ -17,16 +16,18 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
-from openpyxl import Workbook
-from openpyxl.styles import Font
-from openpyxl.utils import get_column_letter
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-from apps.integrations.mixins import EcologistRequiredMixin, RemoteApiReadOnlyMixin
+from apps.integrations.exceptions import ApiError
+from apps.integrations.mixins import (
+    EcologistOrManagerRequiredMixin,
+    EcologistRequiredMixin,
+    RemoteApiReadOnlyMixin,
+)
 from apps.integrations.remote_data import get_remote_service, movements_for_request
 from apps.operations.forms import MovementForm
 from apps.operations.models import Movement
@@ -39,7 +40,7 @@ def movements_queryset_for_request(request):
 
 
 def movement_list_querystring(request) -> str:
-    """Параметры GET без page — пагинация и экспорт (Excel, PDF, XML)."""
+    """Параметры GET без page — пагинация и экспорт (PDF, XML)."""
     params = {}
     org = request.GET.get("organization")
     if org not in (None, ""):
@@ -54,7 +55,7 @@ def movement_list_querystring(request) -> str:
     return urlencode(params)
 
 
-class MovementListView(EcologistRequiredMixin, ListView):
+class MovementListView(EcologistOrManagerRequiredMixin, ListView):
     """Список операций: пагинация, фильтр по организации, поиск по названию организации и отхода."""
 
     model = Movement
@@ -63,78 +64,27 @@ class MovementListView(EcologistRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        return movements_queryset_for_request(self.request)
+        self.api_error = None
+        try:
+            return movements_queryset_for_request(self.request)
+        except ApiError as exc:
+            self.api_error = str(exc)
+            return []
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["organizations"] = get_remote_service().organizations_list()
+        ctx["api_error"] = getattr(self, "api_error", None)
+        try:
+            ctx["organizations"] = get_remote_service().organizations_list()
+        except ApiError as exc:
+            ctx["api_error"] = ctx["api_error"] or str(exc)
+            ctx["organizations"] = []
         ctx["selected_organization"] = self.request.GET.get("organization") or ""
         ctx["search_query"] = self.request.GET.get("q", "").strip()
         ctx["date_from"] = self.request.GET.get("date_from", "").strip()
         ctx["date_to"] = self.request.GET.get("date_to", "").strip()
         ctx["list_filter_query"] = movement_list_querystring(self.request)
         return ctx
-
-
-class MovementExportExcelView(EcologistRequiredMixin, View):
-    """
-    Экспорт операций Movement в файл Excel (.xlsx) через openpyxl.
-
-    Учитывается тот же фильтр ?organization=... что и на странице списка.
-    """
-
-    def get(self, request, *args, **kwargs):
-        queryset = movements_queryset_for_request(request)
-
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Операции"
-
-        headers = (
-            "Организация",
-            "Тип отхода",
-            "Тип операции",
-            "Объём, т",
-            "Дата операции",
-        )
-        header_font = Font(bold=True)
-        for col, title in enumerate(headers, start=1):
-            cell = ws.cell(row=1, column=col, value=title)
-            cell.font = header_font
-
-        row = 2
-        for m in queryset:
-            waste_label = f"{m.waste_type.code} — {m.waste_type.name}"
-            ws.cell(row=row, column=1, value=m.organization.name)
-            ws.cell(row=row, column=2, value=waste_label)
-            ws.cell(row=row, column=3, value=m.get_operation_type_display())
-            ws.cell(row=row, column=4, value=float(m.volume))
-            ws.cell(row=row, column=5, value=m.operation_date)
-            row += 1
-
-        # Автоширина колонок (простая оценка по длине текста)
-        for col in range(1, len(headers) + 1):
-            max_len = len(str(headers[col - 1]))
-            for r in range(2, row):
-                v = ws.cell(row=r, column=col).value
-                if v is not None:
-                    max_len = max(max_len, min(len(str(v)), 60))
-            ws.column_dimensions[get_column_letter(col)].width = max_len + 2
-
-        buffer = BytesIO()
-        wb.save(buffer)
-        buffer.seek(0)
-
-        stamp = timezone.now().strftime("%Y%m%d_%H%M")
-        filename = f"operations_{stamp}.xlsx"
-
-        response = HttpResponse(
-            buffer.getvalue(),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
-        # attachment — браузер предложит скачать файл, а не открыть как страницу
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        return response
 
 
 class MovementExportPdfView(EcologistRequiredMixin, View):

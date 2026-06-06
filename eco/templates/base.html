@@ -58,26 +58,41 @@
   </style>
   {% block extra_css %}{% endblock %}
 </head>
-<body data-nav-active="{{ nav_active }}" data-use-remote-api="{% if use_remote_api %}1{% else %}0{% endif %}">
-<nav class="navbar navbar-expand-lg navbar-dark navbar-eco sticky-top mb-4">
+<body data-nav-active="{{ nav_active }}" data-use-remote-api="{% if use_remote_api %}1{% else %}0{% endif %}" data-manager-only="{% if is_manager_only %}1{% else %}0{% endif %}">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-eco sticky-top mb-4{% if is_manager_only %} navbar-eco--manager{% endif %}">
   <div class="container eco-main">
-    <a class="navbar-brand" href="{% if user.is_authenticated %}{{ user_home_url }}{% else %}{% url 'login' %}{% endif %}">Эко-учёт отходов</a>
+    <a class="navbar-brand" href="{% if user.is_authenticated %}{{ user_home_url }}{% else %}{% url 'login' %}{% endif %}">
+      {% if is_manager_only %}<span class="d-none d-sm-inline">Эко-учёт</span><span class="d-sm-none">Эко</span>{% else %}Эко-учёт отходов{% endif %}
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
             aria-controls="mainNav" aria-expanded="false" aria-label="Меню">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse navbar-eco-collapse" id="mainNav">
       <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-2 py-2 py-lg-0 w-100">
-        {% include "includes/module_nav.html" %}
+        <div class="{% if is_manager_only %}d-none d-xl-flex{% endif %}">
+          {% include "includes/module_nav.html" %}
+        </div>
         {% if user.is_authenticated %}
-          <div class="navbar-eco-actions">
-            <span class="navbar-text text-white-50 navbar-eco-user d-none d-xl-inline"
-                  title="{{ user.username }}{% if user_role_label %} · {{ user_role_label }}{% endif %}">
-              {{ user.username }}{% if user_role_label %} · {{ user_role_label }}{% endif %}
-            </span>
-            <div class="navbar-eco-tabs" data-tour="eco-nav-tabs" role="navigation" aria-label="Разделы модуля">
+          <div class="navbar-eco-actions{% if is_manager_only %} navbar-eco-actions--manager{% endif %}">
+            {% if is_manager_only %}
+              <span class="navbar-text text-white-50 small mb-0 d-lg-none"
+                    title="{{ user.username }}">{{ user_role_label|default:"Руководитель" }}</span>
+            {% endif %}
+            <div class="navbar-eco-tabs" data-tour="eco-nav-tabs">
               {% include "includes/eco_nav.html" %}
             </div>
+            {% if is_manager_only %}
+              <span class="navbar-text text-white-50 small navbar-eco-user d-none d-lg-inline"
+                    title="{{ user.username }}">
+                {{ user_role_label|default:"Руководитель" }}
+              </span>
+            {% else %}
+              <span class="navbar-text text-white-50 navbar-eco-user d-none d-xl-inline"
+                    title="{{ user.username }}{% if user_role_label %} · {{ user_role_label }}{% endif %}">
+                {{ user.username }}{% if user_role_label %} · {{ user_role_label }}{% endif %}
+              </span>
+            {% endif %}
             <div class="navbar-eco-utils">
               <button type="button" class="btn btn-warning btn-sm" id="trainingToggle">Обучение</button>
               <form class="m-0" action="{% url 'logout' %}" method="post">

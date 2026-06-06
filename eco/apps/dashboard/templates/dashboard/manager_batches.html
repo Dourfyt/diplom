@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Партии — просмотр{% endblock %}
+
+{% block content %}
+{% if api_error %}
+  <div class="alert alert-danger">
+    <strong>Нет данных с сервера платформы.</strong><br>{{ api_error }}
+  </div>
+{% endif %}
+{% include "includes/eco_manager_breadcrumb.html" %}
+<div class="eco-page-header eco-page-header--manager" data-tour="eco-page-title">
+  <div>
+    <h1 class="eco-page-title h3 mb-1">Партии отходов</h1>
+    <p class="eco-page-lead mb-0">Просмотр партий с платформы (без редактирования).</p>
+  </div>
+</div>
+
+<div class="card eco-card eco-card-filter mb-4">
+  <div class="card-body py-3">
+    <form class="row g-2 align-items-end" method="get">
+      <div class="col-md-5 col-lg-4">
+        <label class="form-label small text-muted mb-1" for="batch-search-q">Поиск</label>
+        <input type="search" class="form-control" id="batch-search-q" name="q" value="{{ search_query }}"
+               placeholder="Код, наименование, ФККО">
+      </div>
+      <div class="col-md-4 col-lg-3">
+        <label class="form-label small text-muted mb-1" for="batch-status">Статус</label>
+        <select class="form-select" id="batch-status" name="status">
+          {% for value, label in status_choices %}
+            <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto d-flex flex-wrap gap-2">
+        <button type="submit" class="btn btn-success">Показать</button>
+        {% if search_query or selected_status %}
+          <a class="btn btn-outline-secondary" href="{% url 'manager_batches' %}">Сбросить</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card eco-card eco-card-table" data-tour="eco-page-table">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover table-striped eco-table mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>Код</th>
+            <th>Организация</th>
+            <th class="text-end">Объём, т</th>
+            <th>Класс</th>
+            <th>Статус</th>
+            <th>Дата</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in batches %}
+            <tr>
+              <td class="font-monospace small">{{ b.code }}</td>
+              <td>{{ b.organization.name|default:"—" }}</td>
+              <td class="text-end">{{ b.volume_tons }}</td>
+              <td>
+                <span class="badge hazard-class-badge hazard-class-{{ b.hazard_class }}">
+                  {{ b.hazard_class_display }}
+                </span>
+              </td>
+              <td><span class="badge text-bg-secondary">{{ b.status_display }}</span></td>
+              <td class="text-nowrap">{{ b.received_at|date:"d.m.Y" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="6" class="text-center text-muted py-5">Партии не найдены.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% if is_paginated %}
+  <nav class="mt-3" aria-label="Страницы">
+    <ul class="pagination justify-content-center flex-wrap mb-0">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Назад</a>
+        </li>
+      {% endif %}
+      <li class="page-item disabled"><span class="page-link">Стр. {{ page_obj.number }} из {{ paginator.num_pages }}</span></li>
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}">Вперёд</a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}
+{% endblock %}

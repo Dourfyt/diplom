@@ -6,12 +6,21 @@ from datetime import date
 from decimal import Decimal
 from urllib.parse import urlencode
 
+from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.urls import reverse
 from django.utils import timezone
-from django.views.generic import TemplateView
+from django.views import View
+from django.views.generic import ListView, TemplateView
 
+from apps.dashboard.reporting_export import (
+    load_reporting_bundle,
+    reporting_pdf_response,
+)
 from apps.integrations.exceptions import ApiError
-from apps.integrations.mixins import DashboardRequiredMixin
-from apps.integrations.remote_data import _parse_optional_date, get_remote_service
+from apps.integrations.mixins import DashboardRequiredMixin, ManagerRequiredMixin
+from apps.integrations.remote_data import BATCH_STATUS_LABELS, _parse_optional_date, get_remote_service
+from apps.integrations.roles import is_manager_only
 
 
 def _format_number_display(value, max_decimals: int = 3) -> str:
@@ -64,6 +73,15 @@ class DashboardView(DashboardRequiredMixin, TemplateView):
     """Сводка KPI и графики с сервера за выбранный период."""
 
     template_name = "dashboard/dashboard.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if is_manager_only(request.user):
+            query = request.GET.urlencode()
+            target = reverse("reporting")
+            if query:
+                target = f"{target}?{query}"
+            return redirect(target)
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -172,7 +190,9 @@ class ReportingDashboardView(DashboardRequiredMixin, TemplateView):
             ctx["batches"] = []
             ctx["movements"] = []
             ctx["measurements"] = []
-            ctx["chart_hazard"] = {"labels": [], "volumes": [], "counts": []}
+            ctx["chart_hazard"] = {"labels": [], "volumes": [], "counts": [], "classes": []}
+            ctx["chart_operations"] = {"labels": [], "values": []}
+            ctx["manager_insights"] = None
             ctx["batches_total"] = 0
             ctx["batch_volume"] = "0"
             ctx["movements_total"] = 0
@@ -195,6 +215,34 @@ class ReportingDashboardView(DashboardRequiredMixin, TemplateView):
         ctx["movements"] = bundle["movements"]
         ctx["measurements"] = bundle["measurements"]
         ctx["chart_hazard"] = bundle["chart_hazard"]
+        ctx["chart_operations"] = bundle.get("chart_operations", {"labels": [], "values": []})
+        ctx["manager_insights"] = None
+        if is_manager_only(self.request.user):
+            try:
+                kpi = service.dashboard_kpi_bundle(
+                    date_from=date_from,
+                    date_to=date_to,
+                )
+                recycling = "0"
+                charts = kpi.get("charts")
+                if charts:
+                    group = charts["group_volumes"]
+                    total = sum(group.values(), Decimal("0"))
+                    if total > 0:
+                        recycling = _format_number_display(
+                            group.get("recycling", Decimal("0")) / total * Decimal(100),
+                            max_decimals=1,
+                        )
+                attention = kpi.get("attention", {})
+                ctx["manager_insights"] = {
+                    "recycling_percent": recycling,
+                    "recent_exceedances": attention.get("recent_exceedances", [])[:5],
+                    "orgs_without_measurements": attention.get(
+                        "orgs_without_measurements", []
+                    )[:5],
+                }
+            except ApiError:
+                ctx["manager_insights"] = None
         ctx["period_label"] = (
             f"{date_from.strftime('%d.%m.%Y')} — {date_to.strftime('%d.%m.%Y')}"
         )
@@ -233,3 +281,45 @@ def _reporting_filter_querystring(request) -> str:
         if value:
             params[key] = value
     return urlencode(params)
+
+
+class ManagerBatchListView(ManagerRequiredMixin, ListView):
+    """Просмотр партий для руководителя (без админского контроля связности)."""
+
+    template_name = "dashboard/manager_batches.html"
+    context_object_name = "batches"
+    paginate_by = 15
+
+    def get_queryset(self):
+        self.api_error = None
+        try:
+            return get_remote_service().batches_list(
+                search=self.request.GET.get("q", ""),
+                status=self.request.GET.get("status", "").strip(),
+            )
+        except ApiError as exc:
+            self.api_error = str(exc)
+            return []
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["api_error"] = getattr(self, "api_error", None)
+        ctx["search_query"] = self.request.GET.get("q", "").strip()
+        ctx["selected_status"] = self.request.GET.get("status", "").strip()
+        ctx["status_choices"] = [("", "Все статусы")] + list(BATCH_STATUS_LABELS.items())
+        return ctx
+
+
+class ReportingExportPdfView(DashboardRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        try:
+            bundle, _df, _dt, period = load_reporting_bundle(request)
+        except ApiError as exc:
+            return HttpResponse(str(exc), status=502, content_type="text/plain; charset=utf-8")
+        except FileNotFoundError as exc:
+            return HttpResponse(str(exc), status=500, content_type="text/plain; charset=utf-8")
+        return reporting_pdf_response(
+            bundle,
+            period=period,
+            organization_name=bundle.get("remote_organization_name", ""),
+        )

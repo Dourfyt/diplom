@@ -27,7 +27,9 @@
   function commonNavSteps() {
     return [
       step('[data-tour="eco-modules"]', "Модули комплекса", "Переход к API платформы и модулю планирования.", "bottom"),
-      step('[data-tour="eco-nav-tabs"]', "Вкладки раздела", "Контроль — оперативные задачи; Отчётность — аналитика и экспорт.", "bottom"),
+      step('[data-tour="eco-nav-tabs"]', "Вкладки раздела", document.body.getAttribute("data-manager-only") === "1"
+        ? "KPI — сводка за период; детализация — таблицы внизу страницы (только просмотр)."
+        : "Контроль — оперативные задачи; Отчётность — аналитика и экспорт.", "bottom"),
     ].filter(Boolean);
   }
 
@@ -44,11 +46,33 @@
       );
     },
     reporting: function () {
+      var managerOnly = document.body.getAttribute("data-manager-only") === "1";
       return commonNavSteps().concat(
         [
-          step('[data-tour="eco-page-title"]', "Аналитическая отчётность", "План, классы опасности, таблицы, экспорт.", "bottom"),
-          step('[data-tour="eco-report-actions"]', "Экспорт и журнал", "Excel, PDF и XML — операции с датами и организацией из фильтра; полный список — в «Операции».", "bottom"),
-          step('[data-tour="eco-report-detail"]', "Детализация", "Краткий просмотр; полные журналы — в «Операции» и «Измерения».", "top"),
+          step(
+            '[data-tour="eco-page-title"]',
+            managerOnly ? "KPI и отчётность" : "Аналитическая отчётность",
+            managerOnly
+              ? "Сводка для руководителя: план, классы опасности, таблицы (только просмотр)."
+              : "План, классы опасности, таблицы, экспорт.",
+            "bottom"
+          ),
+          step(
+            '[data-tour="eco-report-actions"]',
+            managerOnly ? "Экспорт KPI" : "Экспорт и журнал",
+            managerOnly
+              ? "Скачайте сводку KPI в PDF с учётом выбранного периода и организации."
+              : "PDF и XML — операции с датами и организацией из фильтра; полный список — в «Операции».",
+            "bottom"
+          ),
+          step(
+            '[data-tour="eco-report-detail"]',
+            "Детализация",
+            managerOnly
+              ? "Таблицы партий, операций и измерений за выбранный период."
+              : "Краткий просмотр; полные журналы — в «Операции» и «Измерения».",
+            "top"
+          ),
         ].filter(Boolean)
       );
     },
@@ -61,8 +85,8 @@
             '[data-tour="eco-page-actions"]',
             "Действия",
             remote
-              ? "Просмотр и экспорт в Excel/PDF/XML по фильтрам (даты, организация)."
-              : "Добавление записи и экспорт в Excel/PDF/XML.",
+              ? "Просмотр и экспорт в PDF/XML по фильтрам (даты, организация)."
+              : "Добавление записи и экспорт в PDF/XML.",
             "bottom"
           ),
           step('[data-tour="eco-page-table"]', "Таблица", "Каждая строка — операция с датой, типом и объёмом.", "top"),

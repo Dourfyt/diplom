@@ -11,6 +11,8 @@ def resolve_nav_active(request) -> str:
 
     if path.startswith("/dashboard/reporting"):
         return "reporting"
+    if path.startswith("/dashboard/batches"):
+        return "manager_batches"
     if path.startswith("/dashboard"):
         return "dashboard"
     if path.startswith("/operations"):
@@ -31,7 +33,11 @@ def resolve_nav_active(request) -> str:
         return "users"
 
     if namespace == "dashboard":
-        return "reporting" if url_name == "reporting" else "dashboard"
+        if url_name == "reporting":
+            return "reporting"
+        if url_name == "manager_batches":
+            return "manager_batches"
+        return "dashboard"
     if namespace == "operations":
         return "operations"
     if namespace == "monitoring":

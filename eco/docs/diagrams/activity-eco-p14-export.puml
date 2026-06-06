@@ -1,0 +1,39 @@
+@startuml activity_eco_p14_export
+' UML Activity — P-14 Экспорт журнала операций (дорожки + fork/join)
+' Рендер: python3 scripts/generate_activity_svg.py
+skinparam activity {
+  BackgroundColor #FFFFFF
+  BorderColor #1a1a1a
+  FontName Arial
+  FontSize 12
+}
+skinparam partition {
+  BackgroundColor #f7fafc
+  BorderColor #2c5282
+  FontStyle bold
+}
+title UML Activity — экспорт журнала операций (P-14)\nВеб-модуль отчётности ECO
+
+|Эколог|
+start
+:Открыть журнал операций;
+:Задать фильтры\n(организация, период, поиск);
+:Запросить экспорт;
+:Выбрать формат\n(PDF / XML);
+
+fork
+  |Веб-модуль ECO|
+  :Подготовить шаблон\nPDF или XML;
+fork again
+  |API платформы|
+  :Получить операции\nдвижения за период;
+end fork
+
+|Веб-модуль ECO|
+:Объединить данные\nи сформировать файл\n(PDF / XML);
+
+|Эколог|
+:Скачать отчёт;
+stop
+
+@enduml

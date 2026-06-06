@@ -1,0 +1,100 @@
+@startuml package_eco_webapp
+' UML Package — архитектура веб-модуля отчётности ECO (Django)
+skinparam package {
+  BackgroundColor #f7fafc
+  BorderColor #2c5282
+  FontName Arial
+  FontSize 11
+}
+skinparam rectangle {
+  BackgroundColor #eeeeee
+  BorderColor #666666
+}
+skinparam database {
+  BackgroundColor #e8f4fc
+  BorderColor #2c5282
+}
+skinparam cloud {
+  BackgroundColor #fff8e1
+  BorderColor #b7791f
+}
+skinparam arrow {
+  Color #1a1a1a
+}
+title UML Package — веб-модуль отчётности ECO\n(клиент платформы waste_complex)
+
+rectangle "users" as users <<external>> {
+  [Эколог]
+  [Администратор]
+  [Руководитель]
+}
+
+package "Presentation Layer\n(слой представления)" as PL {
+  package "User Interface" as PUI {
+    [HTML-шаблоны]
+    [Статика CSS/JS]
+  }
+  package "Presentation Logic" as PPL {
+    [views, urls]
+    [forms]
+  }
+}
+
+package "Business Layer\n(предметная логика)" as BL {
+  package "apps.administration" as ADM {
+    [data_quality]
+    [организации, партии]
+  }
+  package "apps.operations" as OPS {
+    [журнал операций]
+    [экспорт PDF / XML]
+  }
+  package "apps.monitoring" as MON {
+    [измерения]
+  }
+  package "apps.dashboard" as DSH {
+    [KPI, дашборды]
+    [экспорт KPI в PDF]
+  }
+  package "apps.waste" as WST {
+    [справочник ФККО]
+  }
+}
+
+package "Integration Layer\n(интеграция)" as SL {
+  package "apps.integrations" as INT {
+    [api_client]
+    [auth_api, api_token]
+    [remote_data, records]
+    [mixins, roles, middleware]
+  }
+}
+
+package "Data Layer\n(слой данных)" as DL {
+  [DTO records.py]
+  [SQLite: сессия, JWT]
+}
+
+database "PostgreSQL\nwaste_complex" as PG
+cloud "REST API\nплатформы" as REST
+cloud "External Systems\n(учёт, планирование,\nмониторинг)" as EXT
+
+package "Cross Cutting\n(сквозные функции)" as CC {
+  [JWT в сессии]
+  [роли eco_*]
+  [USE_REMOTE_API]
+}
+
+users ..> PL : HTTP
+EXT ..> REST
+PL ..> BL
+BL ..> SL
+SL ..> DL
+SL ..> REST : /api/v1/*
+REST ..> PG
+
+PL ..> CC
+BL ..> CC
+SL ..> CC
+
+@enduml

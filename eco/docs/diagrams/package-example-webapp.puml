@@ -1,0 +1,66 @@
+@startuml package_example_webapp
+' Учебный пример: типовая веб-архитектура (как в методичке)
+skinparam package {
+  BackgroundColor #f7fafc
+  BorderColor #2c5282
+  FontName Arial
+  FontSize 11
+}
+skinparam rectangle {
+  BackgroundColor #eeeeee
+  BorderColor #666666
+}
+skinparam arrow {
+  Color #1a1a1a
+}
+title Диаграмма пакетов\n(пример: веб-приложение)
+
+rectangle "users" as users <<external>>
+
+package "Presentation Layer" as PL {
+  package "User Interface" as PUI
+  package "Presentation Logic" as PPL
+}
+
+package "Service Layer" as SL {
+  package "User Interface" as SUI
+  package "Presentation Logic" as SPL
+}
+
+package "Business Layer" as BL {
+  class "Application Facade" as AF
+  class "Business Workflow" as BW
+  class "Business Components" as BC
+  class "Business Entities" as BE
+}
+
+package "Data Layer" as DL {
+  package "Data Access" as DA
+  package "Service Agents" as SA
+}
+
+rectangle "Data Source" as DS <<external>>
+rectangle "External Services" as ES <<external>>
+cloud "External Systems" as EXT
+
+package "Cross Cutting" as CC {
+  class "Security" as SEC
+  class "Operational Management" as OM
+  class "Communication" as COM
+}
+
+users ..> PL
+EXT ..> SL
+PL ..> SL
+PL ..> BL
+SL ..> BL
+BL ..> DL
+DL ..> DS
+DL ..> ES
+
+PL ..> CC
+SL ..> CC
+BL ..> CC
+DL ..> CC
+
+@enduml

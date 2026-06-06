@@ -11,28 +11,42 @@ from django.urls import reverse_lazy
 from django.views.generic import DeleteView, FormView, ListView, UpdateView
 
 from apps.integrations.exceptions import ApiError
-from apps.integrations.mixins import EcologistRequiredMixin, RemoteApiReadOnlyMixin
+from apps.integrations.mixins import (
+    EcologistOrManagerRequiredMixin,
+    EcologistRequiredMixin,
+    RemoteApiReadOnlyMixin,
+)
 from apps.integrations.remote_data import get_remote_service
 from apps.monitoring.forms import MeasurementApiForm
 from apps.monitoring.models import Measurement
 
 
-class MeasurementListView(EcologistRequiredMixin, ListView):
+class MeasurementListView(EcologistOrManagerRequiredMixin, ListView):
     model = Measurement
     template_name = "monitoring/measurement_list.html"
     context_object_name = "measurements"
     paginate_by = 15
 
     def get_queryset(self):
-        return get_remote_service().measurements_list(
-            organization_id=self.request.GET.get("organization"),
-            status=self.request.GET.get("status", ""),
-            search=self.request.GET.get("q", ""),
-        )
+        self.api_error = None
+        try:
+            return get_remote_service().measurements_list(
+                organization_id=self.request.GET.get("organization"),
+                status=self.request.GET.get("status", ""),
+                search=self.request.GET.get("q", ""),
+            )
+        except ApiError as exc:
+            self.api_error = str(exc)
+            return []
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["organizations"] = get_remote_service().organizations_list()
+        ctx["api_error"] = getattr(self, "api_error", None)
+        try:
+            ctx["organizations"] = get_remote_service().organizations_list()
+        except ApiError as exc:
+            ctx["api_error"] = ctx["api_error"] or str(exc)
+            ctx["organizations"] = []
         ctx["selected_organization"] = self.request.GET.get("organization") or ""
         ctx["selected_status"] = self.request.GET.get("status") or ""
         ctx["search_query"] = self.request.GET.get("q", "").strip()

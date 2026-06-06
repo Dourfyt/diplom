@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="eco-diplom" modified="2026-06-02T00:00:00.000Z" agent="idef0-eco" version="22.1.0" type="device">
+  <diagram id="idef0-context" name="IDEF0 A-0 Context">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="720" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="IDEF0 — контекстная диаграмма A-0&#xa;Веб-модуль отчётности ECO (модель «как есть»)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="250" y="20" width="600" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a0" value="A0&#xa;Ведение экологической&#xa;отчётности на КПО" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="280" width="420" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" value="Законодательство РФ об отходах" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="200" y="95" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c2" value="ФККО и нормативы ПДК" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="95" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c3" value="Ролевая модель доступа" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="640" y="95" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c4" value="Политика работы с API" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="880" y="95" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i1" value="Данные партий отходов" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" source="in-left" target="a0">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="in-left" value="" style="point;fillColor=none;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="1" height="1" as="geometry" />
+        </mxCell>
+        <mxCell id="i2" value="Данные операций движения" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="40" y="340" as="sourcePoint" />
+            <mxPoint x="340" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i3" value="Учётные данные пользователя" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="40" y="380" as="sourcePoint" />
+            <mxPoint x="340" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="i4" value="Параметры запросов" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="40" y="420" as="sourcePoint" />
+            <mxPoint x="340" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o1" value="Отчёты (PDF / XML)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" source="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="760" y="320" as="sourcePoint" />
+            <mxPoint x="1040" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o2" value="Дашборды и KPI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" source="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="760" y="340" as="sourcePoint" />
+            <mxPoint x="1040" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o3" value="Результаты контроля согласованности" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" source="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="760" y="360" as="sourcePoint" />
+            <mxPoint x="1040" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o4" value="Записи экологических измерений" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" source="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="760" y="380" as="sourcePoint" />
+            <mxPoint x="1040" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m1" value="Администратор" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="280" y="620" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m2" value="Эколог" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="420" y="620" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m3" value="Руководитель" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="560" y="620" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m4" value="Веб-модуль ECO" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="700" y="620" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m5" value="API платформы" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="880" y="620" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m6" value="Модули учёта, планирования, мониторинга" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;strokeColor=#000000;endArrow=classic;" edge="1" parent="1" target="a0">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1000" y="650" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend" value="← Вход · ↑ Управление · → Выход · ↓ Механизм" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="80" y="680" width="400" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

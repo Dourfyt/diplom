@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="820" viewBox="0 0 900 820">
+  <rect width="100%" height="100%" fill="#fff"/>
+  <text x="450" y="28" text-anchor="middle" font-size="16" font-weight="600"
+        font-family="Arial, Helvetica, sans-serif">Фрагмент диаграммы действий</text>
+  <text x="450" y="52" text-anchor="middle" font-size="12" fill="#555" font-family="Arial, Helvetica, sans-serif">Пример: торговая компания (дорожки + fork/join)</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#1a1a1a"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="70" width="300" height="750" fill="#f7fafc" stroke="#2c5282" stroke-width="1.5"/>
+  <text x="150" y="92" text-anchor="middle" font-size="11" font-weight="600"
+        font-family="Arial, Helvetica, sans-serif" fill="#2c5282">Отдел приёма и
+оформления заказов</text>
+
+  <rect x="300" y="70" width="300" height="750" fill="#f7fafc" stroke="#2c5282" stroke-width="1.5"/>
+  <text x="450" y="92" text-anchor="middle" font-size="11" font-weight="600"
+        font-family="Arial, Helvetica, sans-serif" fill="#2c5282">Отдел продаж</text>
+
+  <rect x="600" y="70" width="300" height="750" fill="#f7fafc" stroke="#2c5282" stroke-width="1.5"/>
+  <text x="750" y="92" text-anchor="middle" font-size="11" font-weight="600"
+        font-family="Arial, Helvetica, sans-serif" fill="#2c5282">Склад</text>
+<circle cx="150" cy="125" r="10" fill="#1a1a1a"/>
+  <line x1="150" y1="135" x2="150" y2="153" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+
+  <rect x="66" y="131" width="168" height="44" rx="10" ry="10"
+        fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text text-anchor="middle" font-size="11" font-family="Arial, Helvetica, sans-serif" fill="#1a1a1a">
+    <text x="150" y="147"><tspan x="150" dy="0">Принять заказ на товар</tspan></text>
+  </text>
+
+  <line x1="150" y1="175" x2="150" y2="211" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+<line x1="130" y1="225" x2="770" y2="225" stroke="#1a1a1a" stroke-width="5"/>
+  <rect x="66" y="243" width="168" height="44" rx="10" ry="10"
+        fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text text-anchor="middle" font-size="11" font-family="Arial, Helvetica, sans-serif" fill="#1a1a1a">
+    <text x="150" y="253"><tspan x="150" dy="0">Получить оплату</tspan><tspan x="150" dy="14">за товар</tspan></text>
+  </text>
+
+  <rect x="366" y="243" width="168" height="44" rx="10" ry="10"
+        fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text text-anchor="middle" font-size="11" font-family="Arial, Helvetica, sans-serif" fill="#1a1a1a">
+    <text x="450" y="259"><tspan x="450" dy="0">Зарегистрировать заказ</tspan></text>
+  </text>
+
+  <line x1="150" y1="211" x2="450" y2="225" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+
+  <line x1="450" y1="225" x2="150" y2="243" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+
+  <line x1="450" y1="225" x2="450" y2="243" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+<line x1="130" y1="343" x2="770" y2="343" stroke="#1a1a1a" stroke-width="5"/>
+  <line x1="150" y1="287" x2="150" y2="343" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+
+  <line x1="450" y1="287" x2="450" y2="343" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+
+  <rect x="666" y="376" width="168" height="44" rx="10" ry="10"
+        fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text text-anchor="middle" font-size="11" font-family="Arial, Helvetica, sans-serif" fill="#1a1a1a">
+    <text x="750" y="392"><tspan x="750" dy="0">Отпустить товар</tspan></text>
+  </text>
+
+  <line x1="750" y1="420" x2="750" y2="456" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+
+  <rect x="666" y="448" width="168" height="44" rx="10" ry="10"
+        fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text text-anchor="middle" font-size="11" font-family="Arial, Helvetica, sans-serif" fill="#1a1a1a">
+    <text x="750" y="458"><tspan x="750" dy="0">Подготовить товар</tspan><tspan x="750" dy="14">к отправке</tspan></text>
+  </text>
+
+  <line x1="750" y1="492" x2="750" y2="528" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+
+  <rect x="666" y="520" width="168" height="44" rx="10" ry="10"
+        fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text text-anchor="middle" font-size="11" font-family="Arial, Helvetica, sans-serif" fill="#1a1a1a">
+    <text x="750" y="530"><tspan x="750" dy="0">Отправить товар</tspan><tspan x="750" dy="14">клиенту</tspan></text>
+  </text>
+
+  <line x1="450" y1="343" x2="750" y2="371" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+
+  <rect x="66" y="612" width="168" height="44" rx="10" ry="10"
+        fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
+  <text text-anchor="middle" font-size="11" font-family="Arial, Helvetica, sans-serif" fill="#1a1a1a">
+    <text x="150" y="628"><tspan x="150" dy="0">Закрыть заказ</tspan></text>
+  </text>
+
+  <line x1="750" y1="600" x2="150" y2="612" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+
+  <circle cx="150" cy="686" r="14" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+  <circle cx="150" cy="686" r="8" fill="#1a1a1a"/>
+
+  <line x1="150" y1="656" x2="150" y2="670" stroke="#1a1a1a" stroke-width="1.5"
+        marker-end="url(#arrow)"/>
+</svg>

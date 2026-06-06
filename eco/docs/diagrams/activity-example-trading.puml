@@ -1,0 +1,36 @@
+@startuml activity_example_trading
+' Учебный фрагмент: дорожки + параллельный поток (fork/join)
+skinparam activity {
+  BackgroundColor #FFFFFF
+  BorderColor #1a1a1a
+  FontName Arial
+  FontSize 12
+}
+skinparam partition {
+  BackgroundColor #f7fafc
+  BorderColor #2c5282
+  FontStyle bold
+}
+title Фрагмент диаграммы действий\n(пример: торговая компания)
+
+|Отдел приёма и оформления заказов|
+start
+:Принять заказ на товар;
+
+fork
+  :Получить оплату за товар;
+fork again
+  |Отдел продаж|
+  :Зарегистрировать заказ;
+end fork
+
+|Склад|
+:Отпустить товар;
+:Подготовить товар к отправке;
+:Отправить товар клиенту;
+
+|Отдел приёма и оформления заказов|
+:Закрыть заказ;
+stop
+
+@enduml
