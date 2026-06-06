@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_P14_ExportJournal" targetNamespace="http://bpmn.io/schema/bpmn" exporter="eco-diplom" exporterVersion="3.0">
+  <bpmn:process id="Process_P14_ExportJournal" name="P-14. Просмотр и экспорт журнала операций" isExecutable="false">
+    <bpmn:laneSet>
+      <bpmn:lane id="lane_user" name="Пользователь">
+        <bpmn:flowNodeRef>n_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_open</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_end_skip</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_format</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_download</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_end_ok</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="lane_eco" name="Веб-модуль ECO">
+        <bpmn:flowNodeRef>n_filter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_table</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_gw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_build</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="lane_api" name="API платформы">
+        <bpmn:flowNodeRef>n_list</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="n_start" name="Начало">
+
+      <bpmn:outgoing>f01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="n_open" name="Открыть журнал операций">
+      <bpmn:incoming>f01</bpmn:incoming>
+      <bpmn:outgoing>f02</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="n_filter" name="Применение фильтров и пагинации">
+      <bpmn:incoming>f02</bpmn:incoming>
+      <bpmn:outgoing>f03</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="n_list" name="Формирование списка операций">
+      <bpmn:incoming>f03</bpmn:incoming>
+      <bpmn:outgoing>f04</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="n_table" name="Отображение таблицы журнала">
+      <bpmn:incoming>f04</bpmn:incoming>
+      <bpmn:outgoing>f05</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="n_gw" name="Экспортировать отчёт?">
+      <bpmn:incoming>f05</bpmn:incoming>
+      <bpmn:outgoing>f_yes</bpmn:outgoing>
+      <bpmn:outgoing>f_no</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="n_end_skip" name="Конец (без экспорта)">
+      <bpmn:incoming>f_no</bpmn:incoming>
+
+    </bpmn:endEvent>
+    <bpmn:userTask id="n_format" name="Выбор формата PDF / XML">
+      <bpmn:incoming>f_yes</bpmn:incoming>
+      <bpmn:outgoing>f06</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="n_build" name="Формирование файла отчёта">
+      <bpmn:incoming>f06</bpmn:incoming>
+      <bpmn:outgoing>f07</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="n_download" name="Скачивание файла">
+      <bpmn:incoming>f07</bpmn:incoming>
+      <bpmn:outgoing>f08</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="n_end_ok" name="Конец">
+      <bpmn:incoming>f08</bpmn:incoming>
+
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="f01" sourceRef="n_start" targetRef="n_open">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f02" sourceRef="n_open" targetRef="n_filter">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f03" sourceRef="n_filter" targetRef="n_list">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f04" sourceRef="n_list" targetRef="n_table">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f05" sourceRef="n_table" targetRef="n_gw">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f_yes" sourceRef="n_gw" targetRef="n_format" name="да">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f_no" sourceRef="n_gw" targetRef="n_end_skip" name="нет">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f06" sourceRef="n_format" targetRef="n_build">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f07" sourceRef="n_build" targetRef="n_download">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f08" sourceRef="n_download" targetRef="n_end_ok">
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_P14_ExportJournal">
+    <bpmndi:BPMNPlane id="Plane_P14_ExportJournal" bpmnElement="Process_P14_ExportJournal">
+      <bpmndi:BPMNShape id="lane_user_di" bpmnElement="lane_user" isHorizontal="true">
+        <dc:Bounds x="80" y="52" width="1990" height="142" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="lane_eco_di" bpmnElement="lane_eco" isHorizontal="true">
+        <dc:Bounds x="80" y="194" width="1990" height="142" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="lane_api_di" bpmnElement="lane_api" isHorizontal="true">
+        <dc:Bounds x="80" y="336" width="1990" height="142" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_start_di" bpmnElement="n_start">
+        <dc:Bounds x="140" y="90" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_open_di" bpmnElement="n_open">
+        <dc:Bounds x="292" y="76" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_filter_di" bpmnElement="n_filter">
+        <dc:Bounds x="444" y="216" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_list_di" bpmnElement="n_list">
+        <dc:Bounds x="596" y="356" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_table_di" bpmnElement="n_table">
+        <dc:Bounds x="748" y="216" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_gw_di" bpmnElement="n_gw" isMarkerVisible="true">
+        <dc:Bounds x="936" y="225" width="46" height="46" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_end_skip_di" bpmnElement="n_end_skip">
+        <dc:Bounds x="1052" y="90" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_format_di" bpmnElement="n_format">
+        <dc:Bounds x="1204" y="76" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_build_di" bpmnElement="n_build">
+        <dc:Bounds x="1356" y="216" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_download_di" bpmnElement="n_download">
+        <dc:Bounds x="1508" y="76" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_end_ok_di" bpmnElement="n_end_ok">
+        <dc:Bounds x="1660" y="90" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="f01_di" bpmnElement="f01">
+        <di:waypoint x="176" y="108" />
+        <di:waypoint x="292" y="108" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f02_di" bpmnElement="f02">
+        <di:waypoint x="351" y="140" />
+        <di:waypoint x="351" y="178" />
+        <di:waypoint x="503" y="178" />
+        <di:waypoint x="503" y="216" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f03_di" bpmnElement="f03">
+        <di:waypoint x="503" y="280" />
+        <di:waypoint x="503" y="318" />
+        <di:waypoint x="655" y="318" />
+        <di:waypoint x="655" y="356" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f04_di" bpmnElement="f04">
+        <di:waypoint x="714" y="388" />
+        <di:waypoint x="738" y="388" />
+        <di:waypoint x="738" y="248" />
+        <di:waypoint x="748" y="248" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f05_di" bpmnElement="f05">
+        <di:waypoint x="866" y="248" />
+        <di:waypoint x="936" y="248" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f_yes_di" bpmnElement="f_yes">
+        <di:waypoint x="982" y="248" />
+        <di:waypoint x="1093" y="248" />
+        <di:waypoint x="1093" y="108" />
+        <di:waypoint x="1204" y="108" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f_no_di" bpmnElement="f_no">
+        <di:waypoint x="982" y="248" />
+        <di:waypoint x="1017" y="248" />
+        <di:waypoint x="1017" y="108" />
+        <di:waypoint x="1052" y="108" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f06_di" bpmnElement="f06">
+        <di:waypoint x="1263" y="140" />
+        <di:waypoint x="1263" y="178" />
+        <di:waypoint x="1415" y="178" />
+        <di:waypoint x="1415" y="216" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f07_di" bpmnElement="f07">
+        <di:waypoint x="1474" y="248" />
+        <di:waypoint x="1498" y="248" />
+        <di:waypoint x="1498" y="108" />
+        <di:waypoint x="1508" y="108" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f08_di" bpmnElement="f08">
+        <di:waypoint x="1626" y="108" />
+        <di:waypoint x="1660" y="108" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

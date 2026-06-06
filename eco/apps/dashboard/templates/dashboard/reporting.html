@@ -48,11 +48,11 @@
         <a class="btn btn-outline-secondary btn-sm" href="{% url 'dashboard' %}{% if filter_query %}?{{ filter_query }}{% endif %}">← Контроль</a>
       {% endif %}
       {% if can_access_reporting_export %}
-        <a class="btn btn-success btn-sm" href="{% url 'reporting_export_excel' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Excel KPI</a>
-        <a class="btn btn-outline-danger btn-sm" href="{% url 'reporting_export_pdf' %}{% if filter_query %}?{{ filter_query }}{% endif %}">PDF KPI</a>
+        <a class="btn btn-success btn-sm" href="{% url 'reporting_export_pdf' %}{% if filter_query %}?{{ filter_query }}{% endif %}">PDF KPI</a>
       {% endif %}
       {% if can_access_operations and not is_manager_only %}
-        <a class="btn btn-outline-secondary btn-sm" href="{% url 'operations:export_excel' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Excel операций</a>
+        <a class="btn btn-outline-danger btn-sm" href="{% url 'operations:export_pdf' %}{% if filter_query %}?{{ filter_query }}{% endif %}">PDF операций</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{% url 'operations:export_xml' %}{% if filter_query %}?{{ filter_query }}{% endif %}">XML операций</a>
         <a class="btn btn-outline-secondary btn-sm" href="{% url 'operations:list' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Журнал операций</a>
       {% endif %}
     </div>
@@ -240,7 +240,7 @@
 
   {% if is_manager_only and chart_operations.labels %}
     <div class="row g-4 mb-4">
-      <div class="col-lg-5">
+      <div class="col-lg-6">
         <div class="card chart-card h-100">
           <div class="card-body">
             <h2 class="h5 card-title">Операции за период по типу</h2>
@@ -251,24 +251,16 @@
           </div>
         </div>
       </div>
-      <div class="col-lg-7 d-flex align-items-center">
-        <div class="small text-muted">
-          Полные журналы — во вкладках <strong>«Операции»</strong> и <strong>«Измерения»</strong> (только просмотр).
-          Сводку KPI можно скачать в Excel или PDF кнопками выше.
-        </div>
-      </div>
     </div>
   {% endif %}
 
   <h2 class="h6 text-uppercase text-muted fw-semibold mb-3">Детализация за выбранный период</h2>
-  <p class="small text-muted mb-3">
-    {% if is_manager_only %}
-      Краткий просмотр показателей (до 15 строк в таблице). Ввод и правки данных выполняет эколог.
-    {% else %}
+  {% if not is_manager_only %}
+    <p class="small text-muted mb-3">
       Краткий просмотр (до 15 строк). Полные журналы — во вкладках «Операции» и «Измерения».
-      {% if can_access_operations %}Экспорт Excel, PDF и XML — по операциям с теми же датами и организацией, что в фильтре.{% endif %}
-    {% endif %}
-  </p>
+      {% if can_access_operations %}Экспорт PDF и XML — по операциям с теми же датами и организацией, что в фильтре.{% endif %}
+    </p>
+  {% endif %}
   <div class="row g-4" data-tour="eco-report-detail">
     <div class="col-lg-4">
       <div class="card eco-card eco-card-table h-100">
@@ -304,7 +296,7 @@
       <div class="card eco-card eco-card-table h-100">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
           <span class="fw-semibold">Операции</span>
-          {% if can_access_operations %}
+          {% if can_access_operations and not is_manager_only %}
             <a class="small" href="{% url 'operations:list' %}{% if filter_query %}?{{ filter_query }}{% endif %}">Весь журнал →</a>
           {% endif %}
         </div>
@@ -339,7 +331,7 @@
       <div class="card eco-card eco-card-table h-100">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
           <span class="fw-semibold">Измерения</span>
-          {% if can_access_monitoring %}
+          {% if can_access_monitoring and not is_manager_only %}
             <a class="small" href="{% url 'monitoring:list' %}{% if selected_organization %}?organization={{ selected_organization }}{% endif %}">Весь журнал →</a>
           {% endif %}
         </div>

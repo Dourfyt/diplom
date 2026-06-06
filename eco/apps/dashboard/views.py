@@ -15,7 +15,6 @@ from django.views.generic import ListView, TemplateView
 
 from apps.dashboard.reporting_export import (
     load_reporting_bundle,
-    reporting_excel_response,
     reporting_pdf_response,
 )
 from apps.integrations.exceptions import ApiError
@@ -309,19 +308,6 @@ class ManagerBatchListView(ManagerRequiredMixin, ListView):
         ctx["selected_status"] = self.request.GET.get("status", "").strip()
         ctx["status_choices"] = [("", "Все статусы")] + list(BATCH_STATUS_LABELS.items())
         return ctx
-
-
-class ReportingExportExcelView(DashboardRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        try:
-            bundle, _df, _dt, period = load_reporting_bundle(request)
-        except ApiError as exc:
-            return HttpResponse(str(exc), status=502, content_type="text/plain; charset=utf-8")
-        return reporting_excel_response(
-            bundle,
-            period=period,
-            organization_name=bundle.get("remote_organization_name", ""),
-        )
 
 
 class ReportingExportPdfView(DashboardRequiredMixin, View):

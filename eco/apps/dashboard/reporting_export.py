@@ -1,5 +1,5 @@
 """
-Экспорт сводного отчёта KPI (страница «Отчётность») в Excel и PDF.
+Экспорт сводного отчёта KPI (страница «Отчётность») в PDF.
 """
 
 from __future__ import annotations
@@ -10,8 +10,6 @@ from io import BytesIO
 
 from django.http import HttpResponse
 from django.utils import timezone
-from openpyxl import Workbook
-from openpyxl.styles import Font
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
@@ -46,60 +44,6 @@ def load_reporting_bundle(request) -> tuple[dict, date, date, str]:
     )
     period = f"{date_from.strftime('%d.%m.%Y')} — {date_to.strftime('%d.%m.%Y')}"
     return bundle, date_from, date_to, period
-
-
-def build_reporting_excel(bundle: dict, *, period: str, organization_name: str) -> bytes:
-    wb = Workbook()
-
-    ws = wb.active
-    ws.title = "KPI"
-    header_font = Font(bold=True)
-    ws["A1"] = "Сводный отчёт KPI"
-    ws["A1"].font = Font(bold=True, size=14)
-    ws["A2"] = f"Период: {period}"
-    ws["A3"] = f"Организация: {organization_name or 'Все'}"
-    ws["A4"] = f"Сформирован: {timezone.localtime().strftime('%d.%m.%Y %H:%M')}"
-
-    rows = [
-        ("Партий на платформе", bundle["remote_total_batches"]),
-        ("Обработано партий", bundle["remote_batches_processed"]),
-        ("Объём на складе, т", _fmt(bundle["remote_total_volume"])),
-        ("Партий за период", bundle["batches_total"]),
-        ("Объём партий за период, т", _fmt(bundle["batch_volume"])),
-        ("Операций за период", bundle["movements_total"]),
-        ("Объём операций за период, т", _fmt(bundle["operation_volume"])),
-        ("Измерений за период", bundle["measurements_total"]),
-        ("Превышений за период", bundle["exceed_count"]),
-        (
-            "Выполнение плана, %",
-            bundle.get("remote_plan_completion")
-            if bundle.get("remote_plan_completion") is not None
-            else "—",
-        ),
-        (
-            "Средний класс опасности",
-            bundle.get("remote_avg_hazard")
-            if bundle.get("remote_avg_hazard") is not None
-            else "—",
-        ),
-    ]
-    row = 6
-    for title, value in rows:
-        ws.cell(row=row, column=1, value=title).font = header_font
-        ws.cell(row=row, column=2, value=value)
-        row += 1
-
-    ws2 = wb.create_sheet("Классы опасности")
-    for col, title in enumerate(("Класс", "Партий", "Объём, т"), start=1):
-        ws2.cell(row=1, column=col, value=title).font = header_font
-    for i, item in enumerate(bundle["hazard_rows"], start=2):
-        ws2.cell(row=i, column=1, value=item["hazard_label"])
-        ws2.cell(row=i, column=2, value=item["batch_count"])
-        ws2.cell(row=i, column=3, value=float(item["volume_tons"]))
-
-    buffer = BytesIO()
-    wb.save(buffer)
-    return buffer.getvalue()
 
 
 def build_reporting_pdf(bundle: dict, *, period: str, organization_name: str) -> bytes:
@@ -194,16 +138,6 @@ def build_reporting_pdf(bundle: dict, *, period: str, organization_name: str) ->
     story.append(htbl)
     doc.build(story)
     return buffer.getvalue()
-
-
-def reporting_excel_response(bundle: dict, *, period: str, organization_name: str) -> HttpResponse:
-    content = build_reporting_excel(bundle, period=period, organization_name=organization_name)
-    response = HttpResponse(
-        content,
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-    response["Content-Disposition"] = 'attachment; filename="kpi_report.xlsx"'
-    return response
 
 
 def reporting_pdf_response(bundle: dict, *, period: str, organization_name: str) -> HttpResponse:

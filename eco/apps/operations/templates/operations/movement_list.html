@@ -25,8 +25,7 @@
   <div class="d-flex flex-wrap gap-2 justify-content-lg-end" data-tour="eco-page-actions">
     {# Тот же фильтр organization передаётся в экспорт — в файле будут те же строки, что и в отфильтрованном списке #}
     {% if can_edit_operations %}
-      <a class="btn btn-success" href="{% url 'operations:export_excel' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать Excel</a>
-      <a class="btn btn-outline-danger" href="{% url 'operations:export_pdf' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать PDF</a>
+      <a class="btn btn-success" href="{% url 'operations:export_pdf' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать PDF</a>
       <a class="btn btn-outline-secondary" href="{% url 'operations:export_xml' %}{% if list_filter_query %}?{{ list_filter_query }}{% endif %}">Скачать XML</a>
     {% endif %}
     {% if can_edit_operations and not use_remote_api %}
