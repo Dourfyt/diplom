@@ -141,10 +141,13 @@ def replan_after_downtime(
         raise ValueError("Plan not found")
 
     batch_ids = list({item.batch_id for item in old.items})
+    # Горизонт расширяется на время простоя: иначе операции на простаивающей
+    # линии (start >= now + downtime) выпадают за предел окна и «исчезают» с Gantt.
+    extended_horizon = min(old.horizon_hours + downtime_hours, 168.0)
     plan = build_schedule(
         db,
         name=f"Перепланирование после простоя {line_code} (вер. {old.version_no})",
-        horizon_hours=old.horizon_hours,
+        horizon_hours=extended_horizon,
         batch_ids=batch_ids,
         line_downtime_offsets={line_code: downtime_hours},
         is_simulation=False,

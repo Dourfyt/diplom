@@ -36,7 +36,10 @@ export function ReplanModal({ open, lines, busy, onClose, onSubmit }: Props) {
       >
         <div className="modal-header">
           <h2 id="replan-title">Перепланирование после простоя</h2>
-          <p>Линии загружаются из справочника платформы (`GET /lines`)</p>
+          <p>
+            Линии из справочника платформы. Горизонт плана увеличится на время простоя,
+            чтобы операции на обеих линиях остались в расписании.
+          </p>
         </div>
         <div className="modal-body">
           <label className="field">
