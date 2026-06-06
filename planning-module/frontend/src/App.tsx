@@ -5,14 +5,16 @@ import {
   stopPlanningTour,
   type PlanningTab,
 } from "./training/planningTour";
-import { api, Batch, Kpi, Notification, Plan, SimCompare } from "./api";
+import { api, Batch, Kpi, Notification, Plan, ProductionLine, SimCompare } from "./api";
 import { formatHours, formatNumber } from "./format";
-import { notificationStatusLabel, planStatusLabel } from "./labels";
+import { batchStatusLabel, notificationStatusLabel, planStatusLabel } from "./labels";
 import { ContextBar } from "./components/ContextBar";
 import { ModuleNav } from "./components/ModuleNav";
+import { BuildPlanModal } from "./components/BuildPlanModal";
 import { GanttChart } from "./components/GanttChart";
 import { KpiCard } from "./components/KpiCard";
 import { PlanPicker } from "./components/PlanPicker";
+import { ReplanModal } from "./components/ReplanModal";
 import {
   IconAlert,
   IconBell,
@@ -28,7 +30,7 @@ import {
   IconZap,
 } from "./components/Icons";
 import { StatusBadge } from "./components/StatusBadge";
-import { getLineMeta } from "./lines";
+import { buildLineMetaMap, getLineMeta, lineBadgeStyle, lineRowStyle } from "./lines";
 
 type Tab = PlanningTab;
 
@@ -79,6 +81,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [batches, setBatches] = useState<Batch[]>([]);
+  const [productionLines, setProductionLines] = useState<ProductionLine[]>([]);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlanId, setSelectedPlanId] = useState<number | null>(null);
   const [kpi, setKpi] = useState<Kpi | null>(null);
@@ -88,6 +91,8 @@ export default function App() {
   const [toast, setToast] = useState<string | null>(null);
   const [showAllPlans, setShowAllPlans] = useState(false);
   const [batchQuery, setBatchQuery] = useState("");
+  const [showBuildModal, setShowBuildModal] = useState(false);
+  const [showReplanModal, setShowReplanModal] = useState(false);
   const [tourActive, setTourActive] = useState(false);
   const tourActiveRef = useRef(false);
 
@@ -97,18 +102,24 @@ export default function App() {
   );
   const page = PAGE_TITLES[tab];
   const newNotifCount = notifications.filter((n) => n.status === "new").length;
+  const lineMeta = buildLineMetaMap(productionLines);
+  const emergencyLineCode =
+    productionLines.find((l) => l.code === "L2")?.code ?? productionLines[0]?.code ?? "L2";
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [b, p, n] = await Promise.all([
+      const [b, p, n, lines] = await Promise.all([
         api.batches(),
         api.plans(showAllPlans ? "all" : "active"),
         api.notifications(),
+        api.lines(),
       ]);
       setBatches(b);
       setPlans(p);
       setNotifications(n);
+      setProductionLines(lines);
       const pid = selectedPlanId ?? p[0]?.id;
       if (pid) {
         setSelectedPlanId(pid);
@@ -152,14 +163,18 @@ export default function App() {
     });
   };
 
-  const handleBuild = async () => {
+  const handleBuild = () => setShowBuildModal(true);
+
+  const handleBuildSubmit = async (data: {
+    name: string;
+    horizon_hours: number;
+    batch_ids: number[] | null;
+  }) => {
     setBusy(true);
     try {
-      const result = await api.buildPlan({
-        name: `Сменный план ${new Date().toLocaleDateString("ru-RU")}`,
-        horizon_hours: 8,
-      });
+      const result = await api.buildPlan(data);
       setToast(result.message);
+      setShowBuildModal(false);
       await load();
       setSelectedPlanId(result.plan.id);
       setTab("schedule");
@@ -185,12 +200,24 @@ export default function App() {
     }
   };
 
-  const handleReplan = async () => {
+  const handleReplan = () => setShowReplanModal(true);
+
+  const handleReplanSubmit = async (data: {
+    line_code: string;
+    duration_hours: number;
+    reason: string;
+  }) => {
     if (!selectedPlan) return;
     setBusy(true);
     try {
-      const result = await api.replan(selectedPlan.id, "L2", 8);
+      const result = await api.replan(
+        selectedPlan.id,
+        data.line_code,
+        data.duration_hours,
+        data.reason
+      );
       setToast(result.message);
+      setShowReplanModal(false);
       await load();
       setSelectedPlanId(result.plan.id);
       setTab("schedule");
@@ -208,11 +235,24 @@ export default function App() {
       const result = await api.simulate(
         selectedPlan.id,
         scenario,
-        scenario === "emergency" ? { L2: 8 } : undefined
+        scenario === "emergency" ? { [emergencyLineCode]: 8 } : undefined
       );
       setSimResult(result);
       await load();
       setSelectedPlanId(result.sim_plan_id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Ошибка");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleCheckNotifications = async () => {
+    setBusy(true);
+    try {
+      const { created } = await api.checkNotifications(selectedPlanId ?? undefined);
+      setToast(created ? `Создано уведомлений: ${created}` : "Новых рисков не обнаружено");
+      await load();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Ошибка");
     } finally {
@@ -453,9 +493,11 @@ export default function App() {
                   </div>
                 </div>
                 <div className="card-body">
-                  {Object.entries(kpi.line_utilization).map(([line, pct]) => (
+                  {Object.entries(kpi.line_utilization).map(([line, pct]) => {
+                    const meta = getLineMeta(lineMeta, line);
+                    return (
                     <div key={line} className="util-bar-row">
-                      <span className="line-tag" style={{ color: line === "L1" ? "var(--line-l1)" : "var(--line-l2)" }}>
+                      <span className="line-tag" style={{ color: meta.color }}>
                         {line}
                       </span>
                       <div className="util-bar-track">
@@ -463,13 +505,14 @@ export default function App() {
                           className="util-bar-fill"
                           style={{
                             width: `${Math.min(pct, 100)}%`,
-                            background: line === "L1" ? "var(--line-l1)" : "var(--line-l2)",
+                            background: meta.color,
                           }}
                         />
                       </div>
                       <span className="util-bar-pct">{pct}%</span>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -501,7 +544,7 @@ export default function App() {
                     disabled={!selectedPlan || busy}
                     onClick={handleReplan}
                   >
-                    Перепланировать · простой L2 (8 ч)
+                    Перепланировать после простоя
                   </button>
                 </div>
                 {selectedPlan ? (
@@ -524,7 +567,7 @@ export default function App() {
                       </div>
                     </div>
                     <div className="card-body" data-tour="schedule-gantt">
-                      <GanttChart plan={selectedPlan} />
+                      <GanttChart plan={selectedPlan} lineMeta={lineMeta} />
                     </div>
                     <div className="card-body flush" data-tour="schedule-table">
                       <div className="table-wrap">
@@ -542,14 +585,20 @@ export default function App() {
                           </thead>
                           <tbody>
                             {selectedPlan.items.map((i) => {
-                              const lineMeta = getLineMeta(i.line_code);
+                              const meta = getLineMeta(lineMeta, i.line_code);
                               return (
-                              <tr key={i.id} className={lineMeta.rowClass || undefined}>
+                              <tr
+                                key={i.id}
+                                className="schedule-row-line"
+                                style={lineRowStyle(meta.color)}
+                              >
                                 <td>
                                   <strong className="mono">{i.batch_code}</strong>
                                 </td>
                                 <td>
-                                  <span className={`badge ${lineMeta.badgeClass}`}>{i.line_code}</span>
+                                  <span className="badge badge-line-dynamic" style={lineBadgeStyle(meta.color)}>
+                                    {i.line_code}
+                                  </span>
                                 </td>
                                 <td className="mono">{formatDateTime(i.start_at)}</td>
                                 <td className="mono">{formatDateTime(i.end_at)}</td>
@@ -604,6 +653,7 @@ export default function App() {
                         <th data-tour="batches-col-code">Код</th>
                         <th>Наименование</th>
                         <th>Класс</th>
+                        <th>Статус</th>
                         <th data-tour="batches-col-balance">Поступило, т</th>
                         <th>Переработано, т</th>
                         <th>Вывезено, т</th>
@@ -616,7 +666,7 @@ export default function App() {
                     <tbody>
                       {filteredBatches.length === 0 ? (
                         <tr>
-                          <td colSpan={10} className="empty-row">
+                          <td colSpan={11} className="empty-row">
                             {batchQuery.trim()
                               ? `Ничего не найдено по запросу «${batchQuery}»`
                               : "Нет партий в очереди"}
@@ -639,6 +689,9 @@ export default function App() {
                               </td>
                               <td>
                                 <HazardClass n={b.hazard_class} />
+                              </td>
+                              <td>
+                                <span className="badge badge-neutral">{batchStatusLabel(b.status)}</span>
                               </td>
                               <td>{formatNumber(b.volume_tons, 2)}</td>
                               <td>{formatNumber(b.processed_tons ?? 0, 2)}</td>
@@ -711,7 +764,9 @@ export default function App() {
                       onClick={() => handleSimulate("emergency")}
                     >
                       <h3>Аварийный</h3>
-                      <p>Остановка линии L2 на 8 часов, перераспределение операций</p>
+                      <p>
+                        Остановка линии {emergencyLineCode} на 8 часов, перераспределение операций
+                      </p>
                     </button>
                   </div>
                 </div>
@@ -779,7 +834,19 @@ export default function App() {
                   <h2>Активные оповещения</h2>
                   <p>Триггеры T1 (простой) и T2 (срок хранения)</p>
                 </div>
-                {newNotifCount > 0 && <span className="badge badge-danger">{newNotifCount} новых</span>}
+                <div className="card-header-actions">
+                  {newNotifCount > 0 && (
+                    <span className="badge badge-danger">{newNotifCount} новых</span>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    disabled={busy}
+                    onClick={handleCheckNotifications}
+                  >
+                    Проверить риски
+                  </button>
+                </div>
               </div>
               <div className="card-body" data-tour="notifications-list">
                 {notifications.length === 0 ? (
@@ -835,6 +902,21 @@ export default function App() {
           </button>
         ))}
       </nav>
+
+      <BuildPlanModal
+        open={showBuildModal}
+        batches={batches}
+        busy={busy}
+        onClose={() => setShowBuildModal(false)}
+        onSubmit={handleBuildSubmit}
+      />
+      <ReplanModal
+        open={showReplanModal}
+        lines={productionLines}
+        busy={busy}
+        onClose={() => setShowReplanModal(false)}
+        onSubmit={handleReplanSubmit}
+      />
     </div>
   );
 }

@@ -26,3 +26,17 @@ export function notificationStatusLabel(status: string): string {
   };
   return map[status] ?? status;
 }
+
+/** Статусы партий из waste_batches (модуль учёта) */
+export function batchStatusLabel(status: string): string {
+  const map: Record<string, string> = {
+    accepted: "Принята",
+    queued: "В очереди",
+    classified: "Классифицирована",
+    in_progress: "На переработке",
+    processed: "Переработана",
+    disposed: "Вывезена",
+    rejected: "Отклонена",
+  };
+  return map[status] ?? status;
+}

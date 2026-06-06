@@ -2,6 +2,15 @@
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 const API = `${API_BASE}/api/v1`;
 
+export interface ProductionLine {
+  id: number;
+  code: string;
+  name: string;
+  line_type: string;
+  capacity_t_per_hour: number;
+  is_available: boolean;
+}
+
 export interface Batch {
   id: number;
   code: string;
@@ -91,24 +100,33 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  lines: () => request<ProductionLine[]>("/lines"),
   batches: () => request<Batch[]>("/batches"),
   plans: (view: "active" | "all" = "active") =>
     request<Plan[]>(`/plans?view=${view}`),
-  plan: (id: number) => request<Plan>(`/plans/${id}`),
   kpi: (planId?: number) =>
     request<Kpi>(planId ? `/dashboard/kpi?plan_id=${planId}` : "/dashboard/kpi"),
   notifications: () => request<Notification[]>("/notifications"),
-  buildPlan: (body: { name: string; horizon_hours: number }) =>
+  buildPlan: (body: {
+    name: string;
+    horizon_hours: number;
+    batch_ids?: number[] | null;
+  }) =>
     request<PlanActionResult>("/plans/build", {
       method: "POST",
       body: JSON.stringify(body),
     }),
   approvePlan: (id: number) =>
     request<PlanActionResult>(`/plans/${id}/approve`, { method: "POST" }),
-  replan: (id: number, line_code: string, duration_hours: number) =>
+  replan: (
+    id: number,
+    line_code: string,
+    duration_hours: number,
+    reason = "Аварийная остановка"
+  ) =>
     request<PlanActionResult>(`/plans/${id}/replan`, {
       method: "POST",
-      body: JSON.stringify({ line_code, duration_hours, reason: "Аварийная остановка" }),
+      body: JSON.stringify({ line_code, duration_hours, reason }),
     }),
   simulate: (base_plan_id: number, scenario: string, line_downtime?: Record<string, number>) =>
     request<SimCompare>("/simulations", {
@@ -122,4 +140,9 @@ export const api = {
     }),
   ackNotification: (id: number) =>
     request<{ ok: boolean }>(`/notifications/${id}/ack`, { method: "PATCH" }),
+  checkNotifications: (planId?: number) =>
+    request<{ created: number }>(
+      planId ? `/notifications/check?plan_id=${planId}` : "/notifications/check",
+      { method: "POST" }
+    ),
 };

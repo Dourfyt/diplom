@@ -1,11 +1,17 @@
 import { Plan } from "../api";
-import { LINE_META } from "../lines";
+import { getLineMeta, type LineMeta } from "../lines";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
 
-export function GanttChart({ plan }: { plan: Plan }) {
+export function GanttChart({
+  plan,
+  lineMeta,
+}: {
+  plan: Plan;
+  lineMeta: Record<string, LineMeta>;
+}) {
   if (!plan.items.length) {
     return (
       <div className="empty-state compact">
@@ -32,6 +38,10 @@ export function GanttChart({ plan }: { plan: Plan }) {
     return acc;
   }, {});
 
+  const legendLines = Object.keys(lineMeta).length
+    ? Object.values(lineMeta)
+    : Object.keys(byLine).map((code) => getLineMeta(lineMeta, code));
+
   return (
     <div className="gantt-wrap">
       <div className="gantt-axis">
@@ -46,7 +56,7 @@ export function GanttChart({ plan }: { plan: Plan }) {
       </div>
 
       {Object.entries(byLine).map(([line, items]) => {
-        const meta = LINE_META[line] ?? { label: line, color: "var(--brand)" };
+        const meta = getLineMeta(lineMeta, line);
         return (
           <div key={line} className="gantt-row">
             <div className="gantt-line-label">
@@ -87,10 +97,10 @@ export function GanttChart({ plan }: { plan: Plan }) {
       })}
 
       <div className="gantt-legend">
-        {Object.entries(LINE_META).map(([code, m]) => (
-          <span key={code}>
+        {legendLines.map((m) => (
+          <span key={m.code}>
             <i style={{ background: m.color }} />
-            {code} — {m.label}
+            {m.code} — {m.label}
           </span>
         ))}
       </div>
