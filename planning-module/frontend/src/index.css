@@ -474,6 +474,24 @@ table.data-table tbody tr:hover {
   background: var(--surface-hover);
 }
 
+table.data-table tbody tr.schedule-row-l1 {
+  background: rgba(13, 122, 95, 0.06);
+  box-shadow: inset 3px 0 0 var(--line-l1);
+}
+
+table.data-table tbody tr.schedule-row-l2 {
+  background: rgba(37, 99, 235, 0.06);
+  box-shadow: inset 3px 0 0 var(--line-l2);
+}
+
+table.data-table tbody tr.schedule-row-l1:hover {
+  background: rgba(13, 122, 95, 0.1);
+}
+
+table.data-table tbody tr.schedule-row-l2:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
 table.data-table tbody tr:last-child td {
   border-bottom: none;
 }
@@ -507,6 +525,16 @@ table.data-table tbody tr:last-child td {
 .badge-ok {
   background: var(--brand-soft);
   color: var(--brand);
+}
+
+.badge-line-l1 {
+  background: rgba(13, 122, 95, 0.14);
+  color: var(--line-l1);
+}
+
+.badge-line-l2 {
+  background: rgba(37, 99, 235, 0.14);
+  color: var(--line-l2);
 }
 
 .badge-neutral {

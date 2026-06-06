@@ -1,13 +1,9 @@
 import { Plan } from "../api";
+import { LINE_META } from "../lines";
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 }
-
-const LINE_META: Record<string, { label: string; color: string }> = {
-  L1: { label: "Сушка / сепарация", color: "var(--line-l1)" },
-  L2: { label: "Термообезвреживание", color: "var(--line-l2)" },
-};
 
 export function GanttChart({ plan }: { plan: Plan }) {
   if (!plan.items.length) {

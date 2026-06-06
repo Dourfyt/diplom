@@ -28,6 +28,7 @@ import {
   IconZap,
 } from "./components/Icons";
 import { StatusBadge } from "./components/StatusBadge";
+import { getLineMeta } from "./lines";
 
 type Tab = PlanningTab;
 
@@ -540,13 +541,15 @@ export default function App() {
                             </tr>
                           </thead>
                           <tbody>
-                            {selectedPlan.items.map((i) => (
-                              <tr key={i.id}>
+                            {selectedPlan.items.map((i) => {
+                              const lineMeta = getLineMeta(i.line_code);
+                              return (
+                              <tr key={i.id} className={lineMeta.rowClass || undefined}>
                                 <td>
                                   <strong className="mono">{i.batch_code}</strong>
                                 </td>
                                 <td>
-                                  <span className="badge badge-ok">{i.line_code}</span>
+                                  <span className={`badge ${lineMeta.badgeClass}`}>{i.line_code}</span>
                                 </td>
                                 <td className="mono">{formatDateTime(i.start_at)}</td>
                                 <td className="mono">{formatDateTime(i.end_at)}</td>
@@ -554,7 +557,8 @@ export default function App() {
                                 <td>{i.planned_loss_tons}</td>
                                 <td>{i.priority_score.toFixed(1)}</td>
                               </tr>
-                            ))}
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
