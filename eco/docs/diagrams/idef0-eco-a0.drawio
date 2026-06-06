@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="eco-diplom" modified="2026-06-02T00:00:00.000Z" agent="idef0-eco" version="22.1.0" type="device">
+  <diagram id="idef0-a0" name="IDEF0 A0 Decomposition">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="780" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="IDEF0 — декомпозиция A0 (уровень 1)&#xa;Родитель: A0 — Ведение экологической отчётности на КПО" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="200" y="15" width="800" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" value="A1&#xa;Аутентификация и&#xa;разграничение доступа&#xa;&#xa;1" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="A2&#xa;Администрирование и&#xa;контроль качества данных&#xa;&#xa;2" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="520" y="120" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="A3&#xa;Ведение журнала операций&#xa;и экспорт отчётов&#xa;&#xa;3" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="80" y="320" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" value="A4&#xa;Учёт экологических&#xa;измерений&#xa;&#xa;4" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="520" y="320" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" value="A5&#xa;Формирование аналитики&#xa;и KPI&#xa;&#xa;5" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;fillColor=#ffffff;strokeColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="300" y="520" width="300" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="e-in1" value="Учётные данные" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=classic;" edge="1" parent="1" target="a1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="20" y="160" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-in2" value="Параметры запросов" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=classic;" edge="1" parent="1" target="a3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="20" y="380" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-in3" value="Данные партий и операций" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=classic;" edge="1" parent="1" target="a2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="20" y="200" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-sess1" value="Сессия и токен" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=classic;" edge="1" parent="1" source="a1" target="a2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-sess2" value="Сессия" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=classic;" edge="1" parent="1" source="a1" target="a3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-out1" value="Сводка целостности" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=classic;" edge="1" parent="1" source="a2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="820" y="160" as="sourcePoint" />
+            <mxPoint x="1100" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-out2" value="Файлы отчётов" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=classic;" edge="1" parent="1" source="a3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="360" as="sourcePoint" />
+            <mxPoint x="1100" y="300" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-out3" value="Записи измерений" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=classic;" edge="1" parent="1" source="a4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="820" y="360" as="sourcePoint" />
+            <mxPoint x="1100" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e-out4" value="Дашборды KPI" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;endArrow=classic;" edge="1" parent="1" source="a5">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="560" as="sourcePoint" />
+            <mxPoint x="1100" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ctrl" value="↑ Управление (наследуется с A-0): роли, законодательство, ФККО, политика API" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#444444;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="70" width="800" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="mech" value="↓ Механизмы: веб-модуль ECO, API платформы, пользователи" style="text;html=1;strokeColor=none;fillColor=none;fontSize=10;fontColor=#444444;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="660" width="800" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

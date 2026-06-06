@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="Definitions_P17_Measurement" targetNamespace="http://bpmn.io/schema/bpmn" exporter="eco-diplom" exporterVersion="3.0">
+  <bpmn:process id="Process_P17_Measurement" name="P-17. Создание экологического измерения" isExecutable="false">
+    <bpmn:laneSet>
+      <bpmn:lane id="lane_user" name="Пользователь">
+        <bpmn:flowNodeRef>n_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_open</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_fill</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_end_ok</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_err</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_end_fail</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="lane_eco" name="Веб-модуль ECO">
+        <bpmn:flowNodeRef>n_load</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_valid</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_gw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_done</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="lane_api" name="API платформы">
+        <bpmn:flowNodeRef>n_lists</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>n_save</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="n_start" name="Начало">
+
+      <bpmn:outgoing>f01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="n_open" name="Открыть форму нового измерения">
+      <bpmn:incoming>f01</bpmn:incoming>
+      <bpmn:outgoing>f02</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="n_load" name="Загрузка справочников для формы">
+      <bpmn:incoming>f02</bpmn:incoming>
+      <bpmn:outgoing>f03</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="n_lists" name="Формирование списков организаций и партий">
+      <bpmn:incoming>f03</bpmn:incoming>
+      <bpmn:outgoing>f04</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="n_fill" name="Ввод параметров измерения">
+      <bpmn:incoming>f04</bpmn:incoming>
+      <bpmn:outgoing>f05</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="n_valid" name="Валидация данных формы">
+      <bpmn:incoming>f05</bpmn:incoming>
+      <bpmn:outgoing>f06</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="n_gw" name="Данные корректны?">
+      <bpmn:incoming>f06</bpmn:incoming>
+      <bpmn:outgoing>f_yes</bpmn:outgoing>
+      <bpmn:outgoing>f_no</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="n_save" name="Сохранение экологического измерения">
+      <bpmn:incoming>f_yes</bpmn:incoming>
+      <bpmn:outgoing>f07</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="n_done" name="Переход к журналу измерений">
+      <bpmn:incoming>f07</bpmn:incoming>
+      <bpmn:outgoing>f08</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="n_end_ok" name="Конец (измерение сохранено)">
+      <bpmn:incoming>f08</bpmn:incoming>
+
+    </bpmn:endEvent>
+    <bpmn:userTask id="n_err" name="Отображение ошибок формы">
+      <bpmn:incoming>f_no</bpmn:incoming>
+      <bpmn:outgoing>f_err</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="n_end_fail" name="Конец (ошибка)">
+      <bpmn:incoming>f_err</bpmn:incoming>
+
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="f01" sourceRef="n_start" targetRef="n_open">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f02" sourceRef="n_open" targetRef="n_load">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f03" sourceRef="n_load" targetRef="n_lists">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f04" sourceRef="n_lists" targetRef="n_fill">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f05" sourceRef="n_fill" targetRef="n_valid">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f06" sourceRef="n_valid" targetRef="n_gw">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f_yes" sourceRef="n_gw" targetRef="n_save" name="да">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f_no" sourceRef="n_gw" targetRef="n_err" name="нет">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f07" sourceRef="n_save" targetRef="n_done">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f08" sourceRef="n_done" targetRef="n_end_ok">
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="f_err" sourceRef="n_err" targetRef="n_end_fail">
+    </bpmn:sequenceFlow>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_P17_Measurement">
+    <bpmndi:BPMNPlane id="Plane_P17_Measurement" bpmnElement="Process_P17_Measurement">
+      <bpmndi:BPMNShape id="lane_user_di" bpmnElement="lane_user" isHorizontal="true">
+        <dc:Bounds x="80" y="52" width="1838" height="142" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="lane_eco_di" bpmnElement="lane_eco" isHorizontal="true">
+        <dc:Bounds x="80" y="194" width="1838" height="142" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="lane_api_di" bpmnElement="lane_api" isHorizontal="true">
+        <dc:Bounds x="80" y="336" width="1838" height="142" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_start_di" bpmnElement="n_start">
+        <dc:Bounds x="140" y="90" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_open_di" bpmnElement="n_open">
+        <dc:Bounds x="292" y="76" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_load_di" bpmnElement="n_load">
+        <dc:Bounds x="444" y="216" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_lists_di" bpmnElement="n_lists">
+        <dc:Bounds x="596" y="356" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_fill_di" bpmnElement="n_fill">
+        <dc:Bounds x="748" y="76" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_valid_di" bpmnElement="n_valid">
+        <dc:Bounds x="900" y="216" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_gw_di" bpmnElement="n_gw" isMarkerVisible="true">
+        <dc:Bounds x="1088" y="225" width="46" height="46" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_save_di" bpmnElement="n_save">
+        <dc:Bounds x="1204" y="356" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_done_di" bpmnElement="n_done">
+        <dc:Bounds x="1356" y="216" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_end_ok_di" bpmnElement="n_end_ok">
+        <dc:Bounds x="1508" y="90" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_err_di" bpmnElement="n_err">
+        <dc:Bounds x="1204" y="76" width="118" height="64" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="n_end_fail_di" bpmnElement="n_end_fail">
+        <dc:Bounds x="1356" y="90" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="f01_di" bpmnElement="f01">
+        <di:waypoint x="176" y="108" />
+        <di:waypoint x="292" y="108" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f02_di" bpmnElement="f02">
+        <di:waypoint x="351" y="140" />
+        <di:waypoint x="351" y="178" />
+        <di:waypoint x="503" y="178" />
+        <di:waypoint x="503" y="216" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f03_di" bpmnElement="f03">
+        <di:waypoint x="503" y="280" />
+        <di:waypoint x="503" y="318" />
+        <di:waypoint x="655" y="318" />
+        <di:waypoint x="655" y="356" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f04_di" bpmnElement="f04">
+        <di:waypoint x="714" y="388" />
+        <di:waypoint x="738" y="388" />
+        <di:waypoint x="738" y="108" />
+        <di:waypoint x="748" y="108" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f05_di" bpmnElement="f05">
+        <di:waypoint x="807" y="140" />
+        <di:waypoint x="807" y="178" />
+        <di:waypoint x="959" y="178" />
+        <di:waypoint x="959" y="216" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f06_di" bpmnElement="f06">
+        <di:waypoint x="1018" y="248" />
+        <di:waypoint x="1088" y="248" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f_yes_di" bpmnElement="f_yes">
+        <di:waypoint x="1111" y="271" />
+        <di:waypoint x="1111" y="313" />
+        <di:waypoint x="1263" y="313" />
+        <di:waypoint x="1263" y="356" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f_no_di" bpmnElement="f_no">
+        <di:waypoint x="1134" y="248" />
+        <di:waypoint x="1169" y="248" />
+        <di:waypoint x="1169" y="108" />
+        <di:waypoint x="1204" y="108" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f07_di" bpmnElement="f07">
+        <di:waypoint x="1322" y="388" />
+        <di:waypoint x="1346" y="388" />
+        <di:waypoint x="1346" y="248" />
+        <di:waypoint x="1356" y="248" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f08_di" bpmnElement="f08">
+        <di:waypoint x="1474" y="248" />
+        <di:waypoint x="1498" y="248" />
+        <di:waypoint x="1498" y="108" />
+        <di:waypoint x="1508" y="108" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="f_err_di" bpmnElement="f_err">
+        <di:waypoint x="1322" y="108" />
+        <di:waypoint x="1356" y="108" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

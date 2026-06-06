@@ -1,0 +1,157 @@
+@startuml ER_logical
+' Логическая ER-модель программного комплекса «Учёт и контроль отходов»
+' БД PostgreSQL waste_complex (сервер API) + локальный SQLite модуля отчётности
+' Рендер: https://www.plantuml.com/plantuml/uml или plantuml docs/diagrams/er_logical.puml
+
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+title Логическая ER-модель\n(БД waste_complex + локальный SQLite)
+
+package "PostgreSQL — waste_complex (общая платформа)" #F8F9FA {
+
+  entity "core_organization\n(Организация)" as Org {
+    * **id** : SERIAL <<PK>>
+    --
+    name : VARCHAR
+    address : VARCHAR
+    email : VARCHAR
+    phone : VARCHAR
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+  }
+
+  entity "core_waste_type\n(Вид отхода)" as Waste {
+    * **id** : SERIAL <<PK>>
+    --
+    code : VARCHAR
+    name : VARCHAR
+    hazard_class : SMALLINT
+    fkko_code : VARCHAR
+    description : TEXT
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+  }
+
+  entity "accounting_batch\n(Партия отходов)" as Batch {
+    * **id** : SERIAL <<PK>>
+    --
+    # organization_id : INT <<FK>>
+    # waste_type_id : INT <<FK>>
+    code : VARCHAR
+    name : VARCHAR
+    volume_tons : NUMERIC
+    hazard_class : SMALLINT
+    fkko_code : VARCHAR
+    status : VARCHAR
+    source_department : VARCHAR
+    received_at : TIMESTAMP
+  }
+
+  entity "planning_plan\n(План переработки)" as Plan {
+    * **id** : SERIAL <<PK>>
+    --
+    # batch_id : INT <<FK>>
+    line : VARCHAR
+    shift_date : DATE
+    status : VARCHAR
+    planned_volume : NUMERIC
+  }
+
+  entity "monitoring_process_stage\n(Этап переработки)" as Stage {
+    * **id** : SERIAL <<PK>>
+    --
+    # batch_id : INT <<FK>>
+    stage_name : VARCHAR
+    started_at : TIMESTAMP
+    finished_at : TIMESTAMP
+    result : VARCHAR
+    notes : TEXT
+  }
+
+  entity "reporting_operation\n(Операция / движение)" as Op {
+    * **id** : SERIAL <<PK>>
+    --
+    # organization_id : INT <<FK>>
+    # waste_type_id : INT <<FK>>
+    operation_type : VARCHAR
+    volume : NUMERIC
+    operation_date : DATE
+    notes : TEXT
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+  }
+
+  entity "reporting_measurement\n(Измерение)" as Meas {
+    * **id** : SERIAL <<PK>>
+    --
+    # organization_id : INT <<FK>>
+    batch_id : INT <<FK?>>
+    indicator_type : VARCHAR
+    value : NUMERIC
+    norm : NUMERIC
+    unit : VARCHAR
+    measurement_date : DATE
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+  }
+
+  entity "auth_user\n(Пользователь)" as User {
+    * **id** : SERIAL <<PK>>
+    --
+    email : VARCHAR <<UNIQUE>>
+    password_hash : VARCHAR
+    role : VARCHAR
+    full_name : VARCHAR
+  }
+
+  Org ||--o{ Batch : "1 : N"
+  Waste ||--o{ Batch : "1 : N"
+
+  Batch ||--o| Plan : "0..1 : 1"
+  Batch ||--o{ Stage : "1 : N"
+
+  Org ||--o{ Op : "1 : N"
+  Waste ||--o{ Op : "1 : N"
+
+  Org ||--o{ Meas : "1 : N"
+  Batch }o--o{ Meas : "0..1 : N\n(партия опциональна)"
+
+  note bottom of User
+    Роли: admin, ecologist, manager.
+    Доступ к данным — по роли и JWT,
+    без прямого FK на организацию.
+  end note
+}
+
+package "SQLite — db.sqlite3 (модуль отчётности)" #FFF8E7 {
+
+  entity "django_session\n(Сессия)" as Session {
+    * **session_key** : VARCHAR <<PK>>
+    --
+    session_data : TEXT
+    expire_date : DATETIME
+  }
+
+  entity "auth_user (локальный)\n(Синхронизация после входа)" as LocalUser {
+    * **id** : INTEGER <<PK>>
+    --
+    username : VARCHAR
+    email : VARCHAR
+    password : VARCHAR
+    is_active : BOOLEAN
+  }
+
+  LocalUser ||--o{ Session : "1 : N"
+}
+
+note as N1
+  **Соответствие Django-моделям** (apps/*/models.py):
+  Organization, WasteType, Movement → reporting_operation,
+  Measurement → reporting_measurement.
+  Учётные данные в SQLite **не дублируются** — только сессия/JWT.
+end note
+
+@enduml

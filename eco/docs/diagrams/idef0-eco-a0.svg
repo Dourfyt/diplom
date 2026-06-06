@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="960" viewBox="0 0 1360 960">
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#1a1a1a"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #1a1a1a; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#fafafa"/>
+  <text x="680" y="32" text-anchor="middle" font-size="18" font-weight="600">IDEF0 — декомпозиция A0 (уровень 1)</text>
+  <text x="680" y="54" text-anchor="middle" font-size="13" fill="#555">Родитель: A0 — Ведение экологической отчётности на КПО</text>
+<text x="32" y="480" text-anchor="middle" font-size="11" fill="#2c5282" font-weight="600" transform="rotate(-90,32,480)">ВХОДЫ</text><text x="1328" y="480" text-anchor="middle" font-size="11" fill="#2c5282" font-weight="600" transform="rotate(90,1328,480)">ВЫХОДЫ</text><text x="680" y="92" text-anchor="middle" font-size="13" fill="#444">↑ Управление (с A-0): законодательство · ФККО · роли · политика API</text>
+  <rect x="90" y="130" width="330" height="115" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+  <text x="104" y="152" font-size="12" fill="#2c5282" font-weight="600">A1</text>
+  <text x="255.0" y="186.95000000000002" text-anchor="middle" font-size="14" font-weight="600">Аутентификация и</text>
+    <text x="255.0" y="205.85000000000002" text-anchor="middle" font-size="14" font-weight="600">разграничение доступа</text>
+  <text x="412" y="237" text-anchor="end" font-size="12" fill="#666">1</text>
+  <rect x="540" y="130" width="330" height="115" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+  <text x="554" y="152" font-size="12" fill="#2c5282" font-weight="600">A2</text>
+  <text x="705.0" y="186.95000000000002" text-anchor="middle" font-size="14" font-weight="600">Администрирование и</text>
+    <text x="705.0" y="205.85000000000002" text-anchor="middle" font-size="14" font-weight="600">контроль качества данных</text>
+  <text x="862" y="237" text-anchor="end" font-size="12" fill="#666">2</text>
+  <rect x="90" y="360" width="330" height="115" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+  <text x="104" y="382" font-size="12" fill="#2c5282" font-weight="600">A3</text>
+  <text x="255.0" y="416.95" text-anchor="middle" font-size="14" font-weight="600">Ведение журнала операций</text>
+    <text x="255.0" y="435.84999999999997" text-anchor="middle" font-size="14" font-weight="600">и экспорт отчётов</text>
+  <text x="412" y="467" text-anchor="end" font-size="12" fill="#666">3</text>
+  <rect x="540" y="360" width="330" height="115" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+  <text x="554" y="382" font-size="12" fill="#2c5282" font-weight="600">A4</text>
+  <text x="705.0" y="416.95" text-anchor="middle" font-size="14" font-weight="600">Учёт экологических</text>
+    <text x="705.0" y="435.84999999999997" text-anchor="middle" font-size="14" font-weight="600">измерений</text>
+  <text x="862" y="467" text-anchor="end" font-size="12" fill="#666">4</text>
+  <rect x="315" y="590" width="330" height="115" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+  <text x="329" y="612" font-size="12" fill="#2c5282" font-weight="600">A5</text>
+  <text x="480.0" y="646.9499999999999" text-anchor="middle" font-size="14" font-weight="600">Формирование аналитики</text>
+    <text x="480.0" y="665.8499999999999" text-anchor="middle" font-size="14" font-weight="600">и KPI</text>
+  <text x="637" y="697" text-anchor="end" font-size="12" fill="#666">5</text><path d="M 42,188 L 90,188" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="38" y="160" width="102.64" height="19" fill="#fafafa" stroke="none"/>
+  <text x="42" y="175" text-anchor="start" font-size="13" fill="#1a1a1a">Учётные данные</text><path d="M 42,228 L 540,228" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="38" y="200" width="170.24" height="19" fill="#fafafa" stroke="none"/>
+  <text x="42" y="215" text-anchor="start" font-size="13" fill="#1a1a1a">Данные партий и операций</text><path d="M 42,418 L 90,408" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="38" y="390" width="129.68" height="19" fill="#fafafa" stroke="none"/>
+  <text x="42" y="405" text-anchor="start" font-size="13" fill="#1a1a1a">Параметры запросов</text><path d="M 420,228 L 540,228" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="428.68" y="201" width="102.64" height="19" fill="#fafafa" stroke="none"/>
+  <text x="480" y="216" text-anchor="middle" font-size="13" fill="#1a1a1a">Сессия и токен</text><path d="M 255,245 L 255,360" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="264" y="290" width="48.56" height="19" fill="#fafafa" stroke="none"/>
+  <text x="268" y="305" text-anchor="start" font-size="13" fill="#1a1a1a">Сессия</text><path d="M 255,475 L 480,590" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="346" y="525" width="48.56" height="19" fill="#fafafa" stroke="none"/>
+  <text x="350" y="540" text-anchor="start" font-size="13" fill="#1a1a1a">Сессия</text><path d="M 705,475 L 555,590" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="636" y="525" width="48.56" height="19" fill="#fafafa" stroke="none"/>
+  <text x="640" y="540" text-anchor="start" font-size="13" fill="#1a1a1a">Сессия</text><path d="M 870,188 L 1318,168" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="1192.32" y="140" width="129.68" height="19" fill="#fafafa" stroke="none"/>
+  <text x="1318" y="155" text-anchor="end" font-size="13" fill="#1a1a1a">Сводка целостности</text><path d="M 420,418 L 1318,328" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="1226.12" y="300" width="95.88000000000001" height="19" fill="#fafafa" stroke="none"/>
+  <text x="1318" y="315" text-anchor="end" font-size="13" fill="#1a1a1a">Файлы отчётов</text><path d="M 870,418 L 1318,408" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="1205.84" y="380" width="116.16" height="19" fill="#fafafa" stroke="none"/>
+  <text x="1318" y="395" text-anchor="end" font-size="13" fill="#1a1a1a">Записи измерений</text><path d="M 645,648 L 1318,588" fill="none" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <rect x="1232.88" y="560" width="89.12" height="19" fill="#fafafa" stroke="none"/>
+  <text x="1318" y="575" text-anchor="end" font-size="13" fill="#1a1a1a">Дашборды KPI</text><text x="680" y="720" text-anchor="middle" font-size="13" fill="#444">↓ Механизмы: веб-модуль ECO · API платформы · пользователи (роли)</text><text x="80" y="930" font-size="13" fill="#666">Цифра в углу блока — порядок доминирования (1 — наибольший)</text></svg>
