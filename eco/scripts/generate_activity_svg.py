@@ -98,8 +98,8 @@ def _defs() -> str:
 
 
 def eco_p14_export() -> str:
-    w, h = 920, 780
-    top, lane_h = 70, 710
+    w, h = 920, 860
+    top, lane_h = 70, 790
     col_w = w // 3
     xs = [col_w // 2, col_w + col_w // 2, 2 * col_w + col_w // 2]
     lanes = [
@@ -121,7 +121,8 @@ def eco_p14_export() -> str:
     actions_eco = [
         (0, "Открыть журнал\nопераций"),
         (0, "Задать фильтры\n(организация, период)"),
-        (0, "Запросить экспорт\n(PDF / XML)"),
+        (0, "Запросить экспорт"),
+        (0, "Выбрать формат\n(PDF / XML)"),
     ]
     for lane, text in actions_eco:
         parts.append(_action(xs[lane], y, text))
@@ -131,7 +132,7 @@ def eco_p14_export() -> str:
     fork_y = y - 10
     parts.append(_fork_join(w // 2, fork_y, col_w * 2 + 40))
     y_fork = fork_y + 35
-    parts.append(_action(xs[1], y_fork, "Подготовить шаблон\nвыбранного формата"))
+    parts.append(_action(xs[1], y_fork, "Подготовить шаблон\nPDF или XML"))
     parts.append(_action(xs[2], y_fork, "Получить операции\nдвижения за период"))
     parts.append(_arrow(xs[0], y - 14, w // 2, fork_y))
     parts.append(_arrow(w // 2, fork_y, xs[1], y_fork - 22))
@@ -145,7 +146,14 @@ def eco_p14_export() -> str:
     parts.append(_arrow(xs[2], join_y, xs[2], join_y + 28))
 
     y_merge = join_y + 55
-    parts.append(_action(xs[1], y_merge, "Объединить данные\nи сформировать файл"))
+    parts.append(
+        _action(
+            xs[1],
+            y_merge,
+            "Объединить данные\nи сформировать файл\n(PDF / XML)",
+            ah=58,
+        )
+    )
     parts.append(_arrow(w // 2, join_y, xs[1], y_merge - 22))
 
     y_dl = y_merge + dy

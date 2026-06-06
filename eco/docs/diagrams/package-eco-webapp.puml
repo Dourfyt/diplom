@@ -47,13 +47,14 @@ package "Business Layer\n(предметная логика)" as BL {
   }
   package "apps.operations" as OPS {
     [журнал операций]
-    [экспорт отчётов]
+    [экспорт PDF / XML]
   }
   package "apps.monitoring" as MON {
     [измерения]
   }
   package "apps.dashboard" as DSH {
     [KPI, дашборды]
+    [экспорт KPI в PDF]
   }
   package "apps.waste" as WST {
     [справочник ФККО]
