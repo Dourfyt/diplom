@@ -11,7 +11,11 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import RedirectView
 
-from apps.integrations.auth_api import authenticate_with_api
+from apps.integrations.auth_api import (
+    API_ROLE_LABELS,
+    ECO_ALLOWED_API_ROLES,
+    authenticate_with_api,
+)
 from apps.integrations.exceptions import ApiError
 from apps.integrations.roles import get_home_redirect_url_for_user
 
@@ -57,6 +61,23 @@ class ApiLoginView(View):
                 {
                     "use_api_auth": True,
                     "error_message": str(exc),
+                    "email": email,
+                },
+            )
+
+        role = (user_data.get("role") or "").lower()
+        if role not in ECO_ALLOWED_API_ROLES:
+            role_label = API_ROLE_LABELS.get(role, role)
+            return render(
+                request,
+                self.template_name,
+                {
+                    "use_api_auth": True,
+                    "error_message": (
+                        f"Модуль отчётности недоступен для роли «{role_label}». "
+                        "Войдите как руководитель (manager@eco.local) или эколог "
+                        "(ecologist@eco.local), пароль eco2026."
+                    ),
                     "email": email,
                 },
             )

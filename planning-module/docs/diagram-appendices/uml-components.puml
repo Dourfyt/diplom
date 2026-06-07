@@ -1,17 +1,39 @@
 @startuml planning_module_components
-' ISO/IEC 19519 — UML 2.5, диаграмма компонентов
+' Рисунок 2.3 — UML-диаграмма компонентов (ISO/IEC 19519, UML 2.5)
+' Рендер: PlantUML / VS Code / https://www.plantuml.com/plantuml
+
 skinparam backgroundColor #FFFFFF
 skinparam shadowing false
-skinparam monochrome true
 skinparam defaultFontName Arial
 skinparam defaultFontSize 12
-skinparam nodesep 100
-skinparam ranksep 120
+skinparam nodesep 90
+skinparam ranksep 100
 skinparam componentStyle uml2
-skinparam ArrowColor #1A1A1A
-skinparam ComponentBorderColor #1A1A1A
+skinparam ArrowColor #1a1a1a
+skinparam ComponentBorderColor #1a1a1a
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #1a1a1a
+  FontName Arial
+  FontSize 12
+}
+skinparam database {
+  BackgroundColor #f7fafc
+  BorderColor #2c5282
+  FontName Arial
+  FontSize 12
+}
+skinparam interface {
+  BackgroundColor #FFFFFF
+  BorderColor #1a1a1a
+}
+skinparam component<<перспектива>> {
+  BorderStyle dashed
+  BorderColor #666666
+  FontColor #666666
+}
 
-title UML-диаграмма компонентов — модуль planning-module
+title UML-диаграмма компонентов\nМодуль planning-module (ЭкоПлан)
 
 component "Веб-клиент\n<<компонент>>\nReact + TypeScript" as WC
 
@@ -21,20 +43,20 @@ component "Движок планирования\n<<компонент>>\nПри
 
 component "Сервис симуляции\n<<компонент>>\nСценарии «что если»" as SS
 
-component "Сервис уведомлений\n<<компонент>>\nSSE · E-mail" as NS
+component "Сервис уведомлений\n<<компонент>>\nT1 / T2 · in_app" as NS
 
 database "PostgreSQL" as DB
 
-component "Внешние системы\n<<компонент>>\nMES · SCADA · ERP" as EXT
+component "Внешние системы\n<<компонент>>\nMES · SCADA · ERP" as EXT <<перспектива>>
 
 interface "API REST-клиента" as I_RC
 interface "API REST" as I_RS
 interface "API планирования" as I_PL
 interface "API симуляции" as I_SI
-interface "Поток SSE" as I_SSE
 interface "Доступ к БД" as I_DB
 interface "Входящие события" as I_IN
 
+' Клиент → API REST (HTTPS/JSON)
 WC ..> I_RC
 I_RC - I_RS
 note on link
@@ -42,33 +64,32 @@ note on link
 end note
 AG -0)- I_RS
 
+' Шлюз → API планирования, API симуляции
 AG ..> I_PL
 PE -0)- I_PL
 
 AG ..> I_SI
 SS -0)- I_SI
 
-AG ..> I_SSE
-NS -0)- I_SSE
-
+' Сервисы → Доступ к БД (PostgreSQL / SQLAlchemy)
 PE ..> I_DB
 SS ..> I_DB
 NS ..> I_DB
 DB -0)- I_DB
 note bottom of I_DB
-  Протокол PostgreSQL
-  SQLAlchemy
+  PostgreSQL
+  SQLAlchemy ORM
 end note
 
+' Уведомления — внутренний вызов из движка планирования
+PE ..> NS : <<use>>
+
+' Внешние системы — перспектива
 EXT -0)- I_IN
 AG ..> I_IN
 note on link
   Webhook / JSON
-end note
-
-WC ..> I_SSE
-note bottom of I_SSE
-  SSE / text-event-stream
+  <<перспектива>>
 end note
 
 @enduml

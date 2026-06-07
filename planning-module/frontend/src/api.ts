@@ -1,6 +1,15 @@
+import { clearSession, getAccessToken } from "./auth";
+
 /** Базовый URL API: пусто = тот же хост (nginx/vite проксируют на платформу) */
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 const API = `${API_BASE}/api/v1`;
+
+export class ApiAuthError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = "ApiAuthError";
+  }
+}
 
 export interface ProductionLine {
   id: number;
@@ -88,10 +97,29 @@ export interface SimCompare {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
+  const token = getAccessToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options?.headers as Record<string, string> | undefined),
+  };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  const res = await fetch(`${API}${path}`, { ...options, headers });
+  if (res.status === 401) {
+    clearSession();
+    throw new ApiAuthError("Сессия истекла. Войдите снова.", 401);
+  }
+  if (res.status === 403) {
+    let detail = "Недостаточно прав";
+    try {
+      const body = await res.json();
+      if (typeof body.detail === "string") detail = body.detail;
+    } catch {
+      /* ignore */
+    }
+    throw new ApiAuthError(detail, 403);
+  }
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || res.statusText);

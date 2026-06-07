@@ -1,0 +1,173 @@
+@startuml ER_planning_logical
+' Рисунок 2.3 — ER-диаграмма базы данных модуля планирования
+' PostgreSQL waste_complex · snake_case · Crow's Foot
+' Рендер: https://www.plantuml.com/plantuml/uml
+
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+title ER-диаграмма базы данных модуля планирования\n(PostgreSQL waste_complex)
+
+package "PostgreSQL — waste_complex" #F8F9FA {
+
+  entity "organizations\n(Организация)" as Org {
+    * **id** : SERIAL <<PK>>
+    --
+    name : VARCHAR(256)
+    address : VARCHAR(512)
+    email : VARCHAR(128)
+    phone : VARCHAR(64)
+  }
+
+  entity "waste_types\n(Вид отхода)" as WasteType {
+    * **id** : SERIAL <<PK>>
+    --
+    code : VARCHAR(32) <<UNIQUE>>
+    name : VARCHAR(256)
+    fkko_code : VARCHAR(32)
+    hazard_class : INTEGER
+    description : TEXT
+  }
+
+  entity "waste_batches\n(Партия отходов)" as Batch {
+    * **id** : SERIAL <<PK>>
+    --
+    # organization_id : INTEGER <<FK>>
+    # waste_type_id : INTEGER <<FK>>
+    code : VARCHAR(16) <<UNIQUE>>
+    name : VARCHAR(256)
+    fkko_code : VARCHAR(32)
+    hazard_class : INTEGER
+    volume_tons : DOUBLE PRECISION
+    storage_deadline_hours : DOUBLE PRECISION
+    received_at : TIMESTAMP
+    status : VARCHAR(32)
+    route_codes : VARCHAR(64)
+    economic_value : DOUBLE PRECISION
+  }
+
+  entity "production_lines\n(Производственная линия)" as Line {
+    * **id** : SERIAL <<PK>>
+    --
+    code : VARCHAR(16) <<UNIQUE>>
+    name : VARCHAR(128)
+    line_type : VARCHAR(64)
+    capacity_t_per_hour : DOUBLE PRECISION
+    is_available : BOOLEAN
+  }
+
+  entity "routing_operations\n(Операция маршрута)" as RouteOp {
+    * **id** : SERIAL <<PK>>
+    --
+    code : VARCHAR(32) <<UNIQUE>>
+    name : VARCHAR(128)
+    line_code : VARCHAR(16)
+    base_duration_hours : DOUBLE PRECISION
+    output_ratio : DOUBLE PRECISION
+    loss_ratio : DOUBLE PRECISION
+    sequence_order : INTEGER
+  }
+
+  entity "schedule_plans\n(Версия плана смены)" as Plan {
+    * **id** : SERIAL <<PK>>
+    --
+    # parent_plan_id : INTEGER <<FK>>
+    name : VARCHAR(128)
+    horizon_hours : DOUBLE PRECISION
+    status : planstatus
+    version_no : INTEGER
+    author : VARCHAR(64)
+    is_simulation : BOOLEAN
+    created_at : TIMESTAMP
+    approved_at : TIMESTAMP
+  }
+
+  entity "schedule_items\n(Операция в плане)" as Item {
+    * **id** : SERIAL <<PK>>
+    --
+    # plan_id : INTEGER <<FK>>
+    # batch_id : INTEGER <<FK>>
+    # line_id : INTEGER <<FK>>
+    operation_code : VARCHAR(32)
+    start_at : TIMESTAMP
+    end_at : TIMESTAMP
+    priority_score : DOUBLE PRECISION
+    planned_output_tons : DOUBLE PRECISION
+    planned_loss_tons : DOUBLE PRECISION
+  }
+
+  entity "notifications\n(Уведомление T1/T2)" as Notif {
+    * **id** : SERIAL <<PK>>
+    --
+    batch_id : INTEGER <<FK?>>
+    line_id : INTEGER <<FK?>>
+    trigger_code : VARCHAR(8)
+    title : VARCHAR(256)
+    message : TEXT
+    channel : VARCHAR(32)
+    status : notificationstatus
+    source_module : VARCHAR(32)
+    created_at : TIMESTAMP
+  }
+
+  entity "line_downtimes\n(Простой линии)" as Downtime {
+    * **id** : SERIAL <<PK>>
+    --
+    # line_id : INTEGER <<FK>>
+    start_at : TIMESTAMP
+    duration_hours : DOUBLE PRECISION
+    reason : VARCHAR(256)
+  }
+
+  entity "users\n(Пользователь)" as User {
+    * **id** : SERIAL <<PK>>
+    --
+    email : VARCHAR(128) <<UNIQUE>>
+    password_hash : VARCHAR(256)
+    role : VARCHAR(32)
+    full_name : VARCHAR(128)
+    is_active : BOOLEAN
+    created_at : TIMESTAMP
+  }
+
+  Org ||--o{ Batch : "1 : N"
+  WasteType ||--o{ Batch : "1 : N"
+
+  Plan ||--o{ Item : "1 : N\nON DELETE CASCADE"
+  Batch ||--o{ Item : "1 : N"
+  Line ||--o{ Item : "1 : N"
+
+  Plan ||--o{ Plan : "0..1 : N\n(симуляция,\nparent_plan_id)"
+
+  Batch }o--o{ Notif : "0..1 : N"
+  Line }o--o{ Notif : "0..1 : N"
+
+  Line ||--o{ Downtime : "1 : N"
+
+  note bottom of RouteOp
+    Связь с production_lines
+    **логическая**: по полю line_code,
+    без FK в БД.
+  end note
+
+  note bottom of Batch
+    Источник очереди планирования:
+    status ∈ {accepted, queued};
+    route_codes — маршрут L1,L2.
+  end note
+
+  note bottom of Plan
+    Жизненный цикл: draft → approved → archived.
+    is_simulation = true — сценарий «что если».
+  end note
+
+  note bottom of User
+    Роли: operator, chief,
+    ecologist, admin. Доступ к данным —
+    по роли и JWT.
+  end note
+}
+
+@enduml

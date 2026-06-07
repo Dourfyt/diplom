@@ -15,6 +15,9 @@ from apps.integrations.roles import (
     ensure_role_groups,
 )
 
+# Роли платформы, которым разрешён вход в модуль eco (остальные — учёт, мониторинг, планирование)
+ECO_ALLOWED_API_ROLES = frozenset({"admin", "administrator", "ecologist", "chief", "manager"})
+
 # Роль в API (PostgreSQL на сервере) → группа Django для меню и доступа
 API_ROLE_TO_DJANGO_GROUP: dict[str, str] = {
     "admin": GROUP_ADMIN,
@@ -22,8 +25,6 @@ API_ROLE_TO_DJANGO_GROUP: dict[str, str] = {
     "ecologist": GROUP_ECOLOGIST,
     "manager": GROUP_MANAGER,
     "chief": GROUP_MANAGER,
-    "operator": GROUP_ECOLOGIST,
-    "dispatcher": GROUP_ECOLOGIST,
 }
 
 # Роль в Django setup_roles → роль в API платформы

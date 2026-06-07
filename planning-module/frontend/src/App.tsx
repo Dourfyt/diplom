@@ -5,7 +5,14 @@ import {
   stopPlanningTour,
   type PlanningTab,
 } from "./training/planningTour";
-import { api, Batch, Kpi, Notification, Plan, ProductionLine, SimCompare } from "./api";
+import {
+  AuthSession,
+  canWritePlanning,
+  getSession,
+  logout,
+  ROLE_LABELS,
+} from "./auth";
+import { api, ApiAuthError, Batch, Kpi, Notification, Plan, ProductionLine, SimCompare } from "./api";
 import { formatHours, formatNumber } from "./format";
 import { batchStatusLabel, notificationStatusLabel, planStatusLabel } from "./labels";
 import { ContextBar } from "./components/ContextBar";
@@ -14,6 +21,7 @@ import { BuildPlanModal } from "./components/BuildPlanModal";
 import { GanttChart } from "./components/GanttChart";
 import { KpiCard } from "./components/KpiCard";
 import { PlanPicker } from "./components/PlanPicker";
+import { LoginPage } from "./components/LoginPage";
 import { ReplanModal } from "./components/ReplanModal";
 import {
   IconAlert,
@@ -77,6 +85,7 @@ function DeltaCell({ value }: { value: number }) {
 }
 
 export default function App() {
+  const [session, setSession] = useState<AuthSession | null>(() => getSession());
   const [tab, setTab] = useState<Tab>("dashboard");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,8 +114,21 @@ export default function App() {
   const lineMeta = buildLineMetaMap(productionLines);
   const emergencyLineCode =
     productionLines.find((l) => l.code === "L2")?.code ?? productionLines[0]?.code ?? "L2";
+  const canWrite = session ? canWritePlanning(session.role) : false;
+
+  const handleLogout = () => {
+    logout();
+    setSession(null);
+    setPlans([]);
+    setBatches([]);
+    setKpi(null);
+    setNotifications([]);
+    setError(null);
+    setToast(null);
+  };
 
   const load = useCallback(async () => {
+    if (!session) return;
     setLoading(true);
     setError(null);
     try {
@@ -126,21 +148,26 @@ export default function App() {
         setKpi(await api.kpi(pid));
       }
     } catch (e) {
+      if (e instanceof ApiAuthError) {
+        handleLogout();
+        return;
+      }
       setError(e instanceof Error ? e.message : "Ошибка загрузки данных");
     } finally {
       setLoading(false);
     }
-  }, [selectedPlanId, showAllPlans]);
+  }, [selectedPlanId, showAllPlans, session]);
 
   useEffect(() => {
-    load();
-  }, [showAllPlans]);
+    if (session) load();
+  }, [showAllPlans, session]);
 
   useEffect(() => {
-    if (selectedPlanId) {
-      api.kpi(selectedPlanId).then(setKpi).catch(() => {});
-    }
-  }, [selectedPlanId, plans]);
+    if (!session || !selectedPlanId) return;
+    api.kpi(selectedPlanId).then(setKpi).catch((e) => {
+      if (e instanceof ApiAuthError) handleLogout();
+    });
+  }, [selectedPlanId, plans, session]);
 
   const handleTrainingToggle = () => {
     if (tourActiveRef.current || isPlanningTourActive()) {
@@ -179,7 +206,8 @@ export default function App() {
       setSelectedPlanId(result.plan.id);
       setTab("schedule");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ошибка");
+      if (e instanceof ApiAuthError) handleLogout();
+      else setError(e instanceof Error ? e.message : "Ошибка");
     } finally {
       setBusy(false);
     }
@@ -194,7 +222,8 @@ export default function App() {
       await load();
       setSelectedPlanId(result.plan.id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ошибка");
+      if (e instanceof ApiAuthError) handleLogout();
+      else setError(e instanceof Error ? e.message : "Ошибка");
     } finally {
       setBusy(false);
     }
@@ -222,7 +251,8 @@ export default function App() {
       setSelectedPlanId(result.plan.id);
       setTab("schedule");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ошибка");
+      if (e instanceof ApiAuthError) handleLogout();
+      else setError(e instanceof Error ? e.message : "Ошибка");
     } finally {
       setBusy(false);
     }
@@ -241,7 +271,8 @@ export default function App() {
       await load();
       setSelectedPlanId(result.sim_plan_id);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ошибка");
+      if (e instanceof ApiAuthError) handleLogout();
+      else setError(e instanceof Error ? e.message : "Ошибка");
     } finally {
       setBusy(false);
     }
@@ -254,11 +285,16 @@ export default function App() {
       setToast(created ? `Создано уведомлений: ${created}` : "Новых рисков не обнаружено");
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Ошибка");
+      if (e instanceof ApiAuthError) handleLogout();
+      else setError(e instanceof Error ? e.message : "Ошибка");
     } finally {
       setBusy(false);
     }
   };
+
+  if (!session) {
+    return <LoginPage onSuccess={() => setSession(getSession())} />;
+  }
 
   const filteredBatches = batches
     .filter(
@@ -317,6 +353,16 @@ export default function App() {
           ))}
         </nav>
 
+        <div className="sidebar-user">
+          <div className="sidebar-user-info">
+            <strong>{session.fullName}</strong>
+            <span>{ROLE_LABELS[session.role] ?? session.role}</span>
+          </div>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={handleLogout}>
+            Выйти
+          </button>
+        </div>
+
         {kpi && (
           <div className="sidebar-footer">
             <div>Рабочий план</div>
@@ -373,7 +419,8 @@ export default function App() {
               type="button"
               className="btn btn-primary"
               onClick={handleBuild}
-              disabled={busy}
+              disabled={busy || !canWrite}
+              title={canWrite ? undefined : "Доступно руководителю и администратору"}
               data-tour="btn-new-plan"
             >
               <IconPlus />
@@ -478,7 +525,7 @@ export default function App() {
                   type="button"
                   className="quick-action quick-action-accent"
                   onClick={handleBuild}
-                  disabled={busy}
+                  disabled={busy || !canWrite}
                 >
                   <IconPlus />
                   <span>Новый план</span>
@@ -527,6 +574,7 @@ export default function App() {
                     className="btn btn-ghost btn-sm"
                     data-tour="schedule-approve"
                     disabled={
+                      !canWrite ||
                       !selectedPlan ||
                       busy ||
                       selectedPlan.is_simulation ||
@@ -541,7 +589,7 @@ export default function App() {
                     type="button"
                     className="btn btn-danger-soft btn-sm"
                     data-tour="schedule-replan"
-                    disabled={!selectedPlan || busy}
+                    disabled={!canWrite || !selectedPlan || busy}
                     onClick={handleReplan}
                   >
                     Перепланировать после простоя
@@ -740,7 +788,7 @@ export default function App() {
                       type="button"
                       className="scenario-card"
                       data-tour="simulation-baseline"
-                      disabled={!selectedPlan || busy}
+                      disabled={!canWrite || !selectedPlan || busy}
                       onClick={() => handleSimulate("baseline")}
                     >
                       <h3>Базовый</h3>
@@ -750,7 +798,7 @@ export default function App() {
                       type="button"
                       className="scenario-card"
                       data-tour="simulation-accelerated"
-                      disabled={!selectedPlan || busy}
+                      disabled={!canWrite || !selectedPlan || busy}
                       onClick={() => handleSimulate("accelerated")}
                     >
                       <h3>Ускоренный</h3>
@@ -760,7 +808,7 @@ export default function App() {
                       type="button"
                       className="scenario-card emergency"
                       data-tour="simulation-emergency"
-                      disabled={!selectedPlan || busy}
+                      disabled={!canWrite || !selectedPlan || busy}
                       onClick={() => handleSimulate("emergency")}
                     >
                       <h3>Аварийный</h3>
@@ -841,7 +889,7 @@ export default function App() {
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm"
-                    disabled={busy}
+                    disabled={busy || !canWrite}
                     onClick={handleCheckNotifications}
                   >
                     Проверить риски
@@ -867,7 +915,7 @@ export default function App() {
                         <div className="notif-body">
                           <h3>{n.title}</h3>
                           <p>{n.message}</p>
-                          {n.status === "new" && (
+                          {n.status === "new" && canWrite && (
                             <button
                               type="button"
                               className="btn btn-ghost btn-sm"

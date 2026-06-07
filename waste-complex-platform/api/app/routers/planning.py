@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.labels import plan_status_ru
+from app.models import User
 from app.models import (
     Notification,
     NotificationStatus,
@@ -39,9 +40,13 @@ from app.services.planner import (
     hours_until_deadline,
     replan_after_downtime,
 )
+from app.services.rbac import require_roles
 from app.services.waste_balance import batch_balance
 
 router = APIRouter(tags=["planning"])
+
+PLANNING_VIEW = require_roles("operator", "chief", "ecologist", "admin")
+PLANNING_WRITE = require_roles("chief", "admin")
 
 
 def _status_code(plan: SchedulePlan) -> str:
@@ -98,18 +103,18 @@ def batch_to_out(b: WasteBatch, db: Session, now: datetime | None = None) -> Bat
 
 
 @router.get("/lines", response_model=list[LineOut])
-def list_lines(db: Session = Depends(get_db)):
+def list_lines(db: Session = Depends(get_db), _: User = Depends(PLANNING_VIEW)):
     return db.query(ProductionLine).order_by(ProductionLine.code).all()
 
 
 @router.get("/batches", response_model=list[BatchOut])
-def list_batches(db: Session = Depends(get_db)):
+def list_batches(db: Session = Depends(get_db), _: User = Depends(PLANNING_VIEW)):
     now = datetime.utcnow()
     return [batch_to_out(b, db, now) for b in db.query(WasteBatch).order_by(WasteBatch.code).all()]
 
 
 @router.get("/plans", response_model=list[PlanOut])
-def list_plans(view: str = "active", db: Session = Depends(get_db)):
+def list_plans(view: str = "active", db: Session = Depends(get_db), _: User = Depends(PLANNING_VIEW)):
     q = db.query(SchedulePlan).options(
         joinedload(SchedulePlan.items).joinedload(ScheduleItem.batch),
         joinedload(SchedulePlan.items).joinedload(ScheduleItem.line),
@@ -135,7 +140,7 @@ def list_plans(view: str = "active", db: Session = Depends(get_db)):
 
 
 @router.get("/plans/{plan_id}", response_model=PlanOut)
-def get_plan(plan_id: int, db: Session = Depends(get_db)):
+def get_plan(plan_id: int, db: Session = Depends(get_db), _: User = Depends(PLANNING_VIEW)):
     plan = (
         db.query(SchedulePlan)
         .options(
@@ -151,7 +156,7 @@ def get_plan(plan_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/plans/build", response_model=PlanActionResult)
-def build_plan(req: BuildPlanRequest, db: Session = Depends(get_db)):
+def build_plan(req: BuildPlanRequest, db: Session = Depends(get_db), _: User = Depends(PLANNING_WRITE)):
     plan = build_schedule(
         db,
         name=req.name,
@@ -168,7 +173,7 @@ def build_plan(req: BuildPlanRequest, db: Session = Depends(get_db)):
 
 @router.post("/plans/{plan_id}/approve", response_model=PlanActionResult)
 @router.post("/plans/{plan_id}/publish", response_model=PlanActionResult)
-def approve_plan(plan_id: int, db: Session = Depends(get_db)):
+def approve_plan(plan_id: int, db: Session = Depends(get_db), _: User = Depends(PLANNING_WRITE)):
     plan = db.query(SchedulePlan).filter(SchedulePlan.id == plan_id).first()
     if not plan:
         raise HTTPException(404, "План не найден")
@@ -187,7 +192,7 @@ def approve_plan(plan_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/plans/{plan_id}/replan", response_model=PlanActionResult)
-def replan(plan_id: int, req: DowntimeRequest, db: Session = Depends(get_db)):
+def replan(plan_id: int, req: DowntimeRequest, db: Session = Depends(get_db), _: User = Depends(PLANNING_WRITE)):
     try:
         plan = replan_after_downtime(db, plan_id, req.line_code, req.duration_hours)
     except ValueError as e:
@@ -198,7 +203,7 @@ def replan(plan_id: int, req: DowntimeRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/simulations", response_model=SimulationCompare)
-def run_simulation(req: SimulationRequest, db: Session = Depends(get_db)):
+def run_simulation(req: SimulationRequest, db: Session = Depends(get_db), _: User = Depends(PLANNING_WRITE)):
     base = db.query(SchedulePlan).filter(SchedulePlan.id == req.base_plan_id).first()
     if not base:
         raise HTTPException(404, "Базовый план не найден")
@@ -249,7 +254,7 @@ def run_simulation(req: SimulationRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/dashboard/kpi", response_model=KpiDashboard)
-def dashboard(plan_id: int | None = None, db: Session = Depends(get_db)):
+def dashboard(plan_id: int | None = None, db: Session = Depends(get_db), _: User = Depends(PLANNING_VIEW)):
     if plan_id is None:
         active = get_active_approved(db)
         if active:
@@ -261,18 +266,18 @@ def dashboard(plan_id: int | None = None, db: Session = Depends(get_db)):
 
 
 @router.get("/notifications", response_model=list[NotificationOut])
-def list_notifications(db: Session = Depends(get_db)):
+def list_notifications(db: Session = Depends(get_db), _: User = Depends(PLANNING_VIEW)):
     return db.query(Notification).order_by(Notification.created_at.desc()).limit(50).all()
 
 
 @router.post("/notifications/check")
-def trigger_notification_check(plan_id: int | None = None, db: Session = Depends(get_db)):
+def trigger_notification_check(plan_id: int | None = None, db: Session = Depends(get_db), _: User = Depends(PLANNING_WRITE)):
     created = check_and_create_notifications(db, plan_id)
     return {"created": len(created)}
 
 
 @router.patch("/notifications/{nid}/ack")
-def ack_notification(nid: int, db: Session = Depends(get_db)):
+def ack_notification(nid: int, db: Session = Depends(get_db), _: User = Depends(PLANNING_WRITE)):
     n = db.query(Notification).filter(Notification.id == nid).first()
     if not n:
         raise HTTPException(404, "Уведомление не найдено")

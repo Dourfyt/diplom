@@ -1,0 +1,45 @@
+@startuml activity_planning_build_plan
+' UML Activity — построение и утверждение сменного плана (дорожки + fork/join)
+' Рендер: PlantUML / VS Code / https://www.plantuml.com/plantuml
+skinparam activity {
+  BackgroundColor #FFFFFF
+  BorderColor #1a1a1a
+  FontName Arial
+  FontSize 12
+}
+skinparam partition {
+  BackgroundColor #f7fafc
+  BorderColor #2c5282
+  FontStyle bold
+}
+title UML Activity — построение сменного плана\nМодуль planning-module (ЭкоПлан)
+
+|Диспетчер|
+start
+:Открыть модуль планирования;
+:Просмотреть очередь партий\n(приоритет, риск хранения);
+:Нажать «Новый план»\n(горизонт смены 8 ч);
+
+fork
+  |Веб-модуль ЭкоПлан|
+  :Подготовить экран «Расписание»\nPlanPicker · Gantt · KPI;
+fork again
+  |API платформы|
+  :POST /api/v1/plans/build\nПриоритеты партий · жадное расписание\nУведомления T1 / T2;
+end fork
+
+|Веб-модуль ЭкоПлан|
+:GET /plans · /dashboard/kpi\nОтобразить Gantt и таблицу операций;
+
+|Диспетчер|
+:Проверить загрузку линий L1/L2\nи активные оповещения;
+:Нажать «Утвердить план»;
+
+|API платформы|
+:POST /plans/{id}/approve\nАрхив старых версий\nСинхронизация этапов мониторинга;
+
+|Диспетчер|
+:Сменный план передан\nв производство;
+stop
+
+@enduml
