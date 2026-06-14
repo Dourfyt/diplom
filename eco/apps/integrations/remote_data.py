@@ -223,9 +223,21 @@ class RemoteDataService:
 
     def _load_waste_types(self) -> dict[int, WasteTypeRecord]:
         if self._waste_types is None:
-            raw = self._client.get("/api/v1/core/waste-types")
+            items: list[dict] = []
+            page = 1
+            while True:
+                raw = self._client.get(
+                    "/api/v1/core/waste-types",
+                    params={"page": page, "page_size": 500},
+                ) or []
+                if not raw:
+                    break
+                items.extend(raw)
+                if len(raw) < 500:
+                    break
+                page += 1
             self._waste_types = {
-                int(item["id"]): _waste_from_dict(item) for item in (raw or [])
+                int(item["id"]): _waste_from_dict(item) for item in items
             }
         return self._waste_types
 

@@ -93,6 +93,7 @@ class WasteTypeOut(BaseModel):
     fkko_code: str
     hazard_class: int
     description: str
+    registration_allowed: bool = True
 
     model_config = {"from_attributes": True}
 

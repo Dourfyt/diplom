@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import text
+from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import or_, text
 from sqlalchemy.orm import Session
 
 from app.database import engine, get_db
@@ -14,9 +14,22 @@ from app.schemas import (
     WasteTypeOut,
 )
 from app.services.auth import get_current_user
+from app.services.fkko_import import registration_allowed_for
 from app.services.rbac import require_roles
 
 router = APIRouter()
+
+
+def _waste_type_out(row: WasteType) -> WasteTypeOut:
+    return WasteTypeOut(
+        id=row.id,
+        code=row.code,
+        name=row.name,
+        fkko_code=row.fkko_code,
+        hazard_class=row.hazard_class,
+        description=row.description,
+        registration_allowed=registration_allowed_for(row.hazard_class),
+    )
 
 
 MODULES = [
@@ -73,17 +86,36 @@ def list_modules():
 @router.get("/organizations", response_model=list[OrganizationOut])
 def list_organizations(
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("chief", "ecologist", "admin")),
+    _: User = Depends(require_roles("operator", "chief", "ecologist", "admin")),
 ):
     return db.query(Organization).order_by(Organization.name).all()
 
 
 @router.get("/waste-types", response_model=list[WasteTypeOut])
 def list_waste_types(
+    q: str | None = Query(default=None, description="Поиск по коду, ФККО или наименованию"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=500, ge=1, le=500),
     db: Session = Depends(get_db),
-    _: User = Depends(require_roles("chief", "ecologist", "admin")),
+    _: User = Depends(require_roles("operator", "chief", "ecologist", "admin")),
 ):
-    return db.query(WasteType).order_by(WasteType.code).all()
+    query = db.query(WasteType)
+    if q:
+        needle = f"%{q.strip()}%"
+        query = query.filter(
+            or_(
+                WasteType.code.ilike(needle),
+                WasteType.fkko_code.ilike(needle),
+                WasteType.name.ilike(needle),
+            )
+        )
+    rows = (
+        query.order_by(WasteType.code)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+    return [_waste_type_out(row) for row in rows]
 
 
 @router.post("/waste-types/import", response_model=WasteTypeImportResult)

@@ -295,7 +295,7 @@ def classification_history(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    _get_batch_or_404(db, batch_id)
+    batch = _get_batch_or_404(db, batch_id)
     if current_user.role == "operator":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Недостаточно прав")
     if current_user.role not in ("chief", "ecologist", "admin"):
