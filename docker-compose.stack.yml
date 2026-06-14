@@ -82,6 +82,12 @@ services:
       - "5173:80"
     depends_on:
       - api
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 15s
     restart: unless-stopped
 
   eco:
@@ -106,10 +112,22 @@ services:
       - eco_sqlite:/app/sqlite
     depends_on:
       - api
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/accounts/login/', timeout=5)\""]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
     restart: unless-stopped
 
   landing:
     build: ./landing
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
 
   gateway:
@@ -122,13 +140,19 @@ services:
       - certbot-webroot:/var/www/certbot
       - certbot-certs:/etc/letsencrypt:ro
     depends_on:
-      - landing
-      - api
-      - planning
-      - eco
+      landing:
+        condition: service_healthy
+      api:
+        condition: service_started
+      planning:
+        condition: service_healthy
+      eco:
+        condition: service_healthy
     restart: unless-stopped
 
   certbot:
+    profiles:
+      - tools
     image: certbot/certbot:latest
     volumes:
       - certbot-webroot:/var/www/certbot

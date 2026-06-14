@@ -28,7 +28,7 @@ export GATEWAY_NGINX_CONF=./gateway/nginx.init.conf
 docker compose -f docker-compose.stack.yml up -d gateway landing api planning eco
 
 echo "==> Certbot: выпуск сертификата..."
-docker compose -f docker-compose.stack.yml run --rm certbot certonly \
+docker compose -f docker-compose.stack.yml --profile tools run --rm certbot certonly \
   --webroot \
   --webroot-path=/var/www/certbot \
   --email "$EMAIL" \

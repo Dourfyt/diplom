@@ -110,7 +110,7 @@ Cron (раз в сутки, на сервере):
 ### Ручной certbot (если нужно)
 
 ```bash
-docker compose -f docker-compose.stack.yml run --rm certbot certonly \
+docker compose -f docker-compose.stack.yml --profile tools run --rm certbot certonly \
   --webroot -w /var/www/certbot \
   --email ваш@email.ru --agree-tos --no-eff-email \
   -d runcourse.online -d www.runcourse.online \
@@ -153,4 +153,21 @@ docker compose -f docker-compose.stack.yml exec api python -m app.import_fkko
 
 ```bash
 docker compose -f docker-compose.stack.yml exec gateway nginx -s reload
+```
+
+### 502 Bad Gateway на поддоменах
+
+Частая причина: gateway стартовал **до** planning/eco или nginx закэшировал старый IP контейнера после `up --build`.
+
+```bash
+docker compose -f docker-compose.stack.yml ps
+docker compose -f docker-compose.stack.yml up -d --build planning eco landing gateway
+docker compose -f docker-compose.stack.yml exec gateway nginx -s reload
+```
+
+Проверка:
+
+```bash
+curl -I -H "Host: plan.runcourse.online" http://127.0.0.1/
+curl -I -H "Host: eco.runcourse.online" http://127.0.0.1/
 ```
