@@ -12,7 +12,7 @@ function hostBase(): string {
     const { protocol, hostname } = window.location;
     return `${protocol}//${hostname}`;
   }
-  return "http://178.57.217.79";
+  return "http://runcourse.online";
 }
 
 function moduleUrl(envValue: string | undefined, port: number): string {

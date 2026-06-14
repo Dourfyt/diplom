@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Программный комплекс по учёту и переработке промышленных отходов — EcoDesk, ЭкоПлан, ECO, мобильный мониторинг." />
+  <title>EcoComplex — учёт и переработка отходов</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <div class="bg-mesh" aria-hidden="true"></div>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <header class="header">
+    <a class="logo" href="#top">
+      <span class="logo-mark">◈</span>
+      <span>EcoComplex</span>
+    </a>
+    <nav class="nav">
+      <a href="#modules">Модули</a>
+      <a href="#downloads">Скачать</a>
+      <a href="#team">Команда</a>
+    </nav>
+    <a class="btn btn-ghost header-cta" href="http://eco.runcourse.online" target="_blank" rel="noopener">Войти в ECO</a>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-badge reveal">413ИС–22 · РАНХиГС · 2026</div>
+      <h1 class="hero-title reveal">
+        <span class="line">Программный комплекс</span>
+        <span class="line accent">учёта и переработки</span>
+        <span class="line">промышленных отходов</span>
+      </h1>
+      <p class="hero-lead reveal">
+        Единая платформа для регистрации партий, планирования переработки,
+        экологической отчётности и оперативного мониторинга на производстве.
+      </p>
+      <div class="hero-actions reveal">
+        <a class="btn btn-primary" href="#modules">Открыть модули</a>
+        <a class="btn btn-outline" href="#downloads">Скачать EcoDesk</a>
+      </div>
+      <div class="hero-stats reveal">
+        <div class="stat">
+          <strong>4</strong>
+          <span>модуля комплекса</span>
+        </div>
+        <div class="stat">
+          <strong>9083</strong>
+          <span>кодов ФККО</span>
+        </div>
+        <div class="stat">
+          <strong>1</strong>
+          <span>API для всех систем</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="modules" class="section">
+      <div class="section-head reveal">
+        <p class="eyebrow">Веб и десктоп</p>
+        <h2>Модули комплекса</h2>
+        <p class="section-desc">Каждый модуль — отдельный дипломный проект, связанный через общий API и базу данных PostgreSQL.</p>
+      </div>
+
+      <div class="module-grid">
+        <article class="module-card reveal" style="--accent:#34d399">
+          <div class="module-top">
+            <span class="module-tag">Десктоп · Tauri</span>
+            <h3>EcoDesk</h3>
+            <p class="module-author">Корчагин Д.Е.</p>
+          </div>
+          <p class="module-text">
+            Автоматизация приёма и классификации промышленных отходов: регистрация партий
+            от цехов-источников, справочник ФККО, присвоение класса опасности и формирование
+            приёмо-сдаточной документации.
+          </p>
+          <ul class="module-features">
+            <li>Каталог ФККО с поиском</li>
+            <li>Классификация I–V класса</li>
+            <li>Загрузка актов и сканов</li>
+          </ul>
+          <div class="module-links">
+            <a class="btn btn-primary btn-sm" href="/downloads/EcoDesk-setup.exe" download>Скачать для Windows</a>
+          </div>
+        </article>
+
+        <article class="module-card reveal" style="--accent:#60a5fa">
+          <div class="module-top">
+            <span class="module-tag">Веб · React</span>
+            <h3>ЭкоПлан</h3>
+            <p class="module-author">Долгов Е.В.</p>
+          </div>
+          <p class="module-text">
+            Планирование перерабатывающих процессов: автоматическое формирование графиков,
+            учёт приоритетов партий и сроков хранения, симуляция сценариев и оперативное
+            перепланирование при простоях линий.
+          </p>
+          <ul class="module-features">
+            <li>Диаграмма Ганта</li>
+            <li>Симуляция «что если»</li>
+            <li>KPI загрузки линий</li>
+          </ul>
+          <div class="module-links">
+            <a class="btn btn-primary btn-sm" href="http://plan.runcourse.online" target="_blank" rel="noopener">Открыть модуль</a>
+          </div>
+        </article>
+
+        <article class="module-card reveal" style="--accent:#a78bfa">
+          <div class="module-top">
+            <span class="module-tag">Веб · Django</span>
+            <h3>ECO</h3>
+            <p class="module-author">Журавлёва М.Е.</p>
+          </div>
+          <p class="module-text">
+            Отчётность и экологический контроль: дашборд KPI, журналы операций и измерений,
+            формирование отчётов и аналитика эффективности переработки — без разрозненных
+            таблиц и ручного свода данных.
+          </p>
+          <ul class="module-features">
+            <li>Дашборд руководителя</li>
+            <li>Экспорт PDF и XML</li>
+            <li>Контроль нормативов</li>
+          </ul>
+          <div class="module-links">
+            <a class="btn btn-primary btn-sm" href="http://eco.runcourse.online" target="_blank" rel="noopener">Открыть модуль</a>
+          </div>
+        </article>
+
+        <article class="module-card reveal" style="--accent:#fbbf24">
+          <div class="module-top">
+            <span class="module-tag">Мобильное · Flutter</span>
+            <h3>EcoMonitor</h3>
+            <p class="module-author">Хука М.М.</p>
+          </div>
+          <p class="module-text">
+            Мониторинг этапов переработки в режиме реального времени: статусы операций
+            на производственных площадках, QR-идентификация партий, фиксация отклонений
+            и push-уведомления для оперативного реагирования.
+          </p>
+          <ul class="module-features">
+            <li>QR-сканирование партий</li>
+            <li>Этапы переработки</li>
+            <li>Push-уведомления</li>
+          </ul>
+          <div class="module-links">
+            <a class="btn btn-primary btn-sm" href="/downloads/app-release.apk" download>Скачать APK</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="api-strip reveal">
+        <div>
+          <p class="eyebrow">Единый backend</p>
+          <h3>API платформы</h3>
+          <p>FastAPI + PostgreSQL · учёт, планирование, мониторинг и отчётность через REST и WebSocket.</p>
+        </div>
+        <div class="api-links">
+          <a class="btn btn-outline" href="http://api.runcourse.online/docs" target="_blank" rel="noopener">Swagger</a>
+          <a class="btn btn-ghost" href="http://api.runcourse.online/api/health" target="_blank" rel="noopener">Health</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="downloads" class="section section-dark">
+      <div class="section-head reveal">
+        <p class="eyebrow">Установка</p>
+        <h2>Скачать приложения</h2>
+        <p class="section-desc">Десктопный EcoDesk и мобильный EcoMonitor подключаются к серверу <code>api.runcourse.online</code>.</p>
+      </div>
+
+      <div class="download-grid">
+        <a class="download-card reveal" href="/downloads/EcoDesk-setup.exe" download>
+          <div class="download-icon">🖥</div>
+          <div>
+            <h3>EcoDesk Setup</h3>
+            <p>Windows · учёт поступления и классификации</p>
+            <span class="download-meta">EcoDesk-setup.exe · ~9 МБ</span>
+          </div>
+          <span class="download-arrow">↓</span>
+        </a>
+        <a class="download-card reveal" href="/downloads/app-release.apk" download>
+          <div class="download-icon">📱</div>
+          <div>
+            <h3>EcoMonitor APK</h3>
+            <p>Android · мониторинг этапов переработки</p>
+            <span class="download-meta">app-release.apk · ~69 МБ</span>
+          </div>
+          <span class="download-arrow">↓</span>
+        </a>
+      </div>
+
+      <p class="compat-note reveal">
+        Обратная совместимость: модули также доступны по IP
+        <code>178.57.217.79:8080</code> · <code>:5173</code> · <code>:8001</code>
+      </p>
+    </section>
+
+    <section id="team" class="section">
+      <div class="section-head reveal">
+        <p class="eyebrow">Дипломная группа</p>
+        <h2>413ИС–22</h2>
+        <p class="section-desc">Колледж многоуровневого профессионального образования РАНХиГС · руководитель Ф.В. Кусков</p>
+      </div>
+      <div class="team-grid reveal">
+        <div class="team-card"><span>Д.Е. Корчагин</span><small>EcoDesk · учёт</small></div>
+        <div class="team-card"><span>Е.В. Долгов</span><small>ЭкоПлан · планирование</small></div>
+        <div class="team-card"><span>М.Е. Журавлева</span><small>ECO · отчётность</small></div>
+        <div class="team-card"><span>М.М. Хука</span><small>EcoMonitor · мониторинг</small></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 EcoComplex · Программный комплекс по учёту и переработке промышленных отходов</p>
+    <p class="footer-links">
+      <a href="http://runcourse.online">runcourse.online</a>
+      ·
+      <a href="http://api.runcourse.online/docs">API</a>
+      ·
+      <a href="http://plan.runcourse.online">ЭкоПлан</a>
+      ·
+      <a href="http://eco.runcourse.online">ECO</a>
+    </p>
+  </footer>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>
