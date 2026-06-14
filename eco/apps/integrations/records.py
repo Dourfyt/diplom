@@ -67,7 +67,9 @@ class MovementRecord:
   notes: str = ""
 
   def get_operation_type_display(self) -> str:
-    return self.operation_type_display
+    from apps.integrations.remote_data import get_operation_type_display
+
+    return get_operation_type_display(self.operation_type)
 
 
 @dataclass

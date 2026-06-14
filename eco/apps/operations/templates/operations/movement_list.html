@@ -92,8 +92,7 @@
               <td class="text-nowrap">{{ m.operation_date|date:"d.m.Y" }}</td>
               <td>{{ m.organization.name }}</td>
               <td><span class="small font-monospace">{{ m.waste_type.code }}</span><br><span class="small text-muted">{{ m.waste_type.name }}</span></td>
-              {# Человекочитаемое название типа операции (из choices модели) #}
-              <td><span class="badge bg-secondary">{{ m.get_operation_type_display }}</span></td>
+              <td><span class="badge bg-secondary">{{ m.operation_type_display }}</span></td>
               <td class="text-end text-nowrap">{{ m.volume }}</td>
               <td class="text-end text-nowrap">
                 {% if can_edit_operations and not use_remote_api %}

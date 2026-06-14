@@ -19,7 +19,7 @@ from apps.administration.forms import UserRegisterForm
 from apps.integrations.auth_api import API_ROLE_LABELS, api_register
 from apps.integrations.exceptions import ApiError
 from apps.integrations.mixins import AdminRequiredMixin
-from apps.integrations.remote_data import BATCH_STATUS_LABELS, get_remote_service
+from apps.integrations.remote_data import get_batch_status_filter_choices, get_remote_service
 from apps.organizations.models import Organization
 
 ORGANIZATION_FILTER_CHOICES = [
@@ -179,9 +179,7 @@ class BatchListView(AdminRequiredMixin, ListView):
         ctx = super().get_context_data(**kwargs)
         ctx["search_query"] = self.request.GET.get("q", "").strip()
         ctx["selected_status"] = self.request.GET.get("status", "")
-        ctx["status_choices"] = [("", "Все статусы")] + list(
-            BATCH_STATUS_LABELS.items()
-        )
+        ctx["status_choices"] = [("", "Все статусы")] + get_batch_status_filter_choices()
         batches = list(ctx.get("batches", []))
         indexes = load_cross_module_indexes(get_remote_service())
         ctx["integrity_totals"] = attach_batch_integrity_checks(batches, indexes)

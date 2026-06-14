@@ -19,24 +19,48 @@ from apps.integrations.records import (
     WasteTypeRecord,
 )
 
-# Отображение типов операций API → учебные категории дашборда
+# Отображение типов операций API → русские подписи в интерфейсе
 OPERATION_TYPE_LABELS = {
     "receipt": "Поступление",
+    "incoming": "Поступление",
+    "intake": "Поступление",
     "disposal": "Вывоз / утилизация",
+    "utilization": "Вывоз / утилизация",
+    "utilisation": "Вывоз / утилизация",
     "transfer": "Передача",
     "accumulation": "Накопление",
     "recycling": "Переработка",
+    "processing": "Переработка",
     "removal": "Вывоз",
+    "export": "Вывоз",
+    "shipment": "Отгрузка",
+    "classify": "Классификация",
+    "classification": "Классификация",
+    "reject": "Отклонение",
+    "rejected": "Отклонение",
+    "rejection": "Отклонение",
 }
 
 # Для KPI и графиков: API-тип → категория объёма
 OPERATION_VOLUME_GROUP = {
     "receipt": "accumulation",
+    "incoming": "accumulation",
+    "intake": "accumulation",
     "accumulation": "accumulation",
     "transfer": "recycling",
     "recycling": "recycling",
+    "processing": "recycling",
     "disposal": "removal",
+    "utilization": "removal",
+    "utilisation": "removal",
     "removal": "removal",
+    "export": "removal",
+    "shipment": "removal",
+    "classify": "accumulation",
+    "classification": "accumulation",
+    "reject": "removal",
+    "rejected": "removal",
+    "rejection": "removal",
 }
 
 VOLUME_GROUP_LABELS = {
@@ -52,6 +76,67 @@ PARAMETER_NORMS: dict[str, Decimal] = {
 }
 
 _EMPTY_WASTE = WasteTypeRecord(pk=0, code="—", name="Не указан", hazard_class=0)
+
+
+def _normalize_operation_type_key(op_type: str) -> str:
+    return op_type.strip().lower().replace("-", "_")
+
+
+def get_operation_type_display(op_type: str) -> str:
+    """Человекочитаемый тип операции на русском."""
+    if not op_type:
+        return "—"
+    raw = op_type.strip()
+    normalized = _normalize_operation_type_key(raw)
+    spaced = normalized.replace("_", " ")
+    for key in (normalized, spaced, raw.lower(), raw):
+        label = OPERATION_TYPE_LABELS.get(key)
+        if label:
+            return label
+    return _humanize_unknown_operation_type(normalized)
+
+
+def _humanize_unknown_operation_type(normalized: str) -> str:
+    """Запасной перевод для неизвестных кодов вида waste_transfer."""
+    word_map = {
+        "receipt": "поступление",
+        "incoming": "поступление",
+        "intake": "поступление",
+        "disposal": "утилизация",
+        "utilization": "утилизация",
+        "utilisation": "утилизация",
+        "transfer": "передача",
+        "accumulation": "накопление",
+        "recycling": "переработка",
+        "processing": "переработка",
+        "removal": "вывоз",
+        "export": "вывоз",
+        "shipment": "отгрузка",
+        "classify": "классификация",
+        "classification": "классификация",
+        "reject": "отклонение",
+        "rejected": "отклонение",
+        "rejection": "отклонение",
+        "waste": "отходы",
+        "operation": "операция",
+    }
+    parts = [word_map.get(part, part) for part in normalized.split("_") if part]
+    if parts:
+        return " ".join(parts).strip().capitalize()
+    return normalized.replace("_", " ").capitalize()
+
+
+def get_operation_volume_group(op_type: str) -> str:
+    """Категория объёма для KPI: accumulation, recycling или removal."""
+    if not op_type:
+        return "accumulation"
+    normalized = _normalize_operation_type_key(op_type)
+    spaced = normalized.replace("_", " ")
+    for key in (normalized, spaced):
+        group = OPERATION_VOLUME_GROUP.get(key)
+        if group:
+            return group
+    return "accumulation"
 
 
 def _parse_date(value: str | None) -> date:
@@ -107,6 +192,10 @@ def _waste_from_dict(data: dict) -> WasteTypeRecord:
 
 BATCH_STATUS_LABELS = {
     "new": "Новая",
+    "accepted": "Принята",
+    "queued": "В очереди",
+    "pending_classification": "Ожидает классификации",
+    "pending classification": "Ожидает классификации",
     "classified": "Классифицирована",
     "in_storage": "На хранении",
     "in storage": "На хранении",
@@ -115,6 +204,8 @@ BATCH_STATUS_LABELS = {
     "planned": "В плане",
     "in_process": "В переработке",
     "in process": "В переработке",
+    "in_progress": "В работе",
+    "in progress": "В работе",
     "processing": "В переработке",
     "completed": "Завершена",
     "complete": "Завершена",
@@ -129,9 +220,25 @@ BATCH_STATUS_LABELS = {
     "cancelled": "Отменена",
     "canceled": "Отменена",
     "rejected": "Отклонена",
+    "reject": "Отклонена",
+    "classify": "Классификация",
+    "classification": "Классификация",
     "archived": "В архиве",
     "draft": "Черновик",
+    "delayed": "Отложена",
 }
+
+
+def get_batch_status_filter_choices() -> list[tuple[str, str]]:
+    """Уникальные пары (код, подпись) для фильтра — без дублей по русской подписи."""
+    seen_labels: set[str] = set()
+    choices: list[tuple[str, str]] = []
+    for key, label in BATCH_STATUS_LABELS.items():
+        if label in seen_labels:
+            continue
+        seen_labels.add(label)
+        choices.append((key, label))
+    return choices
 
 
 def get_batch_status_display(status_key: str) -> str:
@@ -156,10 +263,14 @@ def _humanize_unknown_batch_status(normalized: str) -> str:
     """Запасной перевод для неизвестных кодов вида in_some_status."""
     word_map = {
         "new": "новая",
+        "accepted": "принята",
+        "queued": "в очереди",
+        "classification": "классификации",
         "classified": "классифицирована",
         "planned": "в плане",
         "process": "переработка",
         "processing": "переработка",
+        "progress": "работе",
         "storage": "хранение",
         "stored": "хранение",
         "completed": "завершена",
@@ -172,8 +283,12 @@ def _humanize_unknown_batch_status(normalized: str) -> str:
         "cancelled": "отменена",
         "canceled": "отменена",
         "rejected": "отклонена",
+        "reject": "отклонена",
+        "classify": "классификация",
+        "classification": "классификации",
         "archived": "в архиве",
         "draft": "черновик",
+        "delayed": "отложена",
         "in": "",
         "on": "",
         "at": "",
@@ -281,8 +396,10 @@ class RemoteDataService:
 
         for item in raw:
             status_key = item.get("status", "")
-            if status and status_key != status:
-                continue
+            if status:
+                target_label = get_batch_status_display(status)
+                if get_batch_status_display(status_key) != target_label:
+                    continue
 
             org_id = item.get("organization_id")
             org = org_map.get(org_id) if org_id else None
@@ -385,7 +502,7 @@ class RemoteDataService:
             waste = waste_map.get(wt_id) if wt_id else _EMPTY_WASTE
 
             op_type = item.get("operation_type", "")
-            display = OPERATION_TYPE_LABELS.get(op_type, op_type)
+            display = get_operation_type_display(op_type)
 
             if org_filter is not None and org.pk != org_filter:
                 continue
@@ -617,7 +734,7 @@ class RemoteDataService:
 
         op_type_counts: dict[str, int] = {}
         for m in movements:
-            label = m.operation_type_display
+            label = get_operation_type_display(m.operation_type)
             op_type_counts[label] = op_type_counts.get(label, 0) + 1
         if not op_type_counts:
             for label in OPERATION_TYPE_LABELS.values():
@@ -789,7 +906,7 @@ class RemoteDataService:
         org_volumes: dict[str, Decimal] = {}
 
         for m in movements:
-            label = OPERATION_TYPE_LABELS.get(m.operation_type, m.operation_type)
+            label = get_operation_type_display(m.operation_type)
             type_counts[label] = type_counts.get(label, 0) + 1
             org_name = m.organization.name
             org_volumes[org_name] = org_volumes.get(org_name, Decimal("0")) + m.volume
@@ -804,7 +921,7 @@ class RemoteDataService:
             "removal": Decimal("0"),
         }
         for m in movements:
-            group = OPERATION_VOLUME_GROUP.get(m.operation_type, "accumulation")
+            group = get_operation_volume_group(m.operation_type)
             group_volumes[group] = group_volumes.get(group, Decimal("0")) + m.volume
 
         return {

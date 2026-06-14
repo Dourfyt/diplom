@@ -19,7 +19,7 @@ from apps.dashboard.reporting_export import (
 )
 from apps.integrations.exceptions import ApiError
 from apps.integrations.mixins import DashboardRequiredMixin, ManagerRequiredMixin
-from apps.integrations.remote_data import BATCH_STATUS_LABELS, _parse_optional_date, get_remote_service
+from apps.integrations.remote_data import _parse_optional_date, get_batch_status_filter_choices, get_remote_service
 from apps.integrations.roles import is_manager_only
 
 
@@ -306,7 +306,7 @@ class ManagerBatchListView(ManagerRequiredMixin, ListView):
         ctx["api_error"] = getattr(self, "api_error", None)
         ctx["search_query"] = self.request.GET.get("q", "").strip()
         ctx["selected_status"] = self.request.GET.get("status", "").strip()
-        ctx["status_choices"] = [("", "Все статусы")] + list(BATCH_STATUS_LABELS.items())
+        ctx["status_choices"] = [("", "Все статусы")] + get_batch_status_filter_choices()
         return ctx
 
 

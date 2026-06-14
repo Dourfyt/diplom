@@ -7,9 +7,12 @@ class Movement(TimeStampedModel):
     """Движение отходов: накопление, переработка или вывоз с площадки."""
 
     class OperationType(models.TextChoices):
-        ACCUMULATION = "accumulation", "накопление"
-        RECYCLING = "recycling", "переработка"
-        REMOVAL = "removal", "вывоз"
+        RECEIPT = "receipt", "Поступление"
+        ACCUMULATION = "accumulation", "Накопление"
+        RECYCLING = "recycling", "Переработка"
+        REMOVAL = "removal", "Вывоз"
+        DISPOSAL = "disposal", "Вывоз / утилизация"
+        TRANSFER = "transfer", "Передача"
 
     organization = models.ForeignKey(
         "organizations.Organization",
@@ -35,6 +38,10 @@ class Movement(TimeStampedModel):
         help_text="масса или объём в тоннах (учебный пример)",
     )
     operation_date = models.DateField("дата операции")
+
+    @property
+    def operation_type_display(self) -> str:
+        return self.get_operation_type_display()
 
     class Meta:
         verbose_name = "движение отходов"
