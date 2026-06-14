@@ -178,6 +178,21 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 # Сообщения: уровень ERROR отображаем как Bootstrap alert-danger
 from django.contrib.messages import constants as message_constants
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://runcourse.online',
+    'https://runcourse.online',
+    'http://www.runcourse.online',
+    'https://www.runcourse.online',
+    'http://eco.runcourse.online',
+    'https://eco.runcourse.online',
+    'http://plan.runcourse.online',
+    'https://plan.runcourse.online',
+    'http://178.57.217.79:8001',
+]
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 MESSAGE_TAGS = {
     message_constants.DEBUG: "secondary",
     message_constants.INFO: "info",

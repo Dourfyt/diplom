@@ -1,9 +1,9 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-ARG VITE_MODULE_API_URL=http://api.runcourse.online
-ARG VITE_MODULE_PLANNING_URL=http://plan.runcourse.online
-ARG VITE_MODULE_ECO_URL=http://eco.runcourse.online
+ARG VITE_MODULE_API_URL=https://api.runcourse.online
+ARG VITE_MODULE_PLANNING_URL=https://plan.runcourse.online
+ARG VITE_MODULE_ECO_URL=https://eco.runcourse.online
 ENV VITE_MODULE_API_URL=$VITE_MODULE_API_URL
 ENV VITE_MODULE_PLANNING_URL=$VITE_MODULE_PLANNING_URL
 ENV VITE_MODULE_ECO_URL=$VITE_MODULE_ECO_URL
