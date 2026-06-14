@@ -147,6 +147,66 @@ code {
   font-size: 0.88rem;
 }
 
+.header-menu {
+  position: relative;
+}
+
+.menu-trigger {
+  cursor: pointer;
+  font: inherit;
+}
+
+.menu-chevron {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  transition: transform 0.2s;
+}
+
+.header-menu.open .menu-chevron {
+  transform: rotate(180deg);
+}
+
+.menu-panel {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  min-width: 240px;
+  padding: 0.45rem;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: rgba(8, 12, 10, 0.96);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  z-index: 200;
+}
+
+.menu-panel[hidden] {
+  display: none;
+}
+
+.menu-item {
+  display: block;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  transition: background 0.15s;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.menu-item-title {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.menu-item-desc {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
 .hero {
   max-width: 1120px;
   margin: 0 auto;

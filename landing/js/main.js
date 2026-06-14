@@ -26,3 +26,42 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 });
+
+const headerMenu = document.querySelector(".header-menu");
+if (headerMenu) {
+  const trigger = headerMenu.querySelector(".menu-trigger");
+  const panel = headerMenu.querySelector(".menu-panel");
+
+  const closeMenu = () => {
+    headerMenu.classList.remove("open");
+    trigger?.setAttribute("aria-expanded", "false");
+    panel?.setAttribute("hidden", "");
+  };
+
+  const openMenu = () => {
+    headerMenu.classList.add("open");
+    trigger?.setAttribute("aria-expanded", "true");
+    panel?.removeAttribute("hidden");
+  };
+
+  trigger?.addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (headerMenu.classList.contains("open")) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!headerMenu.contains(event.target)) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeMenu();
+    }
+  });
+}

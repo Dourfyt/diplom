@@ -24,7 +24,28 @@
       <a href="#downloads">Скачать</a>
       <a href="#team">Команда</a>
     </nav>
-    <a class="btn btn-ghost header-cta" href="http://eco.runcourse.online" target="_blank" rel="noopener">Войти в ECO</a>
+    <div class="header-menu header-cta">
+      <button
+        type="button"
+        class="btn btn-ghost menu-trigger"
+        aria-expanded="false"
+        aria-haspopup="true"
+        aria-controls="module-menu"
+      >
+        Войти в модуль
+        <span class="menu-chevron" aria-hidden="true">▾</span>
+      </button>
+      <div class="menu-panel" id="module-menu" role="menu" hidden>
+        <a class="menu-item" role="menuitem" href="http://plan.runcourse.online" target="_blank" rel="noopener">
+          <span class="menu-item-title">ЭкоПлан</span>
+          <span class="menu-item-desc">Планирование переработки</span>
+        </a>
+        <a class="menu-item" role="menuitem" href="http://eco.runcourse.online" target="_blank" rel="noopener">
+          <span class="menu-item-title">ECO</span>
+          <span class="menu-item-desc">Отчётность и экоконтроль</span>
+        </a>
+      </div>
+    </div>
   </header>
 
   <main id="top">
@@ -192,11 +213,6 @@
           <span class="download-arrow">↓</span>
         </a>
       </div>
-
-      <p class="compat-note reveal">
-        Обратная совместимость: модули также доступны по IP
-        <code>178.57.217.79:8080</code> · <code>:5173</code> · <code>:8001</code>
-      </p>
     </section>
 
     <section id="team" class="section">
