@@ -151,6 +151,7 @@ class BatchOut(BaseModel):
     economic_value: float = 0
     route_codes: str = ""
     organization_id: int | None = None
+    organization_name: str | None = None
     waste_type_id: int | None = None
     source_department: str = ""
     composition: str = ""

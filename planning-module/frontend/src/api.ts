@@ -32,6 +32,7 @@ export interface Batch {
   storage_risk_hours: number | null;
   route_codes: string;
   status: string;
+  organization_name?: string | null;
   processed_tons?: number | null;
   disposed_tons?: number | null;
   remaining_tons?: number | null;

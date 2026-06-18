@@ -3,7 +3,7 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, joinedload
 
 from app.database import get_db
 from app.labels import plan_status_ru
@@ -99,6 +99,7 @@ def batch_to_out(b: WasteBatch, db: Session, now: datetime | None = None) -> Bat
     out.processed_tons = bal["processed_tons"]
     out.disposed_tons = bal["disposed_tons"]
     out.remaining_tons = bal["remaining_tons"]
+    out.organization_name = b.organization.name if b.organization else None
     return out
 
 
@@ -110,7 +111,13 @@ def list_lines(db: Session = Depends(get_db), _: User = Depends(PLANNING_VIEW)):
 @router.get("/batches", response_model=list[BatchOut])
 def list_batches(db: Session = Depends(get_db), _: User = Depends(PLANNING_VIEW)):
     now = datetime.utcnow()
-    return [batch_to_out(b, db, now) for b in db.query(WasteBatch).order_by(WasteBatch.code).all()]
+    return [
+        batch_to_out(b, db, now)
+        for b in db.query(WasteBatch)
+        .options(joinedload(WasteBatch.organization))
+        .order_by(WasteBatch.code)
+        .all()
+    ]
 
 
 @router.get("/plans", response_model=list[PlanOut])
@@ -219,12 +226,14 @@ def run_simulation(req: SimulationRequest, db: Session = Depends(get_db), _: Use
             parent_plan_id=base.id,
         )
     elif req.scenario == "emergency":
+        emergency_downtime = downtime or {"L2": 8.0}
+        downtime_hours = max(emergency_downtime.values()) if emergency_downtime else 8.0
         sim = build_schedule(
             db,
             name=f"{req.name} (аварийный)",
-            horizon_hours=base.horizon_hours,
+            horizon_hours=min(base.horizon_hours + downtime_hours, 168.0),
             batch_ids=batch_ids,
-            line_downtime_offsets=downtime or {"L2": 8.0},
+            line_downtime_offsets=emergency_downtime,
             is_simulation=True,
             parent_plan_id=base.id,
         )

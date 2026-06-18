@@ -34,7 +34,9 @@ export function batchStatusLabel(status: string): string {
     queued: "В очереди",
     classified: "Классифицирована",
     in_progress: "На переработке",
+    processing: "На переработке",
     processed: "Переработана",
+    done: "Завершена",
     disposed: "Вывезена",
     rejected: "Отклонена",
   };

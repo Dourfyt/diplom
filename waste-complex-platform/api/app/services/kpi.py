@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
@@ -7,34 +7,60 @@ from app.schemas import KpiDashboard
 from app.services.planner import compute_priority, hours_until_deadline
 
 
+def _line_idle_hours(
+    items_on_line: list[ScheduleItem],
+    window_start: datetime,
+    window_end: datetime,
+) -> float:
+    """Простой по разрывам в окне плана (в т.ч. вынужденный до первой операции)."""
+    if window_end <= window_start:
+        return 0.0
+    if not items_on_line:
+        return (window_end - window_start).total_seconds() / 3600
+
+    sorted_items = sorted(items_on_line, key=lambda x: x.start_at)
+    idle_seconds = 0.0
+    idle_seconds += max(0.0, (sorted_items[0].start_at - window_start).total_seconds())
+    for i in range(len(sorted_items) - 1):
+        idle_seconds += max(
+            0.0,
+            (sorted_items[i + 1].start_at - sorted_items[i].end_at).total_seconds(),
+        )
+    idle_seconds += max(0.0, (window_end - sorted_items[-1].end_at).total_seconds())
+    return idle_seconds / 3600
+
+
 def plan_kpi(db: Session, plan_id: int | None) -> KpiDashboard:
     now = datetime.utcnow()
     batches = db.query(WasteBatch).all()
     items: list[ScheduleItem] = []
+    plan: SchedulePlan | None = None
     if plan_id:
+        plan = db.get(SchedulePlan, plan_id)
         items = db.query(ScheduleItem).filter(ScheduleItem.plan_id == plan_id).all()
 
     scheduled_batch_ids = {i.batch_id for i in items}
-    line_busy: dict[str, float] = {}
-    line_total: dict[str, float] = {}
+    horizon = plan.horizon_hours if plan else 8.0
+    window_start = plan.created_at if plan else now
+    window_end = window_start + timedelta(hours=horizon)
 
+    by_line: dict[str, list[ScheduleItem]] = {}
+    line_busy: dict[str, float] = {}
     for item in items:
         code = item.line.code
+        by_line.setdefault(code, []).append(item)
         dur = (item.end_at - item.start_at).total_seconds() / 3600
         line_busy[code] = line_busy.get(code, 0) + dur
-        if plan_id:
-            plan = db.get(SchedulePlan, plan_id)
-            horizon = plan.horizon_hours if plan else 8
-        else:
-            horizon = 8
-        line_total[code] = horizon
+
+    idle = round(
+        sum(_line_idle_hours(line_items, window_start, window_end) for line_items in by_line.values()),
+        2,
+    )
 
     utilization = {
-        code: round(min(100.0, line_busy.get(code, 0) / max(line_total.get(code, 8), 0.01) * 100), 1)
-        for code in set(line_total) | set(line_busy)
+        code: round(min(100.0, line_busy.get(code, 0) / max(horizon, 0.01) * 100), 1)
+        for code in by_line
     }
-
-    idle = sum(max(0, line_total.get(c, 8) - line_busy.get(c, 0)) for c in line_total)
 
     at_risk = 0
     priorities = []
@@ -58,7 +84,7 @@ def plan_kpi(db: Session, plan_id: int | None) -> KpiDashboard:
         total_batches=len(batches),
         scheduled_batches=len(scheduled_batch_ids),
         line_utilization=utilization,
-        total_idle_hours=round(idle, 2),
+        total_idle_hours=idle,
         batches_at_storage_risk=at_risk,
         avg_priority=round(sum(priorities) / len(priorities), 2) if priorities else 0,
         notifications_new=notif_new,

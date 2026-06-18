@@ -316,7 +316,8 @@ export default function App() {
       (b) =>
         !batchQuery.trim() ||
         b.code.toLowerCase().includes(batchQuery.toLowerCase()) ||
-        b.name.toLowerCase().includes(batchQuery.toLowerCase())
+        b.name.toLowerCase().includes(batchQuery.toLowerCase()) ||
+        (b.organization_name ?? "").toLowerCase().includes(batchQuery.toLowerCase())
     )
     .sort((a, b) => (b.priority_score ?? 0) - (a.priority_score ?? 0));
 
@@ -702,7 +703,7 @@ export default function App() {
                   <IconSearch />
                   <input
                     type="search"
-                    placeholder="Поиск по коду или наименованию…"
+                    placeholder="Поиск по коду, наименованию или организации…"
                     value={batchQuery}
                     onChange={(e) => setBatchQuery(e.target.value)}
                   />
@@ -715,6 +716,7 @@ export default function App() {
                       <tr>
                         <th data-tour="batches-col-code">Код</th>
                         <th>Наименование</th>
+                        <th>Организация</th>
                         <th>Класс</th>
                         <th>Статус</th>
                         <th data-tour="batches-col-balance">Поступило, т</th>
@@ -729,7 +731,7 @@ export default function App() {
                     <tbody>
                       {filteredBatches.length === 0 ? (
                         <tr>
-                          <td colSpan={11} className="empty-row">
+                          <td colSpan={12} className="empty-row">
                             {batchQuery.trim()
                               ? `Ничего не найдено по запросу «${batchQuery}»`
                               : "Нет партий в очереди"}
@@ -750,6 +752,7 @@ export default function App() {
                                   {b.fkko_code}
                                 </div>
                               </td>
+                              <td>{b.organization_name ?? "—"}</td>
                               <td>
                                 <HazardClass n={b.hazard_class} />
                               </td>
