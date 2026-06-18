@@ -84,6 +84,13 @@ function DeltaCell({ value }: { value: number }) {
   );
 }
 
+/** Исходный план для сценариев: не подменять предыдущей симуляцией после переключения. */
+function resolveSimulationBasePlanId(plan: Plan | undefined): number | null {
+  if (!plan) return null;
+  if (!plan.is_simulation) return plan.id;
+  return plan.parent_plan_id;
+}
+
 export default function App() {
   const [session, setSession] = useState<AuthSession | null>(() => getSession());
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -106,6 +113,7 @@ export default function App() {
   const tourActiveRef = useRef(false);
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? plans[0];
+  const simulationBasePlanId = resolveSimulationBasePlanId(selectedPlan);
   const approvedPlan = plans.find(
     (p) => !p.is_simulation && (p.status === "approved" || p.status === "published")
   );
@@ -168,6 +176,12 @@ export default function App() {
       if (e instanceof ApiAuthError) handleLogout();
     });
   }, [selectedPlanId, plans, session]);
+
+  useEffect(() => {
+    if (simResult && simulationBasePlanId && simResult.base_plan_id !== simulationBasePlanId) {
+      setSimResult(null);
+    }
+  }, [simulationBasePlanId, simResult]);
 
   const handleTrainingToggle = () => {
     if (tourActiveRef.current || isPlanningTourActive()) {
@@ -259,11 +273,12 @@ export default function App() {
   };
 
   const handleSimulate = async (scenario: string) => {
-    if (!selectedPlan) return;
+    const basePlanId = simulationBasePlanId;
+    if (!basePlanId) return;
     setBusy(true);
     try {
       const result = await api.simulate(
-        selectedPlan.id,
+        basePlanId,
         scenario,
         scenario === "emergency" ? { [emergencyLineCode]: 8 } : undefined
       );
@@ -778,7 +793,7 @@ export default function App() {
                   <div>
                     <h2>Выберите сценарий</h2>
                     <p>
-                      Базовый план #{selectedPlan?.id ?? "—"} · результат сохраняется как отдельная симуляция
+                      Базовый план #{simulationBasePlanId ?? "—"} · результат сохраняется как отдельная симуляция
                     </p>
                   </div>
                 </div>
@@ -788,7 +803,7 @@ export default function App() {
                       type="button"
                       className="scenario-card"
                       data-tour="simulation-baseline"
-                      disabled={!canWrite || !selectedPlan || busy}
+                      disabled={!canWrite || !simulationBasePlanId || busy}
                       onClick={() => handleSimulate("baseline")}
                     >
                       <h3>Базовый</h3>
@@ -798,7 +813,7 @@ export default function App() {
                       type="button"
                       className="scenario-card"
                       data-tour="simulation-accelerated"
-                      disabled={!canWrite || !selectedPlan || busy}
+                      disabled={!canWrite || !simulationBasePlanId || busy}
                       onClick={() => handleSimulate("accelerated")}
                     >
                       <h3>Ускоренный</h3>
@@ -808,7 +823,7 @@ export default function App() {
                       type="button"
                       className="scenario-card emergency"
                       data-tour="simulation-emergency"
-                      disabled={!canWrite || !selectedPlan || busy}
+                      disabled={!canWrite || !simulationBasePlanId || busy}
                       onClick={() => handleSimulate("emergency")}
                     >
                       <h3>Аварийный</h3>
